@@ -8,12 +8,30 @@ using namespace std;
 typedef pair<int, int> isPair;
 
 class Graph {
+    public:
+        virtual void addEdge(int u, int v, int w) = 0;
+        virtual void shortestPath(int src) = 0;
+};
+
+class AdjListGraph : public Graph {
     private:    
         int V;  
+        bool isDirected;
         list<isPair> *adjList;
     public:
-        Graph(int V);
+        AdjListGraph(int V, bool isDirected);
+        ~AdjListGraph();
+        void addEdge(int u, int v, int w) override;
+        void shortestPath(int src) override;
+};
 
-        void addEdge(int u, int v, int w);
-        void shortestPath(int s); 
+class AdjMatrixGraph : public Graph {
+    private:
+        int V;
+        bool isDirected;
+        vector<vector<int>> adjMatrix;
+    public:
+        AdjMatrixGraph(int V, bool isDirected);
+        void addEdge(int u, int v, int w) override;
+        void shortestPath(int src) override;
 };
