@@ -8,7 +8,7 @@
                 "-fdiagnostics-color=always",
                 "-g",
                 "${workspaceFolder}/src/*.cpp",
-				"${workspaceFolder}/src/DataStructures/Singly Linked List/*.cpp",
+				"${workspaceFolder}/src/DataStructures/SinglyLinkedList/*.cpp",
 				"${workspaceFolder}/src/DataStructures/Graph/*.cpp",
 				"${workspaceFolder}/src/DataStructures/Heap/*.cpp",
                 "${workspaceFolder}/src/DataStructures/Trie/*.cpp",
