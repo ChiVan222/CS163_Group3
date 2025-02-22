@@ -1,5 +1,9 @@
 #include <iostream>
 #include "SinglyLinkedList.h"
+SinglyLinkedList::~SinglyLinkedList()
+{
+    DeleteList();
+}
 void SinglyLinkedList::DeleteList()
 {
    while(root)
@@ -53,4 +57,16 @@ bool SinglyLinkedList::Delete(int x)
     cur->next = cur->next->next; 
     delete tmp; 
     return true; 
+}
+bool SinglyLinkedList::Search(int x)
+{
+    if(!root) return false; 
+    Node* cur = root; 
+    while(cur)
+    {
+        if(cur->value == x) return true;
+        cur=cur->next;
+
+    }
+    return false; 
 }
