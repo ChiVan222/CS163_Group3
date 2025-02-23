@@ -1,36 +1,61 @@
 #include "Button.h"
-Button::Button(const char* imgpath, Vector2 pos, float scale):position(pos){
+#include <cmath>
+Button::Button(const char* imgpath, Vector2 pos, Vector2 rect,const char* title):position(pos), title(title), rect(rect){
      Image img =  LoadImage(imgpath); 
      int oWidth =img.width;
      int oHeight = img.height;   
+     float scaleX = (float)rect.x/oWidth; 
+     float scaleY = (float)rect.y/oHeight; 
+     float scale = fmin(scaleX,scaleY);
      int nWidth = static_cast<int>(oWidth*scale);
      int nHeight = static_cast<int>(oHeight*scale);
      ImageResize(&img,nWidth,nHeight);
      texture =  LoadTextureFromImage(img);
      UnloadImage(img);
-
+     isHovered = None;
 }
 Button::~Button(){ 
     UnloadTexture(texture); 
 }
 void Button::Draw( )
 { 
-    if(isHovered == None)
-    {
-        DrawTextureV(texture,position,GRAY);
-    }else 
-    {
-        DrawTextureV(texture,position,WHITE);
-    }
+    Color borderColor = isHovered == None? RED : GREEN;
+    Color imageColor  = isHovered == None? GRAY : WHITE;
+        Rectangle src = { 0, 0, (float)texture.width, (float)texture.height };  
+        Rectangle dest = {position.x, position.y, (float)rect.x, (float)rect.y }; 
+        DrawTexturePro(texture, src, dest, Vector2({0, 0}), 0.0f, imageColor);
+    DrawRectangleLinesEx(Rectangle({position.x, position.y, (float)rect.x, (float)rect.y}),3,borderColor);
+    DrawText(title, position.x, position.y + 10 + rect.y, 20, WHITE);
+
 }
 bool Button :: IsHovered(Vector2 mousePos)
 {
-    Rectangle rect =  {position.x,position.y, static_cast<float>(texture.width),static_cast<float>(texture.height)};
-   if(CheckCollisionPointRec(mousePos,rect))
+    Rectangle rect2 =  {position.x,position.y, rect.x,rect.y};
+   if(CheckCollisionPointRec(mousePos,rect2))
    {
-     isHovered = HighLighting; 
-     return true; 
-
+        isHovered = HighLighting; 
+        return true; 
+   }else 
+   {
+    isHovered =None;
    }
    return false; 
+}
+
+
+const char* Button::get_title() 
+{
+    return title; 
+}
+Texture2D Button::get_texture()
+{
+    return texture; 
+}
+Vector2 Button::get_position()
+{
+  return position;
+}
+Vector2 Button::get_rectangle()
+{
+  return rect; 
 }

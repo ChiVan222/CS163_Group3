@@ -1,5 +1,6 @@
 #include "UI.h"
 #include "Button.h"
+#include <iostream> 
 UI::UI(): cScene(Welcome), mFont(GetFontDefault())
 {
 }
@@ -9,7 +10,14 @@ void UI::run()
     InitWindow(wWidth, wHeight, "Hello, World!");
     SetTargetFPS(mFPS);
     Texture2D background = LoadTexture("../assets/Images/background.png");
-    Button SinglyLinkedList("../assets/Images/SinglyLinkedList.png",Vector2({200,200}),0.7);  
+    float buttonSpacing = 20; 
+    int buttons_count = 4; 
+    Button buttons[] = {
+        Button("../assets/Images/SinglyLinkedList.png", Vector2({wWidth / 5 * 1, 300}),Vector2({200,200}), "Singly Linked List"),
+        Button("../assets/Images/holder.png", Vector2({wWidth / 5 * 2, 300}),Vector2({200,200}), "Trie"),
+        Button("../assets/Images/holder.png", Vector2({wWidth / 5 * 3, 300}),Vector2({200,200}), "Heap"),
+        Button("../assets/Images/holder.png", Vector2({wWidth / 5 * 4, 300}),Vector2({200,200}),"Graph")
+    };
     while (!WindowShouldClose())
     {
        
@@ -38,13 +46,16 @@ void UI::run()
 
                 ClearBackground(DARKBLUE);
                 DrawText("Menu", static_cast<int>(wWidth/2), 100, 40, WHITE);
-                SinglyLinkedList.Draw();
-                if(SinglyLinkedList.IsHovered(mousePos))
+                for(int i = 0; i <buttons_count;  i++)
                 {
-                    if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
-                       cScene =  Singly;
+                    buttons[i].Draw();
+                    if(buttons[i].IsHovered(mousePos))
+                    {
+                        if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+                            cScene =  Singly;
+                    }
                 }
-                if(GetKeyPressed()!=0)
+                if(IsKeyPressed(KEY_LEFT))
                 {
                     cScene = Welcome; 
                 }
@@ -53,13 +64,14 @@ void UI::run()
             { 
                 ClearBackground(DARKBLUE);
                 DrawText("Singly Linked List", 200, 200, 40, WHITE);
-                if(GetKeyPressed()!=0)
+                if(IsKeyPressed(KEY_LEFT))
                 {
-                    cScene = Menu; 
+                    cScene = Welcome; 
                 }
             }break; 
         }
         EndDrawing();
+
     }
     CloseWindow();
     return; 
