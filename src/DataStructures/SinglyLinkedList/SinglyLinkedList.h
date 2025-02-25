@@ -10,8 +10,8 @@ class SinglyLinkedList
       };
       Node* root;  
     public :  
-      SinglyLinkedList(): root(nullptr){}
-      SinglyLinkedList(int x): root(new Node(x)){}
+      SinglyLinkedList();
+      SinglyLinkedList(int x);
       ~SinglyLinkedList();
       void DeleteList();  
       void Traverse(); 

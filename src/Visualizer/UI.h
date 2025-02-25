@@ -1,13 +1,12 @@
 #pragma once
 #include <raylib.h> 
-#include <math.h>
-#include "Button.h"
 class UI 
 {   
-    private: 
-       typedef enum Scenes{  
+    public: 
+      typedef enum Scenes{  
           Welcome = 0, Menu, Settings, Singly, Trie, Graph, Heap
-       } Scenes;
+      } Scenes;
+    private: 
       Scenes cScene;  
       static constexpr int wWidth = 1280; 
       static constexpr int wHeight = 720; 
@@ -18,7 +17,6 @@ class UI
     public : 
       
      void run() ; 
-     void DrawNode();
      Scenes getScenes(); 
      UI();
    //   ~UI();

@@ -1,5 +1,7 @@
 #include <iostream>
 #include "SinglyLinkedList.h"
+SinglyLinkedList::SinglyLinkedList(): root(nullptr){}
+SinglyLinkedList::SinglyLinkedList(int x): root(new Node(x)){}
 SinglyLinkedList::~SinglyLinkedList()
 {
     DeleteList();

@@ -17,13 +17,16 @@ Button::Button(const char* imgpath, Vector2 pos, Vector2 rect,const char* title)
 Button::~Button(){ 
     UnloadTexture(texture); 
 }
+SceneButton::SceneButton(const char* imgpath, Vector2 pos,Vector2 rect, const char* title, UI::Scenes bScenes)
+: Button(imgpath,pos,rect,title), bScenes(bScenes){}
+
 void Button::Draw( )
 { 
     Color borderColor = isHovered == None? RED : GREEN;
     Color imageColor  = isHovered == None? GRAY : WHITE;
-        Rectangle src = { 0, 0, (float)texture.width, (float)texture.height };  
-        Rectangle dest = {position.x, position.y, (float)rect.x, (float)rect.y }; 
-        DrawTexturePro(texture, src, dest, Vector2({0, 0}), 0.0f, imageColor);
+    Rectangle src = { 0, 0, (float)texture.width, (float)texture.height };  
+    Rectangle dest = {position.x, position.y, (float)rect.x, (float)rect.y }; 
+    DrawTexturePro(texture, src, dest, Vector2({0, 0}), 0.0f, imageColor);
     DrawRectangleLinesEx(Rectangle({position.x, position.y, (float)rect.x, (float)rect.y}),3,borderColor);
     DrawText(title, position.x, position.y + 10 + rect.y, 20, WHITE);
 
@@ -58,4 +61,8 @@ Vector2 Button::get_position()
 Vector2 Button::get_rectangle()
 {
   return rect; 
+}
+UI::Scenes SceneButton::getButtonScenes()
+{
+    return bScenes; 
 }

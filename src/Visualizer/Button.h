@@ -1,8 +1,8 @@
 #pragma once 
 #include <raylib.h> 
+#include "UI.h"
 class Button 
 {
-  
   public : 
     Button(const char* imgpath, Vector2 pos,Vector2 rect, const char* title); 
     ~Button();
@@ -12,7 +12,7 @@ class Button
     Texture2D get_texture(); 
     Vector2 get_position();
     Vector2 get_rectangle();
-  private : 
+  protected : 
     typedef enum HighLight{
       None, 
       HighLighting
@@ -24,8 +24,12 @@ class Button
     Vector2 rect; 
 
 }; 
-class SceneButton: Button //Button for switching scenes 
+class SceneButton: public Button //Button for switching scenes 
 { 
-    private : 
-       
+ 
+  private :  
+    UI::Scenes bScenes;
+  public : 
+    UI::Scenes getButtonScenes();  
+    SceneButton(const char* imgpath, Vector2 pos,Vector2 rect, const char* title, UI::Scenes bScenes);
 }; 
