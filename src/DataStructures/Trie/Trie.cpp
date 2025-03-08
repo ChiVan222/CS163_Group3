@@ -75,5 +75,5 @@ bool Trie::removeWord(TrieNode* node, const string& word, int depth) {
 
 
 bool Trie::removeWord(const string& word) {
-    return removeWord(root, word, 0);
+    return removeWord(proot, word, 0);
 }
