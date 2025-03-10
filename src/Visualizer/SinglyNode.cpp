@@ -1,7 +1,7 @@
 #include "SinglyNode.h"
 #include <raylib.h> 
 #include <string>
-SinglyNode:: SinglyNode(Node* node,Vector2 pos,float radius):PolyNode(pos,radius),node(node)
+SinglyNode:: SinglyNode(SinglyLinkedList::Node* node,Vector2 pos,float radius):PolyNode(pos,radius),node(node)
 { 
 
 }
@@ -19,7 +19,11 @@ void SinglyNode::Draw()
     DrawText(text,textX, textY, radius, WHITE);
 
 }
-void SinglyNode::SetRoot(Node* newNode)
+void SinglyNode::SetRoot(SinglyLinkedList::Node* newNode)
 {
-    root = newNode;
+    node = newNode;
+}
+int SinglyNode::getValue()
+{
+    return node->value;
 }

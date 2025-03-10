@@ -15,11 +15,11 @@ class UI
       static constexpr int mFPS = 60; 
       Font mFont; 
       Ani_LinkedListTraversal a;
+      SinglyLinkedList list;
       bool created; 
     private : 
    //   void initAssets(); 
     public : 
-      
      void run() ; 
      Scenes getScenes(); 
      UI();

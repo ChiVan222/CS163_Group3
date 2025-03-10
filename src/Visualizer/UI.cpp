@@ -25,7 +25,7 @@ void UI::DrawFadingText(float time, int x, int y, int fontsize,const char* text)
     Color textColor = {255,255,255,(unsigned char)(alpha*255)}; 
     DrawText(text, x,y,fontsize,textColor); 
 }
-UI::UI(): cScene(Welcome), mFont(GetFontDefault())
+UI::UI(): cScene(Welcome), mFont(GetFontDefault()),a(),list()
 {
     created = false;
 }
@@ -87,7 +87,6 @@ void UI::run()
             } break; 
             case(Singly):
             { 
-            
               SinglyScene();
             }break; 
             case(Trie):
@@ -126,27 +125,32 @@ void UI::run()
     return; 
 }
 #include "Animation.h"
-void UI::SinglyScene()
-{
-    float deltaTime = GetFrameTime();
+#include <raylib.h>
+
+void UI::SinglyScene() {
+ 
+    float deltaTime = IsWindowFocused() ? GetFrameTime() : 0;
     ClearBackground(BLACK);
     DrawText("Singly Linked List", 200, 200, 40, WHITE);
-    if(IsKeyPressed(KEY_LEFT))
-    {
-        cScene = Menu; 
+    
+    if (IsKeyPressed(KEY_LEFT)) {
+        cScene = Menu;
+        created = false;
+        list.DeleteList();
+        a = Ani_LinkedListTraversal();
+        return; 
     }
     
-    if(!created)
-    {
-        SinglyLinkedList list(5);
+    if (!created) {
+        list.Insert(5);
         list.Insert(3);
         list.Insert(7);
         list.Insert(9);
         list.Insert(12);
         list.Insert(15);
-        a   =   Ani_LinkedListTraversal(0.3,list.get_root(),Vector2({300,300}),20);
-        created = true; 
+        a = Ani_LinkedListTraversal(0.3, list.get_root(), Vector2({300, 300}), 20);
+        created = true;
     }
     a.updateAnimations(deltaTime);
-    a.Draw(); 
+    a.Draw();
 }
