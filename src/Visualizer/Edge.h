@@ -1,4 +1,5 @@
 #include "PolyNode.h"
+
 class  Edge
 { protected :
      int size; 
@@ -7,4 +8,5 @@ class  Edge
   public : 
      explicit Edge(PolyNode* from , PolyNode* to);
      void Draw(); 
+
 }; 

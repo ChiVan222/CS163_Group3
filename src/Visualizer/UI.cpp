@@ -139,15 +139,16 @@ void UI::SinglyScene() {
         list.DeleteList();
         a = Ani_LinkedListTraversal();
         return; 
+
     }
     
     if (!created) {
         list.Insert(5);
         list.Insert(3);
         list.Insert(7);
-        list.Insert(9);
-        list.Insert(12);
         list.Insert(15);
+        list.Insert(12);
+        list.Insert(20);
         a = Ani_LinkedListTraversal(0.3, list.get_root(), Vector2({300, 300}), 20);
         created = true;
     }
