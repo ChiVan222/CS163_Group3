@@ -1,5 +1,7 @@
 #pragma once
 #include <raylib.h> 
+#include "Animation.h"
+
 class UI 
 {   
     public: 
@@ -12,6 +14,8 @@ class UI
       static constexpr int wHeight = 720; 
       static constexpr int mFPS = 60; 
       Font mFont; 
+      Ani_LinkedListTraversal a;
+      bool created; 
     private : 
    //   void initAssets(); 
     public : 
@@ -23,5 +27,9 @@ class UI
      void UILoadFont(); 
      void UIUnLoadFont();
      void DrawFadingText(float time, int x, int y, int fontsize,const char* text);
+     void TrieScene(); 
+     void GraphScene();
+     void HeapScene(); 
+     void SinglyScene(); 
      Font getFont();
 };

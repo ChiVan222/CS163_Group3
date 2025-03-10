@@ -1,10 +1,33 @@
 #include "UI.h"
 #include "Button.h"
+#include "SinglyNode.h"
 #include <iostream> 
 #include <math.h>
-
+UI::Scenes UI::getScenes()
+{
+    return cScene; 
+}
+void UI::UILoadFont()
+{
+   mFont = LoadFont("../assets/Fonts/fonts.ttf"); 
+}
+void UI::UIUnLoadFont()
+{
+   UnloadFont(mFont);
+}
+Font UI::getFont()
+{
+    return mFont; 
+}
+void UI::DrawFadingText(float time, int x, int y, int fontsize,const char* text)
+{
+    float alpha  = (sin(time*4.0f)+1.0f)/2 ; 
+    Color textColor = {255,255,255,(unsigned char)(alpha*255)}; 
+    DrawText(text, x,y,fontsize,textColor); 
+}
 UI::UI(): cScene(Welcome), mFont(GetFontDefault())
 {
+    created = false;
 }
 void UI::run()
 {
@@ -64,12 +87,8 @@ void UI::run()
             } break; 
             case(Singly):
             { 
-                ClearBackground(DARKBLUE);
-                DrawText("Singly Linked List", 200, 200, 40, WHITE);
-                if(IsKeyPressed(KEY_LEFT))
-                {
-                    cScene = Menu; 
-                }
+            
+              SinglyScene();
             }break; 
             case(Trie):
             { 
@@ -106,26 +125,28 @@ void UI::run()
     CloseWindow();
     return; 
 }
-UI::Scenes UI::getScenes()
+#include "Animation.h"
+void UI::SinglyScene()
 {
-    return cScene; 
-}
-
-void UI::UILoadFont()
-{
-   mFont = LoadFont("../assets/Fonts/fonts.ttf"); 
-}
-void UI::UIUnLoadFont()
-{
-   UnloadFont(mFont);
-}
-Font UI::getFont()
-{
-    return mFont; 
-}
-void UI::DrawFadingText(float time, int x, int y, int fontsize,const char* text)
-{
-    float alpha  = (sin(time*4.0f)+1.0f)/2 ; 
-    Color textColor = {255,255,255,(unsigned char)(alpha*255)}; 
-    DrawText(text, x,y,fontsize,textColor); 
+    float deltaTime = GetFrameTime();
+    ClearBackground(BLACK);
+    DrawText("Singly Linked List", 200, 200, 40, WHITE);
+    if(IsKeyPressed(KEY_LEFT))
+    {
+        cScene = Menu; 
+    }
+    
+    if(!created)
+    {
+        SinglyLinkedList list(5);
+        list.Insert(3);
+        list.Insert(7);
+        list.Insert(9);
+        list.Insert(12);
+        list.Insert(15);
+        a   =   Ani_LinkedListTraversal(0.3,list.get_root(),Vector2({300,300}),20);
+        created = true; 
+    }
+    a.updateAnimations(deltaTime);
+    a.Draw(); 
 }

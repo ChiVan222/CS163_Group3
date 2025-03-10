@@ -1,5 +1,7 @@
 #include <iostream>
 #include "SinglyLinkedList.h"
+#include <chrono>
+#include <thread>
 SinglyLinkedList::SinglyLinkedList(): root(nullptr){}
 SinglyLinkedList::SinglyLinkedList(int x): root(new Node(x)){}
 SinglyLinkedList::~SinglyLinkedList()
@@ -29,15 +31,18 @@ void SinglyLinkedList::Insert(int x)
     }
     cur->next = new Node(x); 
 }
-void SinglyLinkedList::Traverse()
+void SinglyLinkedList::Traverse(Vector2 position, float radius)
 {
-    Traverse(root); 
+    Traverse(root,position, radius); 
 }
-void SinglyLinkedList::Traverse(Node* x)
+void SinglyLinkedList::Traverse(Node* x,Vector2 position, float radius)
 {
    if(!x) return;   
-   std::cout<<x->value<<" ";
-   Traverse(x->next);
+
+}
+SinglyLinkedList :: SinglyLinkedList(Node* node):root(node)
+{
+ 
 }
 bool SinglyLinkedList::Delete(int x)
 { 
@@ -72,3 +77,7 @@ bool SinglyLinkedList::Search(int x)
     }
     return false; 
 }
+SinglyLinkedList::Node* SinglyLinkedList::get_root()
+{
+  return root; 
+} 
