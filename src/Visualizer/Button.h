@@ -1,6 +1,6 @@
 #pragma once 
 #include <raylib.h> 
-#include "UI.h"
+#include "Ultility.h"
 class Button 
 {
   public : 
@@ -28,8 +28,16 @@ class SceneButton: public Button //Button for switching scenes
 { 
  
   private :  
-    UI::Scenes bScenes;
+    Scenes bScenes;
   public : 
-    UI::Scenes getButtonScenes();  
-    SceneButton(const char* imgpath, Vector2 pos,Vector2 rect, const char* title, UI::Scenes bScenes);
+    Scenes getButtonScenes();  
+    SceneButton(const char* imgpath, Vector2 pos,Vector2 rect, const char* title,Scenes bScenes);
+    ~SceneButton(){};
 }; 
+class InputButton: public Button
+{ 
+  private :
+
+  public : 
+    
+};

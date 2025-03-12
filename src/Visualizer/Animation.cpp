@@ -44,11 +44,18 @@ void Ani_LinkedListTraversal::play() {
 
 void Ani_LinkedListTraversal::Draw() {
     for (int i = 0; i < Nodes.size(); i++) {
-        Nodes[i].Draw();
+         Nodes[i].Draw();
     }
-        for (int i = 0; i < Edges.size(); i++) {
-            Edges[i].Draw();
+    for (int i = 0; i < Edges.size();) {
+        if(Edges[i].Draw())
+        { 
+            i++;
         }
+        else{
+           Edges.erase(Edges.begin()+i);
+        }
+    }
+
     
 }
 

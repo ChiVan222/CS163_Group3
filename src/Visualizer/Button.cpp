@@ -17,7 +17,7 @@ Button::Button(const char* imgpath, Vector2 pos, Vector2 rect,const char* title)
 Button::~Button(){ 
     UnloadTexture(texture); 
 }
-SceneButton::SceneButton(const char* imgpath, Vector2 pos,Vector2 rect, const char* title, UI::Scenes bScenes)
+SceneButton::SceneButton(const char* imgpath, Vector2 pos,Vector2 rect, const char* title, Scenes bScenes)
 : Button(imgpath,pos,rect,title), bScenes(bScenes){}
 
 void Button::Draw( )
@@ -62,7 +62,7 @@ Vector2 Button::get_rectangle()
 {
   return rect; 
 }
-UI::Scenes SceneButton::getButtonScenes()
+Scenes SceneButton::getButtonScenes()
 {
     return bScenes; 
 }
