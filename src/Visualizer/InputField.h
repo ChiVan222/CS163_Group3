@@ -1,19 +1,25 @@
 #include <string>
 #include <raylib.h> 
+#include "Button.h"
+#include "Ultility.h"
 #pragma once
 class InputField 
 { 
+    
     private:
      static constexpr int max_input = 20; 
      std::string input; 
+     std::string prevInput; 
      Rectangle inputbox; 
+     InputType type; 
      bool isActive;
+     Button* button; 
     public :   
-     void Send(std::string & buffer); 
+     bool Send(std::string & buffer); 
      void HandleInput(std::string& buffer,Vector2 mousePos); 
      void Activate(); 
      void Deactivate();
-     void Draw(); 
+     void Draw(bool DrawButton); 
      InputField(Rectangle rec);
-     InputField(float width, float height, Vector2 position);
+     InputField(float width, float height, Vector2 position, InputType type);
 }; 

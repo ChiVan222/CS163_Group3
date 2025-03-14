@@ -1,14 +1,35 @@
 #include "InputField.h"
+#include "UI.h"
 void InputField::Activate()
 {
   isActive = true; 
 }
-InputField::InputField(float width, float height, Vector2 position)
+InputField::InputField(float width, float height, Vector2 position, InputType type): type(type)
 {
    inputbox.x = position.x;
    inputbox.y = position.y; 
    inputbox.height = height;
    inputbox.width = width;  
+   isActive = false;
+   switch(type)
+   { 
+     case(InputType::Insert):
+     {
+        button = new Button("",Vector2({inputbox.x+inputbox.width, inputbox.y}),Vector2({100,inputbox.height}),"Insert") ;
+     }break;
+     case(InputType::Remove):
+     {
+        button = new Button("",Vector2({inputbox.x+inputbox.width, inputbox.y}),Vector2({100,100}),"Remove") ;
+     }break;
+     case(InputType::Update):
+     {
+        button = new Button("",Vector2({inputbox.x+inputbox.width, inputbox.y}),Vector2({100,100}),"Update") ;
+     }break;
+     case(InputType::Search):
+     {
+        button = new Button("",Vector2({inputbox.x+inputbox.width, inputbox.y}),Vector2({100,100}),"Search") ;
+     }break;
+   }
 }
 InputField::InputField(Rectangle rec)
 {
@@ -31,29 +52,53 @@ void InputField::HandleInput(std::string& buffer,Vector2 mousePos)
         int key =GetCharPressed();
         while(key>0)
         {       
-            if(key>=32 && key<= 125)
+            if(key>=32 && key<= 125 && input.size()<max_input)
             {
                 input +=  (char)key; 
             }
             key = GetCharPressed();
         }
-        if(IsKeyPressed(KEY_BACK)&& !input.empty())
+        if(IsKeyDown(KEY_BACKSPACE)&& !input.empty())
         {
             input.pop_back(); 
         }
-        if(IsKeyPressed(KEY_ENTER))
-        {
-            Send(buffer); 
-        }
+       
     }
 }
-void InputField::Send(std::string& buffer)
-{
-  buffer +=  input; 
-  input =""; 
+#include <sstream>
+std::string formatInput(const std::string& type, const std::string& input) {
+    std::stringstream ss(input);
+    std::vector<std::string> words;
+    std::string word, result;
+
+    while (ss >> word) {
+        words.push_back(type + " " + word);
+    }
+    for (const std::string& w : words) {
+        result += w + " ";
+    }
+
+    return result;
 }
-void InputField::Draw()
+bool InputField::Send(std::string& buffer)
+{
+ 
+    if(IsKeyPressed(KEY_ENTER)||((button->IsHovered(UI::mousePos)&& IsMouseButtonPressed(MOUSE_BUTTON_LEFT))))
+    {
+        if(input!="")
+       { buffer += formatInput(std::to_string(static_cast<int>(type)),' ' +input + ' '+ prevInput + " "); 
+        input =""; 
+        return true; }
+    }
+    DrawText(("Buffer: " +buffer).c_str(), 0,0,20,WHITE);
+    return false; 
+}
+void InputField::Draw(bool DrawButton)
 {
     DrawRectangleRec(inputbox, isActive? LIGHTGRAY:GRAY); 
     DrawText(input.c_str(), inputbox.x + 10, inputbox.y + 15, 20, BLACK);
+    if(DrawButton){ 
+        button->Draw();
+        button->DrawButtonText_center();
+    }
 }

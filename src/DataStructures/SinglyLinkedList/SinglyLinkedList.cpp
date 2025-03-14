@@ -17,12 +17,12 @@ void SinglyLinkedList::DeleteList()
      delete tmp; 
    }   
 }
-void SinglyLinkedList::Insert(int x)
+SinglyLinkedList::Node* SinglyLinkedList::Insert(int x)
 { 
     if(!root) 
     {
         root = new Node(x);
-        return;
+        return root;
     }
     Node* cur = root; 
     while(cur->next)
@@ -30,6 +30,7 @@ void SinglyLinkedList::Insert(int x)
         cur = cur->next; 
     }
     cur->next = new Node(x); 
+    return cur->next; 
 }
 void SinglyLinkedList::Traverse(Vector2 position, float radius)
 {
@@ -52,6 +53,7 @@ bool SinglyLinkedList::Delete(int x)
         Node* tmp = root; 
         root = root->next;
         delete tmp; 
+        
         return true;
     }
     Node* cur = root;

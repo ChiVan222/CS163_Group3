@@ -6,7 +6,11 @@ class Button
   public : 
     Button(const char* imgpath, Vector2 pos,Vector2 rect, const char* title); 
     ~Button();
+    Button(); 
     void Draw();     
+    void DrawButtonText(Vector2 textpos); 
+    void DrawButtonText_center();
+    void DrawButtonText_below(); 
     bool IsHovered(Vector2 mousePos);
     const char* get_title() ; 
     Texture2D get_texture(); 

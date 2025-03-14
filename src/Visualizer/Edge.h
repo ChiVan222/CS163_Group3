@@ -8,5 +8,7 @@ class Edge
   public : 
      explicit Edge(PolyNode* from , PolyNode* to);
      bool Draw(); 
-    
+     PolyNode* getFrom();
+     PolyNode* getTo(); 
 }; 
+

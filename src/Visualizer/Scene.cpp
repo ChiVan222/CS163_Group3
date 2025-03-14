@@ -1,5 +1,12 @@
 #include "Scene.h"
 #include "UI.h"
+Ani_MoveList Singly_Scene::m ;
+SinglyLinkedListNode Singly_Scene::Nodes = SinglyLinkedListNode();
+std::vector<Edge*>Singly_Scene::Edges;
+SinglyNode* Singly_Scene::cur =nullptr;
+bool Singly_Scene::created = false; 
+animation Singly_Scene:: ani = None; 
+
 Scenes SceneManager::get_scene()
 {
     return mscene;
@@ -12,6 +19,7 @@ void SceneManager::runScene()
 {
      scenes[mscene]->run(mscene); 
 }
+
 void Welcome_Scene::run(Scenes& mscene)
 {
 
@@ -25,7 +33,6 @@ void Welcome_Scene::run(Scenes& mscene)
     {
        mscene = Menu; 
     }
-
 }
 Menu_Scene::Menu_Scene()
 {
@@ -52,8 +59,9 @@ void Menu_Scene::run(Scenes& mscene)
     DrawText("Menu", static_cast<int>(UI::wWidth/2), 100, 40, WHITE);
     for(int i = 0; i <sButtons.size();  i++)
     {
+        sButtons[i]->Draw();
+        sButtons[i]->DrawButtonText_below();
 
-      sButtons[i]->Draw();
         if(sButtons[i]->IsHovered(UI::mousePos))
         {
             if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
@@ -65,31 +73,107 @@ void Menu_Scene::run(Scenes& mscene)
          mscene = Welcome;
     }
 }
+#include <sstream>
+#include <iostream>
+void Singly_Scene::CheckBuffer()
+{
+    int type;
+    std::stringstream ss(buffer);
+    bool inputted =false; 
+    if(i.getState()) 
+    {
+        ss>>type; 
+        inputted =true;
+    }
+    switch(type)
+    {
+      case 0 :
+        {   
+            int x ;
+            Vector2 insert_pos; 
+            if(Nodes.get_root())
+            {
+                insert_pos = Vector2({cur->getPosition().x + 2*cur->getRadius()+10, cur->getPosition().y});
+            }
+            else 
+            {
+                insert_pos = Vector2({300,300});
+            }
+            if(i.getState())
+            {
+                ss>>x; 
+                ani = Inserting; 
+                std::cout<<insert_pos.x<<" "<<insert_pos.y<<"\n";
+                i.updateTarget(x,20,insert_pos);
+            }
+        }
+        break;
+      case 1: 
+        { }
+        break;
+      case 3:
+        { 
+            if(a.getState())
+            {
+                int x ;
+                ss>>x; 
+                ani = Searching;
+                a.updateTarget(x);
+            }
+        }
+        break; 
+    }
+    if(inputted)
+    {
+        std::string newBuffer;
+        std::string word;
+        while (ss >> word) {  
+            newBuffer += word + " ";
+        }
+        buffer = newBuffer; 
+        inputted =false;
+    }
+}
+void Singly_Scene::Draw() {
+    Nodes.Traverse(); 
+    for (int i = 0; i <Singly_Scene::Edges.size();) {
+        if(Singly_Scene::Edges[i]->Draw())
+        { 
+            i++;
+        }
+        else{
+           Singly_Scene::Edges.erase(Singly_Scene::Edges.begin()+i);
+        }
+    }
+}
+#include "iostream"
 void Singly_Scene::run(Scenes& mscene)
 {
     float deltaTime = IsWindowFocused() ? GetFrameTime() : 0;
     ClearBackground(BLACK);
+    DrawCommonUI();
     DrawText("Singly Linked List", 200, 200, 40, WHITE);
+    CheckBuffer();
     if (IsKeyPressed(KEY_LEFT)) {
         mscene = Menu;
         created = false;
-        list.DeleteList();
-        a = Ani_LinkedListTraversal();
+        a = Ani_LinkedListSearching(0.3,0);
+        Nodes.DeleteList();
+        for(int i =0; i<Edges.size();i++)
+        {
+             Edge* tmp = Edges[i];
+             Edges[i] = nullptr;
+             delete tmp;
+        }
+        Edges.clear();
+        cur = nullptr; 
         return; 
-    }
-    
-    if (!created) {
-        list.Insert(5);
-        list.Insert(3);
-        list.Insert(7);
-        list.Insert(15);
-        list.Insert(12);
-        list.Insert(20);
-        a = Ani_LinkedListTraversal(0.3, list.get_root(), Vector2({300, 300}), 20);
-        created = true;
+
     }
     a.updateAnimations(deltaTime);
-    a.Draw();
+    i.updateAnimations(deltaTime); 
+    m.updateAnimations(deltaTime); 
+    Draw();
 }
 SceneManager::SceneManager()
 {
@@ -104,9 +188,21 @@ SceneManager::~SceneManager() {
     }
     scenes.clear();
 }
+void NodeScene::DrawCommonUI()
+{
+    for(int i =0 ; i< Inputs.size();i++)
+    {
+        Inputs[i]->HandleInput(buffer,UI::mousePos);
+        Inputs[i]->Draw(true);
+        Inputs[i]->Send(buffer);
+    }
+}
 NodeScene::NodeScene()
 {
-    DrawText("Node Scene", 300, 200, 30, WHITE);
+    Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-100}),InputType::Insert));
+    Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-210}),InputType::Remove));
+    Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-320}),InputType::Search));
 }
-Singly_Scene::Singly_Scene(): NodeScene(),a(0.3, nullptr, Vector2({300, 300}), 20), created(false)
-{}
+Singly_Scene::Singly_Scene(): NodeScene(),a(0.3,0), i(0.5,0,20,Vector2({300,300})){
+    Edges.clear(); 
+}

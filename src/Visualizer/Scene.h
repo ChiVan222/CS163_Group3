@@ -27,10 +27,12 @@ class SceneManager
 class NodeScene: public Scene{
     protected :
     //  std::vector<PolyNode*> Node; 
+     std::string buffer; 
      std::vector<InputField*> Inputs; 
     public :
     void DrawCommonUI(); 
     NodeScene(); 
+    virtual void CheckBuffer()=0; 
 }; 
 class Welcome_Scene: public Scene
 {
@@ -49,11 +51,18 @@ class Menu_Scene: public Scene
 };
 class Singly_Scene:public NodeScene
 {
-    protected :
-        Ani_LinkedListTraversal a;
-        SinglyLinkedList list;
-        bool created; 
+    public :
+        Ani_LinkedListSearching a;
+        Ani_LinkedListInsert i; 
+        static Ani_MoveList m ;
+        static SinglyNode* cur;
+        static std::vector<Edge*> Edges;
+        static bool created; 
+        static SinglyLinkedListNode Nodes; 
+        static animation ani; 
     public: 
+        void CheckBuffer() override; 
         void run(Scenes& mscene); 
         Singly_Scene();
+        void Draw();
 };

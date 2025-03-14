@@ -14,3 +14,11 @@ bool Edge::Draw()
     }
     return false;
 }
+PolyNode* Edge::getFrom()
+{
+    return from;
+}
+PolyNode* Edge::getTo(){
+    return to;
+
+} 

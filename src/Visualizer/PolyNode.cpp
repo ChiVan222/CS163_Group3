@@ -23,3 +23,6 @@ float PolyNode::getRadius()
 {
      return radius;
 }
+void PolyNode::SetPosition(Vector2 newpos){
+    position = newpos;
+}

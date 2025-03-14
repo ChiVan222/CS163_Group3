@@ -4,6 +4,7 @@
 float UI::time = 0.0f;
 Vector2 UI::mousePos = {0, 0};
 Texture2D UI::background;
+float UI::fontsize =0.0f;
 void UI::UILoadFont()
 {
    mFont = LoadFont("../assets/Fonts/fonts.ttf"); 
@@ -24,7 +25,7 @@ void UI::DrawFadingText(float time, int x, int y, int fontsize,const char* text)
 }
 UI::UI():  mFont(GetFontDefault())
 {
-
+    fontsize = mFont.baseSize;
 }
 void UI::run()
 {

@@ -9,7 +9,7 @@ class UI
      static constexpr int wHeight = 720; 
      static constexpr int mFPS = 60; 
      static  Vector2 mousePos;
-     
+     static float fontsize; 
     private: 
       SceneManager* scene_manager; 
       Font mFont; 
