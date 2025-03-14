@@ -1,8 +1,19 @@
 #include "Animation.h"
 #include <iostream>
 #include "Scene.h"
+#include <math.h>
+//Animations Function
 Animations::Animations(float duration) : isDone(false), elapsed_time(0), duration(duration) {}
+void Animations::setDuration(float newduration)
+{
+     duration =newduration;
+}
 
+bool Animations::getState()
+{
+    return isDone;
+}
+//LinkedList Searching Function 
 Ani_LinkedListSearching::Ani_LinkedListSearching(float duration, int target)
     : Animations(duration),  target(target){
         isDone =true;
@@ -21,14 +32,22 @@ void Ani_LinkedListSearching::updateAnimations(float deltaTime) {
         if (Singly_Scene::cur && Singly_Scene::cur->value != target) {
             Singly_Scene::cur->SetNullHighLight();
             Singly_Scene::cur = Singly_Scene::cur->next;
-        } else {
-            if(Singly_Scene::cur == nullptr)Singly_Scene::cur =Singly_Scene::Nodes.get_root();
+        } else if( Singly_Scene::cur && Singly_Scene::cur->value == target)
+        {
             isDone = true;
             Singly_Scene::ani=None;
         }
+         if(Singly_Scene::cur == nullptr)
+        {
+            isDone = true;
+            Singly_Scene::ani=None;
+            Singly_Scene::cur =Singly_Scene::Nodes.get_root();
+        }
+        
         elapsed_time = 0;
     }
 }
+
 void Ani_LinkedListSearching::updateTarget(int x)
 {
   target = x; 
@@ -36,6 +55,7 @@ void Ani_LinkedListSearching::updateTarget(int x)
   Singly_Scene::cur = Singly_Scene::Nodes.get_root(); 
   play();
 }
+
 void Ani_LinkedListSearching::play() {
     elapsed_time = 0;
     isDone = false;
@@ -49,10 +69,11 @@ Ani_LinkedListSearching& Ani_LinkedListSearching::operator=(Ani_LinkedListSearch
     return *this;
 }
 
+
+//Linked List Inserting 
 Ani_LinkedListInsert::Ani_LinkedListInsert() : Animations(0){
 
 }
-
 Ani_LinkedListInsert::Ani_LinkedListInsert(float duration, int target, int radius, Vector2 position):Animations(duration), target(target), radius(radius),position(position)
 {
      src_pos = Vector2({100,100});
@@ -77,7 +98,6 @@ void Ani_LinkedListInsert::play()
     Singly_Scene::cur = node_insert; 
     isDone =false;
 }
-#include <math.h>
 void Ani_LinkedListInsert::updateAnimations(float deltaTime)
 { 
     if(isDone||!node_insert||Singly_Scene::ani != Inserting) return;
@@ -90,14 +110,11 @@ void Ani_LinkedListInsert::updateAnimations(float deltaTime)
         node_insert->SetPosition(Vector2({(float)std::floor(node_insert->getPosition().x) ,(float)std::floor( node_insert->getPosition().y)}));
     }
 }
-bool Animations::getState()
-{
-    return isDone;
-}
+
+//Linked List Move
 void Ani_MoveList::updateTarget(Vector2 newoffset, SinglyNode* node)
 {
     offset=  newoffset; 
-    std::cout<<offset.x<<" "<<offset.y <<'\n';
     root = node; 
     play();
 }
@@ -135,7 +152,70 @@ void Ani_MoveList::updateAnimations(float deltaTime)
    }
 }
 
-void Animations::setDuration(float newduration)
+
+
+Ani_LinkedListDelete::Ani_LinkedListDelete(float duration, int target):Animations(duration), target(target)
 {
-     duration =newduration;
+     isDone = true; 
+}
+Ani_LinkedListDelete::Ani_LinkedListDelete():Animations(0), target(0)
+{
+     isDone = true; 
+}
+void Ani_LinkedListDelete::updateTarget(int x)
+{
+    if(isDone)
+    {
+        target = x;
+        Singly_Scene::cur = Singly_Scene::Nodes.get_root(); 
+        play(); 
+    }
+}
+#include <algorithm>
+void Ani_LinkedListDelete::play() {
+    if(Singly_Scene::Nodes.get_root()->value == target) 
+    {
+        SinglyNode* tmp =Singly_Scene::Nodes.get_root(); 
+        Singly_Scene::Nodes.set_root(Singly_Scene::Nodes.get_root()->next); 
+        Singly_Scene::cur = Singly_Scene::Nodes.get_root(); 
+        Singly_Scene::Edges.erase(
+            std::remove_if(Singly_Scene::Edges.begin(),Singly_Scene::Edges.end(),[tmp](Edge* edge){
+                    if (edge->getFrom() == tmp || edge->getTo() == tmp) {
+                        delete edge; 
+                        return true;
+                    }
+                    return false;
+                }),
+        Singly_Scene::Edges.end());
+        if(tmp->next)
+        {
+            Singly_Scene::m.setDuration(duration);
+            Singly_Scene::m.updateTarget(Vector2({(float)(-Singly_Scene::Node_radius*2-10),0}),tmp->next);
+        }
+        Singly_Scene::Nodes.size--; 
+        Singly_Scene::ani =None;
+        delete tmp;
+        return; 
+    }
+    elapsed_time = 0;
+    isDone = false; 
+}
+void Ani_LinkedListDelete::updateAnimations(float deltaTime)
+{
+    if(isDone||Singly_Scene::ani != Removing) return;
+    elapsed_time += deltaTime;
+    if(Singly_Scene::cur)Singly_Scene::cur->SetPrimaryHighLight();
+    if (elapsed_time >= duration/Singly_Scene::Nodes.get_size()) {
+        if (Singly_Scene::cur && Singly_Scene::cur->next&& Singly_Scene::cur->next->value != target) {
+            Singly_Scene::cur->SetNullHighLight();
+            Singly_Scene::cur = Singly_Scene::cur->next;
+        } else
+        {
+            Singly_Scene::Nodes.DeleteNode(Singly_Scene::cur,duration); 
+            isDone = true;
+            Singly_Scene::cur = Singly_Scene::Nodes.get_root();
+            Singly_Scene::ani=None;
+        }
+        elapsed_time = 0;
+    }
 }

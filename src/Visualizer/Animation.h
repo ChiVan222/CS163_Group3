@@ -47,7 +47,20 @@ class Ani_LinkedListInsert : public Animations{
     
     Ani_LinkedListInsert& operator=(Ani_LinkedListInsert&& other) noexcept;
     void updateTarget(int x, int radius, Vector2 position);
-}; 
+};
+class Ani_LinkedListDelete: public Animations 
+{ 
+  private: 
+    int target;
+  public :  
+    void updateAnimations(float deltaTime) override;
+    void play() override;
+    // void Draw() override;
+    Ani_LinkedListDelete(float duration, int target);
+    Ani_LinkedListDelete();
+    Ani_LinkedListDelete& operator=(Ani_LinkedListDelete&& other) noexcept;
+    void updateTarget(int x);
+} ; 
 class Ani_MoveList: public Animations{
    private: 
      Vector2 offset; 

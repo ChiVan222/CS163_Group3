@@ -54,12 +54,14 @@ class Singly_Scene:public NodeScene
     public :
         Ani_LinkedListSearching a;
         Ani_LinkedListInsert i; 
+        Ani_LinkedListDelete d; 
         static Ani_MoveList m ;
         static SinglyNode* cur;
         static std::vector<Edge*> Edges;
         static bool created; 
         static SinglyLinkedListNode Nodes; 
         static animation ani; 
+        static int Node_radius; 
     public: 
         void CheckBuffer() override; 
         void run(Scenes& mscene); 

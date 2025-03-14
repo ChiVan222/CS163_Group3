@@ -7,15 +7,16 @@ class SinglyNode: public PolyNode
         int value;
     public : 
         SinglyNode(Vector2 pos,float radius, int value); 
-        void SetNext(SinglyNode* newNode); 
+        void SetNext(SinglyNode* newNode);
         bool Draw() override; 
         int getValue();
         SinglyNode& operator=(SinglyNode&& other) noexcept;
 };
 class SinglyLinkedListNode
 {  
+   public :
+     int size; 
     protected: 
-      int size; 
       SinglyNode* root;  
     public :  
       SinglyLinkedListNode();
@@ -26,6 +27,11 @@ class SinglyLinkedListNode
       int get_size();
       void Insert(SinglyNode* node,float duration); 
       SinglyNode* get_root(); 
+      void set_root(SinglyNode* nroot); 
+
+      void DeleteNode(SinglyNode* cur2, float duration); 
       void Traverse();
+      void UpdateHightLight(); 
+
 }; 
 

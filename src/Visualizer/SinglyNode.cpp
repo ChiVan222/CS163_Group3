@@ -4,6 +4,7 @@
 #include "Scene.h"
 SinglyNode:: SinglyNode(Vector2 pos,float radius, int value):PolyNode(pos,radius),next(nullptr), value(value)
 { }
+
 bool SinglyNode::Draw()
 {  
     Color defaulta = GetColor(0x2E3192);
@@ -115,3 +116,54 @@ SinglyNode* SinglyLinkedListNode::get_root()
 {
      return root;
 } 
+
+void SinglyLinkedListNode::UpdateHightLight()
+{
+   SinglyNode* cur= root;
+   while(cur)
+   { 
+     if(cur == Singly_Scene::cur)
+     {
+        cur->SetPrimaryHighLight();
+     }else{
+        cur->SetNullHighLight();
+     }
+     cur = cur->next;
+   }
+}
+void SinglyLinkedListNode::set_root(SinglyNode* nroot)
+{
+  root = nroot;
+
+}
+void SinglyLinkedListNode::DeleteNode(SinglyNode* cur2, float duration)
+{ 
+    if(!cur2)
+    {
+        return ; 
+    }
+  
+    if(cur2->next)
+    { 
+        SinglyNode* tmp = cur2->next; 
+        if(tmp->next)
+        {
+            Singly_Scene::Edges.push_back(new Edge(cur2,tmp->next));
+            Singly_Scene::m.setDuration(duration);
+            Singly_Scene::m.updateTarget(Vector2({(float)(-Singly_Scene::Node_radius*2-10),0}),tmp->next); 
+        }
+        Singly_Scene::Edges.erase(
+            std::remove_if(Singly_Scene::Edges.begin(),Singly_Scene::Edges.end(),[tmp](Edge* edge){
+                    if (edge->getFrom() == tmp || edge->getTo() == tmp) {
+                        delete edge; 
+                        return true;
+                    }
+                    return false;
+                }),
+
+        Singly_Scene::Edges.end());
+        cur2->next = tmp->next;
+        size--;  
+        delete tmp;
+    }
+}

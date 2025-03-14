@@ -27,7 +27,8 @@ UI::UI():  mFont(GetFontDefault())
 {
     fontsize = mFont.baseSize;
 }
-void UI::run()
+void UI::
+run()
 {
 
     InitWindow(wWidth, wHeight, "Hello, World!");

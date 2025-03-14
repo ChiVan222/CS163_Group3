@@ -6,7 +6,7 @@ std::vector<Edge*>Singly_Scene::Edges;
 SinglyNode* Singly_Scene::cur =nullptr;
 bool Singly_Scene::created = false; 
 animation Singly_Scene:: ani = None; 
-
+int Singly_Scene::Node_radius = 20; 
 Scenes SceneManager::get_scene()
 {
     return mscene;
@@ -80,7 +80,7 @@ void Singly_Scene::CheckBuffer()
     int type;
     std::stringstream ss(buffer);
     bool inputted =false; 
-    if(i.getState()) 
+    if(ani == None) 
     {
         ss>>type; 
         inputted =true;
@@ -109,7 +109,15 @@ void Singly_Scene::CheckBuffer()
         }
         break;
       case 1: 
-        { }
+        {
+            int x ;
+            if(d.getState())
+            {
+                ss>>x; 
+                ani = Removing; 
+                d.updateTarget(x);
+            }
+        }
         break;
       case 3:
         { 
@@ -173,6 +181,8 @@ void Singly_Scene::run(Scenes& mscene)
     a.updateAnimations(deltaTime);
     i.updateAnimations(deltaTime); 
     m.updateAnimations(deltaTime); 
+    d.updateAnimations(deltaTime);
+    Nodes.UpdateHightLight();
     Draw();
 }
 SceneManager::SceneManager()
@@ -203,6 +213,6 @@ NodeScene::NodeScene()
     Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-210}),InputType::Remove));
     Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-320}),InputType::Search));
 }
-Singly_Scene::Singly_Scene(): NodeScene(),a(0.3,0), i(0.5,0,20,Vector2({300,300})){
+Singly_Scene::Singly_Scene(): NodeScene(),a(0.3,0), i(0.5,0,20,Vector2({300,300})),d(0.5,0){
     Edges.clear(); 
 }
