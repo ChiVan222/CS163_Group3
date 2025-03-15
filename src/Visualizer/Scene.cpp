@@ -6,6 +6,11 @@ std::vector<Edge*>Singly_Scene::Edges;
 SinglyNode* Singly_Scene::cur =nullptr;
 bool Singly_Scene::created = false; 
 animation Singly_Scene:: ani = None; 
+Ani_DrawEdge Singly_Scene::de;  
+std::priority_queue<std::pair<int, std::function<void()>>, 
+     std::vector<std::pair<int, std::function<void()>>>, 
+    FunctionComparator> Singly_Scene:: animation_queue ; 
+
 int Singly_Scene::Node_radius = 20; 
 Scenes SceneManager::get_scene()
 {
@@ -75,6 +80,20 @@ void Menu_Scene::run(Scenes& mscene)
 }
 #include <sstream>
 #include <iostream>
+void Singly_Scene::addFunction(int priority, std::function<void()> func)
+{
+    animation_queue.push({priority, func});
+}
+void Singly_Scene::executeFunctions()
+{
+    while (!animation_queue.empty()&& ani == None) {
+        auto topFunction = animation_queue.top();
+        animation_queue.pop();
+        topFunction.second();  
+    }
+}
+
+
 void Singly_Scene::CheckBuffer()
 {
     int type;
@@ -93,7 +112,7 @@ void Singly_Scene::CheckBuffer()
             Vector2 insert_pos; 
             if(Nodes.get_root())
             {
-                insert_pos = Vector2({cur->getPosition().x + 2*cur->getRadius()+10, cur->getPosition().y});
+                insert_pos = Vector2({cur->getPosition().x + 2*cur->getRadius()+50, cur->getPosition().y});
             }
             else 
             {
@@ -102,10 +121,8 @@ void Singly_Scene::CheckBuffer()
             if(i.getState())
             {
                 ss>>x; 
-                ani = Inserting; 
-                std::cout<<insert_pos.x<<" "<<insert_pos.y<<"\n";
-                i.updateTarget(x,20,insert_pos);
-            }
+                addFunction(1, std::bind(&Ani_LinkedListInsert::updateTarget, &i, x, 20, insert_pos));          
+           }
         }
         break;
       case 1: 
@@ -114,8 +131,7 @@ void Singly_Scene::CheckBuffer()
             if(d.getState())
             {
                 ss>>x; 
-                ani = Removing; 
-                d.updateTarget(x);
+                addFunction(1, std::bind(&Ani_LinkedListDelete::updateTarget, &d, x));          
             }
         }
         break;
@@ -125,8 +141,7 @@ void Singly_Scene::CheckBuffer()
             {
                 int x ;
                 ss>>x; 
-                ani = Searching;
-                a.updateTarget(x);
+               addFunction(1, std::bind(&Ani_LinkedListSearching::updateTarget, &a, x)); 
             }
         }
         break; 
@@ -144,14 +159,8 @@ void Singly_Scene::CheckBuffer()
 }
 void Singly_Scene::Draw() {
     Nodes.Traverse(); 
-    for (int i = 0; i <Singly_Scene::Edges.size();) {
-        if(Singly_Scene::Edges[i]->Draw())
-        { 
-            i++;
-        }
-        else{
-           Singly_Scene::Edges.erase(Singly_Scene::Edges.begin()+i);
-        }
+    for (int i = 0; i <Edges.size();i++) {
+        if(Edges[i]->isDraw)Edges[i]->Draw();
     }
 }
 #include "iostream"
@@ -182,6 +191,8 @@ void Singly_Scene::run(Scenes& mscene)
     i.updateAnimations(deltaTime); 
     m.updateAnimations(deltaTime); 
     d.updateAnimations(deltaTime);
+    de.updateAnimations(deltaTime);
+    executeFunctions();
     Nodes.UpdateHightLight();
     Draw();
 }

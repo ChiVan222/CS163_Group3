@@ -1,15 +1,16 @@
 #include "Edge.h"
 #include <raylib.h> 
 #include <iostream> 
-Edge::Edge(PolyNode* from , PolyNode* to) : from(from), to(to)
+#include "Scene.h"
+Edge::Edge(PolyNode* from , PolyNode* to) : from(from), to(to),isDraw(false)
 {
-    
 }
 bool Edge::Draw()
 {
     if(from && to)
     {
-        DrawLine(from->getPosition().x + from->getRadius(), from->getPosition().y, to->getPosition().x-to->getRadius(), to->getPosition().y, WHITE); 
+        DrawLineBezier(Vector2({from->getPosition().x+Singly_Scene::Node_radius,from->getPosition().y})
+            , Vector2({to->getPosition().x-Singly_Scene::Node_radius,to->getPosition().y}),size,WHITE); 
         return true;
     }
     return false;
@@ -22,3 +23,7 @@ PolyNode* Edge::getTo(){
     return to;
 
 } 
+int Edge::getsize()
+{
+    return size;
+}

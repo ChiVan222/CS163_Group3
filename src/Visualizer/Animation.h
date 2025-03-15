@@ -6,19 +6,19 @@
 #include "Edge.h"
 #include <vector>
 
-class Animations {
-protected:
-    float elapsed_time;
-    float duration;
-    bool isDone;
-public:
-    virtual void updateAnimations(float deltaTime) = 0;
-    virtual void play() = 0;
-    bool getState(); 
-    void setDuration(float newduration);
-    // virtual void Draw() = 0;
-    explicit Animations(float duration);
-};
+  class Animations {
+  protected:
+      float elapsed_time;
+      float duration;
+      bool isDone;
+  public:
+      virtual void updateAnimations(float deltaTime) = 0;
+      virtual void play() = 0;
+      bool getState(); 
+      void setDuration(float newduration);
+      // virtual void Draw() = 0;
+      explicit Animations(float duration);
+  };
 
 class Ani_LinkedListSearching : public Animations {
 private:
@@ -75,3 +75,15 @@ class Ani_MoveList: public Animations{
 
     void updateTarget(Vector2 newoffset, SinglyNode* node);
 };
+class Ani_DrawEdge:public Animations
+{
+  private: 
+    Edge* target; 
+  public : 
+   Ani_DrawEdge(); 
+   Ani_DrawEdge(float duration); 
+
+   void updateAnimations(float deltaTime) override;
+   void play() override;
+   void updateTarget(Edge* egde);
+}; 
