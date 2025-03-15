@@ -1,9 +1,9 @@
-#include "DataStructures/Singly Linked List/SinglyLinkedList.h"
-
+#include "DataStructures/SinglyLinkedList/SinglyLinkedList.h"
+#include "DataStructures/Graph/Graph.h"
+#include "Visualizer/UI.h"
 int main()
 { 
-//	SinglyLinkedList<int> a = SinglyLinkedList<int>();
-    SinglyLinkedList<int> a = SinglyLinkedList<int>(3); 
-    a.Insert(5);
-    a.Traverse(); 
+    UI ui; 
+    // a.Traverse();
+    ui.run();
 }

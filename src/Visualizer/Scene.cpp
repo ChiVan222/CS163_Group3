@@ -202,6 +202,7 @@ SceneManager::SceneManager()
     scenes.push_back(new Welcome_Scene()); 
     scenes.push_back(new Menu_Scene()); 
     scenes.push_back(new Singly_Scene()); 
+    scenes.push_back(new Graph_Scene());
 }
 SceneManager::~SceneManager() {
     for (Scene* scene : scenes) {

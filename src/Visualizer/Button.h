@@ -26,7 +26,6 @@ class Button
     Texture2D texture; 
     Vector2 position; 
     Vector2 rect; 
-
 }; 
 class SceneButton: public Button //Button for switching scenes 
 { 

@@ -1,3 +1,5 @@
+#pragma once
+
 #include "PolyNode.h"
 #include "InputField.h"
 #include <vector> 
