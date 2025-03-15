@@ -108,7 +108,7 @@ bool InputField::Send(std::string& buffer)
     {
         if(input!="")
        {  
-        if(type == AddEdge) buffer = formatInputAddEdge(std::to_string(static_cast<int>(type)),' ' +input +" ");
+        if(type == AddEdge) buffer += formatInputAddEdge(std::to_string(static_cast<int>(type)),' ' +input +" ");
         else buffer += formatInput(std::to_string(static_cast<int>(type)),' ' +input + ' '+ prevInput + " "); 
         input =""; 
         return true; }
