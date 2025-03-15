@@ -1,35 +1,26 @@
 #pragma once
 #include <raylib.h> 
-#include "Animation.h"
-
+#include "Scene.h"
 class UI 
-{   
-    public: 
-      typedef enum Scenes{  
-          Welcome = 0, Menu, Settings, Singly, Trie, Graph, Heap
-      } Scenes;
+{   public :
+     static float time; 
+     static Texture2D background;
+     static constexpr int wWidth = 1280; 
+     static constexpr int wHeight = 720; 
+     static constexpr int mFPS = 60; 
+     static  Vector2 mousePos;
+     static float fontsize; 
     private: 
-      Scenes cScene;  
-      static constexpr int wWidth = 1280; 
-      static constexpr int wHeight = 720; 
-      static constexpr int mFPS = 60; 
+      SceneManager* scene_manager; 
       Font mFont; 
-      Ani_LinkedListTraversal a;
-      SinglyLinkedList list;
-      bool created; 
-    private : 
+        private : 
    //   void initAssets(); 
     public : 
      void run() ; 
-     Scenes getScenes(); 
      UI();
-   //   ~UI();
+    ~UI();
      void UILoadFont(); 
      void UIUnLoadFont();
-     void DrawFadingText(float time, int x, int y, int fontsize,const char* text);
-     void TrieScene(); 
-     void GraphScene();
-     void HeapScene(); 
-     void SinglyScene(); 
+     static void DrawFadingText(float time, int x, int y, int fontsize,const char* text); 
      Font getFont();
 };

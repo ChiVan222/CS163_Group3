@@ -1,12 +1,17 @@
+#pragma once
 #include "PolyNode.h"
-
-class  Edge
-{ protected :
-     int size; 
+class Edge
+{  protected :
+     int size =2; 
      PolyNode* from; 
      PolyNode* to; 
+   public :
+     bool isDraw; 
   public : 
      explicit Edge(PolyNode* from , PolyNode* to);
-     void Draw(); 
-
+     bool Draw();
+     PolyNode* getFrom();
+     PolyNode* getTo(); 
+     int getsize(); 
 }; 
+

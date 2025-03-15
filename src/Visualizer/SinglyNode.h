@@ -1,13 +1,37 @@
 #pragma once
 #include "PolyNode.h"
-#include "..\DataStructures\SinglyLinkedList\SinglyLinkedList.h"
 class SinglyNode: public PolyNode
 { 
-    private : 
-        SinglyLinkedList::Node* node; 
     public : 
-        SinglyNode(SinglyLinkedList::Node* node,Vector2 pos,float radius); 
-        void Draw() override; 
-        void SetRoot(SinglyLinkedList::Node* node); 
+        SinglyNode* next;
+        int value;
+    public : 
+        SinglyNode(Vector2 pos,float radius, int value); 
+        void SetNext(SinglyNode* newNode);
+        bool Draw() override; 
         int getValue();
+        SinglyNode& operator=(SinglyNode&& other) noexcept;
 };
+class SinglyLinkedListNode
+{  
+   public :
+     int size; 
+    protected: 
+      SinglyNode* root;  
+    public :  
+      SinglyLinkedListNode();
+      SinglyLinkedListNode(int x);
+      SinglyLinkedListNode(SinglyNode* node);
+      ~SinglyLinkedListNode();
+      void DeleteList();  
+      int get_size();
+      void Insert(SinglyNode* node,float duration); 
+      SinglyNode* get_root(); 
+      void set_root(SinglyNode* nroot); 
+
+      void DeleteNode(SinglyNode* cur2, float duration); 
+      void Traverse();
+      void UpdateHightLight(); 
+
+}; 
+

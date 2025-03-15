@@ -21,7 +21,7 @@ class SinglyLinkedList
       void DeleteList();  
       void Traverse(Vector2 position, float radius); 
       void Traverse(Node* x,Vector2 position, float radius);
-      void Insert(int x); 
+      Node* Insert(int x); 
       bool Delete(int x); 
       bool  Search(int x); 
       Node* get_root(); 

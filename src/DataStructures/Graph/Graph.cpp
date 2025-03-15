@@ -1,96 +1,46 @@
-#include <iostream>
-#include <list>
+#include "Graph.h"
 #include <queue>
-#include <string>
-using namespace std;
+#include <cassert>
 
-#include "Graph.h"  
+const int Dijkstra::INF = 1e5;
 
-// Adj List Graph
-AdjListGraph::AdjListGraph(int V, bool isDirected) {
-    this->V = V;
-    this->isDirected = isDirected;
-    adjList = new list<isPair>[V];
+Dijkstra::Dijkstra(int nodes, int start) : nodes(nodes), start(start), isRun(false) {
+    adj.resize(nodes);
+    dist.assign(nodes, INF);
+    traverse.assign(nodes, -1);
 }
 
-AdjListGraph::~AdjListGraph() {
-    delete[] adjList;
+void Dijkstra::addEdge(int from, int to, int weight) {
+    adj[from].emplace_back(to, weight);
 }
 
-void AdjListGraph::addEdge(int u, int v, int w) {
-    adjList[u].push_back(make_pair(v, w));
-    if (isDirected) {
-        adjList[v].push_back(make_pair(u, w));
-    }
-}
-
-void AdjListGraph::shortestPath(int src) {
-    priority_queue<isPair, vector<isPair>, greater<isPair>> pq;
-
-    vector<int> dist(V, INF);
-
-    pq.push(make_pair(0, src));
-    dist[src] = 0;
-
-    while (!pq.empty()) {
-        int u = pq.top().second;
-        pq.pop();
-
-        for (auto &neighbor : adjList[u]) {
-            int v = neighbor.first;
-            int w = neighbor.second;
-            if (dist[v] > dist[u] + w) {
-                dist[v] = dist[u] + w;
-                pq.push(make_pair(dist[v], v));
-            }
-        }
-    }
-
-    cout << "Vertex \t Distance from Source" << endl;
-    for (int i = 0; i < V; ++i) {
-        cout << i << " \t\t" << (dist[i] == INF ? "INF" : to_string(dist[i])) << endl;
-    }
-}
-
-// Adj Matrix Graph
-AdjMatrixGraph::AdjMatrixGraph(int V, bool isDirected) {
-    this->V = V;
-    this->isDirected = isDirected;
-    this->adjMatrix = vector(V, (V, vector<int>(V, INF)));
-}
-
-void AdjMatrixGraph::addEdge(int u, int v, int w) {
-    adjMatrix[u][v] = w;
-    if (isDirected) {
-        adjMatrix[v][u] = w;
-    }
-}
-
-void AdjMatrixGraph::shortestPath(int src) {
+void Dijkstra::run() {  
     priority_queue<pair<int, int>, vector<pair<int, int>>, greater<>> pq;
-    
-    vector<int> dist(V, INF);
-
-    pq.push(make_pair(0, src));
-    dist[src] = 0;
-
+    dist[start] = 0;
+    pq.emplace(0, start);
     while (!pq.empty()) {
-        int u = pq.top().second;
-        int w = pq.top().first;
+        auto[distance, node] = pq.top();
         pq.pop();
-
-        if (w > dist[u]) continue;
-
-        for (int v = 0; v < V; v++) {
-            if (adjMatrix[u][v] != INF && dist[u] + adjMatrix[u][v] < dist[v]) {
-                dist[v] = dist[u] + adjMatrix[u][v];
-                pq.push(make_pair(dist[v], v));
+        if (distance != dist[node]) continue;
+        for (auto [next, weight] : adj[node]) {
+            int newDist = dist[node] + weight;
+            if (newDist < dist[next]) {
+                dist[next] = newDist;
+                traverse[next] = node;
+                pq.emplace(newDist, next);
             }
         }
     }
-    
-    cout << "Vertex \t Distance from Source" << endl;
-    for (int i = 0; i < V; i++) {
-        cout << i << " \t\t" << (dist[i] == INF ? "INF" : to_string(dist[i])) << endl;
-    }
+    isRun = true;
 }
+
+int Dijkstra::getDistance(int node) {
+    assert(isRun == true);
+    return dist[node];
+}
+
+int Dijkstra::getTraverse(int node) {
+    assert(isRun == true);
+    return traverse[node];
+}
+

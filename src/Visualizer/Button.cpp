@@ -1,5 +1,6 @@
 #include "Button.h"
 #include <cmath>
+#include "UI.h"
 Button::Button(const char* imgpath, Vector2 pos, Vector2 rect,const char* title):position(pos), title(title), rect(rect){
      Image img =  LoadImage(imgpath); 
      int oWidth =img.width;
@@ -14,22 +15,51 @@ Button::Button(const char* imgpath, Vector2 pos, Vector2 rect,const char* title)
      UnloadImage(img);
      isHovered = None;
 }
+Button::Button()
+{
+    position.x =0 ;
+    position.y = 0 ; 
+    title = "";
+}
 Button::~Button(){ 
     UnloadTexture(texture); 
 }
-SceneButton::SceneButton(const char* imgpath, Vector2 pos,Vector2 rect, const char* title, UI::Scenes bScenes)
+SceneButton::SceneButton(const char* imgpath, Vector2 pos,Vector2 rect, const char* title, Scenes bScenes)
 : Button(imgpath,pos,rect,title), bScenes(bScenes){}
 
-void Button::Draw( )
+void Button::Draw()
 { 
     Color borderColor = isHovered == None? RED : GREEN;
     Color imageColor  = isHovered == None? GRAY : WHITE;
+    if(!IsTextureValid(texture))
+    {
+        Image img = GenImageColor(100, 100, GRAY);
+        texture = LoadTextureFromImage(img);
+        UnloadImage(img);
+    }
     Rectangle src = { 0, 0, (float)texture.width, (float)texture.height };  
     Rectangle dest = {position.x, position.y, (float)rect.x, (float)rect.y }; 
     DrawTexturePro(texture, src, dest, Vector2({0, 0}), 0.0f, imageColor);
     DrawRectangleLinesEx(Rectangle({position.x, position.y, (float)rect.x, (float)rect.y}),3,borderColor);
-    DrawText(title, position.x, position.y + 10 + rect.y, 20, WHITE);
+}
+void Button::DrawButtonText(Vector2 textpos)
+{
+    DrawText(title, textpos.x, textpos.y, 20, WHITE);
+}
+void Button::DrawButtonText_below()
+{
+    DrawButtonText(Vector2({position.x,position.y + 10 + rect.y}));
+}
+void Button::DrawButtonText_center()
+{ 
 
+    int textWidth = MeasureText(title, UI::fontsize);
+    int textHeight = UI::fontsize;
+
+    float textX = position.x + (rect.x - textWidth) / 2;
+    float textY = position.y + (rect.y - textHeight) / 2;
+
+    DrawButtonText(Vector2({textX,textY}));
 }
 bool Button :: IsHovered(Vector2 mousePos)
 {
@@ -62,7 +92,7 @@ Vector2 Button::get_rectangle()
 {
   return rect; 
 }
-UI::Scenes SceneButton::getButtonScenes()
+Scenes SceneButton::getButtonScenes()
 {
     return bScenes; 
 }
