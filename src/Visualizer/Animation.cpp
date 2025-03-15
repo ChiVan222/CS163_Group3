@@ -28,6 +28,7 @@ void Ani_LinkedListSearching::updateAnimations(float deltaTime) {
     if(isDone||!Singly_Scene::cur||Singly_Scene::ani != Searching) return; 
     elapsed_time += deltaTime;
     Singly_Scene::cur->SetPrimaryHighLight();
+    std::cout<<duration/Singly_Scene::Nodes.get_size();
     if (elapsed_time >= duration/Singly_Scene::Nodes.get_size()) {
         if (Singly_Scene::cur && Singly_Scene::cur->value != target) {
             Singly_Scene::cur->SetNullHighLight();
@@ -51,6 +52,12 @@ void Ani_LinkedListSearching::updateAnimations(float deltaTime) {
 void Ani_LinkedListSearching::updateTarget(int x)
 {
   target = x; 
+  Singly_Scene::ani  =Searching;
+  if(!Singly_Scene::cur)
+  {
+    Singly_Scene::ani = None;
+    return; 
+  }
   Singly_Scene::cur->SetNullHighLight();
   Singly_Scene::cur = Singly_Scene::Nodes.get_root(); 
   play();
@@ -59,7 +66,6 @@ void Ani_LinkedListSearching::updateTarget(int x)
 void Ani_LinkedListSearching::play() {
     elapsed_time = 0;
     isDone = false;
-    index =0 ; 
 }
 
 Ani_LinkedListSearching& Ani_LinkedListSearching::operator=(Ani_LinkedListSearching&& other) noexcept {
@@ -87,27 +93,34 @@ void Ani_LinkedListInsert::updateTarget(int x, int nradius, Vector2 nposition)
         target = x; 
         radius = nradius;
         position = nposition; 
+        Singly_Scene::ani = Inserting; 
         play(); 
     }
 }
 void Ani_LinkedListInsert::play()
 { 
     node_insert = new SinglyNode(src_pos, radius,target);
-    if(Singly_Scene::cur) Singly_Scene::Edges.push_back(new Edge(Singly_Scene::cur,node_insert));
+    if(Singly_Scene::cur) 
+    {
+      Singly_Scene::de.setDuration(0.5);
+      Singly_Scene::Edges.push_back(new Edge(Singly_Scene::cur,node_insert));
+      Singly_Scene::addFunction(2, std::bind(&Ani_DrawEdge::updateTarget, &Singly_Scene::de,Singly_Scene::Edges.back()));
+    }
     Singly_Scene::Nodes.Insert(node_insert,duration/5);  
     Singly_Scene::cur = node_insert; 
     isDone =false;
 }
 void Ani_LinkedListInsert::updateAnimations(float deltaTime)
 { 
+    
     if(isDone||!node_insert||Singly_Scene::ani != Inserting) return;
+    std::cout<<elapsed_time<<"\n";
     elapsed_time += deltaTime;
-    node_insert->SetPosition(Vector2({(elapsed_time/duration)*position.x,(elapsed_time/duration)*position.y}));
+    node_insert->SetPosition(Vector2({std::min(position.x,(elapsed_time/duration)*position.x),std::min(position.y,(elapsed_time/duration)*position.y)}));
     if (elapsed_time >= duration) {
         isDone = true;
         elapsed_time = 0;
         Singly_Scene::ani = None; 
-        node_insert->SetPosition(Vector2({(float)std::floor(node_insert->getPosition().x) ,(float)std::floor( node_insert->getPosition().y)}));
     }
 }
 
@@ -147,7 +160,7 @@ void Ani_MoveList::updateAnimations(float deltaTime)
         {
             isDone =true; 
             root= nullptr; 
-             elapsed_time =0; 
+            elapsed_time =0; 
         }
    }
 }
@@ -166,6 +179,7 @@ void Ani_LinkedListDelete::updateTarget(int x)
 {
     if(isDone)
     {
+        Singly_Scene::ani = Removing; 
         target = x;
         Singly_Scene::cur = Singly_Scene::Nodes.get_root(); 
         play(); 
@@ -190,7 +204,7 @@ void Ani_LinkedListDelete::play() {
         if(tmp->next)
         {
             Singly_Scene::m.setDuration(duration);
-            Singly_Scene::m.updateTarget(Vector2({(float)(-Singly_Scene::Node_radius*2-10),0}),tmp->next);
+            Singly_Scene::m.updateTarget(Vector2({(float)(-Singly_Scene::Node_radius*2-50),0}),tmp->next);
         }
         Singly_Scene::Nodes.size--; 
         Singly_Scene::ani =None;
@@ -218,4 +232,40 @@ void Ani_LinkedListDelete::updateAnimations(float deltaTime)
         }
         elapsed_time = 0;
     }
+}
+
+void Ani_DrawEdge::updateAnimations(float deltaTime){
+   if(isDone ||!target) return;
+   elapsed_time+= deltaTime;
+   Vector2 nposition= Vector2(
+    {std::min(target->getTo()->getPosition().x,target->getFrom()->getPosition().x+(elapsed_time/duration)*target->getTo()->getPosition().x) -Singly_Scene::Node_radius,
+    std::min(target->getTo()->getPosition().y,target->getFrom()->getPosition().y+(elapsed_time/duration)*target->getTo()->getPosition().y)});
+  
+  
+   Vector2 from = Vector2({target->getFrom()->getPosition().x + Singly_Scene::Node_radius,target->getFrom()->getPosition().y});
+   DrawLineBezier(from,nposition, target->getsize(),WHITE); 
+   if (elapsed_time >= duration) {
+     isDone = true;
+     elapsed_time = 0;
+     Singly_Scene::ani = None; 
+     target->isDraw = true; 
+    }
+}
+void Ani_DrawEdge::play(){
+    elapsed_time =0; 
+    isDone =false;
+}
+void Ani_DrawEdge::updateTarget(Edge* egde)
+{  
+    Singly_Scene::ani = EdgeDrawing;
+    target = egde; 
+    play();  
+}
+Ani_DrawEdge::Ani_DrawEdge(): Animations(0) ,target(nullptr)
+{
+    isDone = true; 
+}
+Ani_DrawEdge::Ani_DrawEdge(float duration): Animations(duration) ,target(nullptr)
+{
+    isDone = true; 
 }

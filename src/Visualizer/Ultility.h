@@ -8,5 +8,5 @@ enum InputType
 };
 enum animation 
 { 
-    None, Searching, Inserting, Updating, Removing
+    None, Searching, Inserting, Updating, Removing, EdgeDrawing
 };

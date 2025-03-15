@@ -58,11 +58,13 @@ SinglyNode& SinglyNode::operator=(SinglyNode&& other) noexcept {
     return *this;
 }
 #include <algorithm>
+#include <iostream>
 void SinglyLinkedListNode::Insert(SinglyNode* node, float duration)
 { 
     if(!root) 
     {
         root = node; 
+        size++;
         return ; 
     }
     SinglyNode* cur2 = root; 
@@ -76,25 +78,26 @@ void SinglyLinkedListNode::Insert(SinglyNode* node, float duration)
     { 
         SinglyNode* tmp = cur2->next; 
         Singly_Scene::m.setDuration(duration);
-        Singly_Scene::m.updateTarget(Vector2({node->getRadius()*2 +10,0}),tmp); 
-        Singly_Scene::Edges.push_back(new Edge(node,tmp)); 
+        Singly_Scene::m.updateTarget(Vector2({node->getRadius()*2 +50,0}),tmp); 
+        std::cout<<"BEFORE"<<Singly_Scene::Edges.size()<<'\n';
+
         Singly_Scene::Edges.erase(
-            std::remove_if(Singly_Scene::Edges.begin(),Singly_Scene::Edges.end(),[cur2,node](Edge* edge){
-                    if (edge->getFrom() == cur2 || edge->getTo() == node) {
+            std::remove_if(Singly_Scene::Edges.begin(),Singly_Scene::Edges.end(),[cur2,tmp](Edge* edge){
+                    if (edge->getFrom() == cur2&& edge->getTo() == tmp) {
                         delete edge; 
                         return true;
                     }
                     return false;
                 }),
-
         Singly_Scene::Edges.end());
+        std::cout<<"AFTER"<<Singly_Scene::Edges.size()<<'\n';
         cur2->next = node;
         node->next = tmp;
-        Singly_Scene::Edges.push_back(new Edge(cur2,node)); 
+        Singly_Scene::Edges.push_back(new Edge(node,tmp)); 
+        Singly_Scene::addFunction(2, std::bind(&Ani_DrawEdge::updateTarget, &Singly_Scene::de,Singly_Scene::Edges.back())); 
 
     }else{
         cur2->next = node;
-        Singly_Scene::Edges.push_back(new Edge(cur2,node)); 
     }
 }
 void SinglyLinkedListNode::Traverse()
@@ -148,9 +151,11 @@ void SinglyLinkedListNode::DeleteNode(SinglyNode* cur2, float duration)
         SinglyNode* tmp = cur2->next; 
         if(tmp->next)
         {
+            
             Singly_Scene::Edges.push_back(new Edge(cur2,tmp->next));
+            Singly_Scene::addFunction(2, std::bind(&Ani_DrawEdge::updateTarget, &Singly_Scene::de,Singly_Scene::Edges.back()));
             Singly_Scene::m.setDuration(duration);
-            Singly_Scene::m.updateTarget(Vector2({(float)(-Singly_Scene::Node_radius*2-10),0}),tmp->next); 
+            Singly_Scene::m.updateTarget(Vector2({(float)(-Singly_Scene::Node_radius*2-50),0}),tmp->next); 
         }
         Singly_Scene::Edges.erase(
             std::remove_if(Singly_Scene::Edges.begin(),Singly_Scene::Edges.end(),[tmp](Edge* edge){
@@ -160,7 +165,6 @@ void SinglyLinkedListNode::DeleteNode(SinglyNode* cur2, float duration)
                     }
                     return false;
                 }),
-
         Singly_Scene::Edges.end());
         cur2->next = tmp->next;
         size--;  

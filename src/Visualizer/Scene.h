@@ -4,6 +4,8 @@
 #include "Ultility.h"
 #include "Button.h" 
 #include "Animation.h"
+#include <queue>
+#include <functional>
 #pragma once
 class Scene
 { 
@@ -49,12 +51,23 @@ class Menu_Scene: public Scene
      Menu_Scene();
      ~Menu_Scene();
 };
+
+struct FunctionComparator {
+  bool operator()(const std::pair<int, std::function<void()>>& a, 
+                  const std::pair<int, std::function<void()>>& b) {
+      return a.first < b.first;  
+  }
+};
 class Singly_Scene:public NodeScene
 {
     public :
+   static std::priority_queue<std::pair<int, std::function<void()>>, 
+     std::vector<std::pair<int, std::function<void()>>>, 
+    FunctionComparator> animation_queue;
         Ani_LinkedListSearching a;
         Ani_LinkedListInsert i; 
         Ani_LinkedListDelete d; 
+        static Ani_DrawEdge de; 
         static Ani_MoveList m ;
         static SinglyNode* cur;
         static std::vector<Edge*> Edges;
@@ -67,4 +80,8 @@ class Singly_Scene:public NodeScene
         void run(Scenes& mscene); 
         Singly_Scene();
         void Draw();
+        static void addFunction(int priority, std::function<void()> func);
+        void executeFunctions();
+
 };
+
