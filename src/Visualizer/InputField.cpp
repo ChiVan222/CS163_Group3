@@ -11,25 +11,32 @@ InputField::InputField(float width, float height, Vector2 position, InputType ty
    inputbox.height = height;
    inputbox.width = width;  
    isActive = false;
+   const char* title;
    switch(type)
    { 
+     
      case(InputType::Insert):
      {
-        button = new Button("",Vector2({inputbox.x+inputbox.width, inputbox.y}),Vector2({100,inputbox.height}),"Insert") ;
+       title=  "Insert" ;
      }break;
      case(InputType::Remove):
      {
-        button = new Button("",Vector2({inputbox.x+inputbox.width, inputbox.y}),Vector2({100,100}),"Remove") ;
+        title = "Remove"; 
      }break;
      case(InputType::Update):
      {
-        button = new Button("",Vector2({inputbox.x+inputbox.width, inputbox.y}),Vector2({100,100}),"Update") ;
+        title = "Update" ;
      }break;
      case(InputType::Search):
      {
-        button = new Button("",Vector2({inputbox.x+inputbox.width, inputbox.y}),Vector2({100,100}),"Search") ;
+        title = "Search";
      }break;
+     case(InputType::AddEdge):
+     {
+        title  = "AddEdge";
+     }break; 
    }
+   button = new Button("",Vector2({inputbox.x+inputbox.width, inputbox.y}),Vector2({100,inputbox.height}),title);
 }
 InputField::InputField(Rectangle rec)
 {
@@ -80,13 +87,31 @@ std::string formatInput(const std::string& type, const std::string& input) {
 
     return result;
 }
+std::string  formatInputAddEdge(const std::string& type, const std::string& input) {
+    std::stringstream ss(input);
+    std::vector<std::string> words;
+    std::string from, to, weight, result;
+
+    while (ss >> from) {
+        ss>>to;
+        ss>>weight; 
+        words.push_back(type + " " + from+" "+to+" "+weight);
+    }
+    for (const std::string& w : words) {
+        result += w + " ";
+    }
+
+    return result;
+}
 bool InputField::Send(std::string& buffer)
 {
  
     if(IsKeyPressed(KEY_ENTER)||((button->IsHovered(UI::mousePos)&& IsMouseButtonPressed(MOUSE_BUTTON_LEFT))))
     {
         if(input!="")
-       { buffer += formatInput(std::to_string(static_cast<int>(type)),' ' +input + ' '+ prevInput + " "); 
+       {  
+        if(type == AddEdge) buffer = formatInputAddEdge(std::to_string(static_cast<int>(type)),' ' +input +" ");
+        else buffer += formatInput(std::to_string(static_cast<int>(type)),' ' +input + ' '+ prevInput + " "); 
         input =""; 
         return true; }
     }

@@ -232,6 +232,7 @@ Singly_Scene::Singly_Scene(): NodeScene(),a(0.3,0), i(0.5,0,20,Vector2({300,300}
 #include <iostream>
 Graph_Scene::Graph_Scene() : NodeScene(), dijkstra(nullptr), curNode(nullptr), created(false) {
     dijkstra = new Dijkstra(0, 0);
+    Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-430}),InputType::AddEdge));
 }
 
 Graph_Scene::~Graph_Scene() {
@@ -301,7 +302,7 @@ void Graph_Scene::run(Scenes& mscene) {
     Draw();
 }
 
-void Graph_Scene::AddNode(Vector2 position) {
+void Graph_Scene::   AddNode(Vector2 position) {
     GraphNode node;
     node.setPosition(position);
     graphNodes.push_back(node);
