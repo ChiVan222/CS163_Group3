@@ -59,8 +59,14 @@ const std::vector<GraphNode*>& GraphNode::getAdj() const {
     return nAdj;
 }
 
-void GraphNode::draw() {
+void GraphNode::draw() const {
     DrawCircleV(nPosition, 18, WHITE);
+}
+
+void GraphNode::drawEdges() const {
+    for (const auto& adjNode : nAdj) {
+        DrawLineV(nPosition, adjNode->getPosition(), WHITE);
+    }
 }
 
 void GraphNode::updateCurrent(float dt) {
@@ -76,3 +82,10 @@ void GraphNode::updateCurrent(float dt) {
     nPosition.y = round(nPosition.y);
 }
 
+void GraphNode::setPosition(Vector2 position){
+    nPosition = position;
+}
+
+Vector2 GraphNode::getPosition() const {
+    return nPosition;
+}

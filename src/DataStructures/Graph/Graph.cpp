@@ -43,3 +43,4 @@ int Dijkstra::getTraverse(int node) {
     assert(isRun == true);
     return traverse[node];
 }
+

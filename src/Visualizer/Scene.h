@@ -68,3 +68,22 @@ class Singly_Scene:public NodeScene
         Singly_Scene();
         void Draw();
 };
+
+class Graph_Scene: public NodeScene 
+{
+  public:
+    Dijkstra* dijkstra;
+    std::vector<GraphNode> graphNodes;
+    GraphNode* curNode;
+    bool created;
+  
+  public:
+    void CheckBuffer() override;
+    void run(Scenes& mscene);
+    Graph_Scene();
+    ~Graph_Scene();
+    void Draw();
+    void AddNode(Vector2 position);
+    void AddEdge(int from, int to, int weight);
+    void RemoveNode(Vector2 position);
+};

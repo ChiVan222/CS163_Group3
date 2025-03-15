@@ -1,6 +1,8 @@
 #include <vector>
 using namespace std;
 
+#include <GraphNode.h>
+
 /*
  * Dijkstra Algorithm is directed
  */
@@ -13,6 +15,7 @@ using namespace std;
         vector<vector<pair<int, int>>> adj;
         vector<int> dist;
         vector<int> traverse;
+        vector<GraphNode> graphNodes;
     public:
         static const int INF;   
         

@@ -28,6 +28,9 @@ public:
     Vector2 getAttraction(const GraphNode& node) const;
     const std::vector<GraphNode*>& getAdj() const;
 
-    void draw();
+    void draw() const;
+    void drawEdges() const;
     void updateCurrent(float dt);
+    void setPosition(Vector2 position);
+    Vector2 getPosition() const;
 };

@@ -1,6 +1,8 @@
 #pragma once
 #include "../DataStructures/SinglyLinkedList/SinglyLinkedList.h"
+#include "../DataStructures/Graph/Graph.h"
 #include "SinglyNode.h"
+#include "GraphNode.h"
 #include "Edge.h"
 #include <vector>
 

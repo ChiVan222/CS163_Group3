@@ -216,3 +216,97 @@ NodeScene::NodeScene()
 Singly_Scene::Singly_Scene(): NodeScene(),a(0.3,0), i(0.5,0,20,Vector2({300,300})),d(0.5,0){
     Edges.clear(); 
 }
+
+#include <iostream>
+Graph_Scene::Graph_Scene() : NodeScene(), dijkstra(nullptr), curNode(nullptr), created(false) {
+    dijkstra = new Dijkstra(0, 0);
+}
+
+Graph_Scene::~Graph_Scene() {
+    delete dijkstra;
+}   
+
+void Graph_Scene::CheckBuffer() {
+    int type;
+    std::stringstream ss(buffer);
+    bool inputted = false;
+    if (!created) {
+        ss >> type;
+        inputted = true;
+    }
+    switch(type)
+    {
+        case 0:
+        {
+            Vector2 pos = GetMousePosition();
+            AddNode(pos);
+            created = true;
+        }
+        break;
+        case 1:
+        {
+            int from, to, weight;
+            ss >> from >> to >> weight;
+            AddEdge(from, to, weight);
+        }
+        break;
+        if (inputted) {
+            std::string newBuffer;
+            std::string word;
+            while (ss >> word) {
+                newBuffer += word + " ";
+            }
+            buffer = newBuffer;
+            inputted = false;
+        }
+    }
+}
+
+void Graph_Scene::Draw() {
+    for (const auto& node : graphNodes) {
+        node.drawEdges();
+    }
+    for (const auto& node : graphNodes) {
+        node.draw();
+    }
+}   
+
+void Graph_Scene::run(Scenes& mscene) {
+    float deltatime = IsWindowFocused() ? GetFrameTime() : 0;
+    ClearBackground(BLACK);
+    DrawCommonUI();
+    DrawText("Graph", 200, 200, 40, WHITE);
+    CheckBuffer();
+    if (IsKeyPressed(KEY_LEFT)) {
+        mscene = Menu;
+        created = false;
+        delete dijkstra;
+        dijkstra = new Dijkstra(0, 0);
+        graphNodes.clear();
+        curNode = nullptr;
+        return;
+    }
+    Draw();
+}
+
+void Graph_Scene::AddNode(Vector2 position) {
+    GraphNode node;
+    node.setPosition(position);
+    graphNodes.push_back(node);
+}
+
+void Graph_Scene::AddEdge(int from, int to, int weight) {
+    if (from < graphNodes.size() && to < graphNodes.size()) {
+        graphNodes[from].makeAdjacent(&graphNodes[to]);
+        dijkstra->addEdge(from, to, weight);
+    }
+}
+
+void Graph_Scene::RemoveNode(Vector2 position) {
+    for (auto it = graphNodes.begin(); it != graphNodes.end(); ++it) {
+        if (CheckCollisionPointCircle(position, it->getPosition(), 18)) {
+            graphNodes.erase(it);
+            break;
+        }
+    }
+}
