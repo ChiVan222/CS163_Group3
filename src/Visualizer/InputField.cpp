@@ -92,9 +92,7 @@ std::string  formatInputAddEdge(const std::string& type, const std::string& inpu
     std::vector<std::string> words;
     std::string from, to, weight, result;
 
-    while (ss >> from) {
-        ss>>to;
-        ss>>weight; 
+    while (ss >> from && ss>>to && ss>>weight) {
         words.push_back(type + " " + from+" "+to+" "+weight);
     }
     for (const std::string& w : words) {
