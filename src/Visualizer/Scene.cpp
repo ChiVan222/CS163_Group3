@@ -192,9 +192,23 @@ void Singly_Scene::run(Scenes& mscene)
     m.updateAnimations(deltaTime); 
     d.updateAnimations(deltaTime);
     de.updateAnimations(deltaTime);
+    
     executeFunctions();
     Nodes.UpdateHightLight();
     Draw();
+    if(ani ==None && cur &&cur->isClicked())
+    {
+        isDragging = true;  
+    }
+    if(isDragging)
+    {
+        cur->SetPosition(UI::mousePos);
+        Nodes.get_root()->ForwardDistanceConstraints(2*Node_radius +50);
+        if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+            isDragging = false;  
+        }
+    }
+
 }
 SceneManager::SceneManager()
 {
@@ -225,7 +239,7 @@ NodeScene::NodeScene()
     Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-210}),InputType::Remove));
     Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-320}),InputType::Search));
 }
-Singly_Scene::Singly_Scene(): NodeScene(),a(0.3,0), i(0.5,0,20,Vector2({300,300})),d(0.5,0){
+Singly_Scene::Singly_Scene(): NodeScene(),a(0.3,0), i(0.5,0,20,Vector2({300,300})),d(0.5,0),isDragging(false){
     Edges.clear(); 
 }
 

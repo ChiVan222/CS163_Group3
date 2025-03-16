@@ -67,6 +67,7 @@ class Singly_Scene:public NodeScene
      std::vector<std::pair<int, std::function<void()>>>, 
     FunctionComparator> animation_queue;
         Ani_LinkedListSearching a;
+        bool isDragging;
         Ani_LinkedListInsert i; 
         Ani_LinkedListDelete d; 
         static Ani_DrawEdge de; 
@@ -84,7 +85,6 @@ class Singly_Scene:public NodeScene
         void Draw();
         static void addFunction(int priority, std::function<void()> func);
         void executeFunctions();
-
 };
 
 class Graph_Scene: public NodeScene 

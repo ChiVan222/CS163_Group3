@@ -12,6 +12,8 @@ InputField::InputField(float width, float height, Vector2 position, InputType ty
    inputbox.width = width;  
    isActive = false;
    const char* title;
+   last_deletedtime = 0 ; 
+   wait_time = 0.1; 
    switch(type)
    { 
      
@@ -40,6 +42,7 @@ InputField::InputField(float width, float height, Vector2 position, InputType ty
 }
 InputField::InputField(Rectangle rec)
 {
+    
     inputbox = rec; 
 }
 void InputField::Deactivate()
@@ -53,7 +56,7 @@ void InputField::HandleInput(std::string& buffer,Vector2 mousePos)
     } else if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             isActive = false;
     }
-
+    
     if(isActive)
     {
         int key =GetCharPressed();
@@ -65,10 +68,15 @@ void InputField::HandleInput(std::string& buffer,Vector2 mousePos)
             }
             key = GetCharPressed();
         }
-        if(IsKeyDown(KEY_BACKSPACE)&& !input.empty())
-        {
-            input.pop_back(); 
+        if(GetTime() - last_deletedtime >= wait_time)
+        { 
+            if(IsKeyDown(KEY_BACKSPACE)&& !input.empty())
+            {
+                input.pop_back(); 
+                last_deletedtime  = GetTime(); 
+            }
         }
+        
        
     }
 }

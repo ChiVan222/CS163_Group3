@@ -2,6 +2,7 @@
 #include <raylib.h> 
 #include <string>
 #include "Scene.h"
+#include "UI.h"
 SinglyNode:: SinglyNode(Vector2 pos,float radius, int value):PolyNode(pos,radius),next(nullptr), value(value)
 { }
 
@@ -79,7 +80,6 @@ void SinglyLinkedListNode::Insert(SinglyNode* node, float duration)
         SinglyNode* tmp = cur2->next; 
         Singly_Scene::m.setDuration(duration);
         Singly_Scene::m.updateTarget(Vector2({node->getRadius()*2 +50,0}),tmp); 
-        std::cout<<"BEFORE"<<Singly_Scene::Edges.size()<<'\n';
 
         Singly_Scene::Edges.erase(
             std::remove_if(Singly_Scene::Edges.begin(),Singly_Scene::Edges.end(),[cur2,tmp](Edge* edge){
@@ -90,7 +90,6 @@ void SinglyLinkedListNode::Insert(SinglyNode* node, float duration)
                     return false;
                 }),
         Singly_Scene::Edges.end());
-        std::cout<<"AFTER"<<Singly_Scene::Edges.size()<<'\n';
         cur2->next = node;
         node->next = tmp;
         Singly_Scene::Edges.push_back(new Edge(node,tmp)); 
@@ -107,6 +106,11 @@ void SinglyLinkedListNode::Traverse()
     while(cur)
     {
          cur->Draw(); 
+         if(cur->isClicked()&& Singly_Scene::ani == None)
+         {
+            Singly_Scene::cur = cur;
+         }
+         
          cur = cur->next; 
     }
 
@@ -139,6 +143,18 @@ void SinglyLinkedListNode::set_root(SinglyNode* nroot)
   root = nroot;
 
 }
+bool SinglyNode::isClicked()
+{ 
+    if(CheckCollisionPointCircle(UI::mousePos, position, radius)&&IsMouseButtonPressed(MOUSE_BUTTON_LEFT))  
+    { 
+         OnClicked(); 
+         return true; 
+    }return false; 
+}
+void SinglyNode::OnClicked()
+{
+    // Singly_Scene::cur  = this; 
+}
 void SinglyLinkedListNode::DeleteNode(SinglyNode* cur2, float duration)
 { 
     if(!cur2)
@@ -170,4 +186,38 @@ void SinglyLinkedListNode::DeleteNode(SinglyNode* cur2, float duration)
         size--;  
         delete tmp;
     }
+}
+#include <math.h>
+float getDistance(Vector2 a, Vector2 b)
+{ 
+    return std::sqrt((a.x-b.x)*(a.x-b.x) + (a.y-b.y)*(a.y-b.y)); 
+}
+void  SinglyNode::ForwardDistanceConstraints(float maxDistance)
+{ 
+    if(!next) return; 
+    if(this == Singly_Scene::cur) 
+    {
+        BackwardDistanceConstraints(maxDistance); 
+        return;
+    }
+    next->ForwardDistanceConstraints(maxDistance); 
+    float distance = getDistance(position, next->position); 
+        Vector2 direction = { (next->position.x - position.x) / distance, 
+                              (next->position.y - position.y) / distance };
+
+        position.x = next->position.x - direction.x * maxDistance;
+        position.y = next->position.y - direction.y * maxDistance;
+}
+void  SinglyNode::BackwardDistanceConstraints(float maxDistance)
+{
+     if(!next) return; 
+     float distance = getDistance(position, next->position); 
+        Vector2 direction = { (position.x - next->position.x) / distance,
+                              (position.y - next->position.y) / distance };
+
+        next->SetPosition(Vector2({
+            position.x - direction.x * maxDistance,
+            position.y - direction.y * maxDistance
+        }));
+   next->BackwardDistanceConstraints(maxDistance);
 }
