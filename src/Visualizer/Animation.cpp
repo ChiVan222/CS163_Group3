@@ -114,7 +114,6 @@ void Ani_LinkedListInsert::updateAnimations(float deltaTime)
 { 
     
     if(isDone||!node_insert||Singly_Scene::ani != Inserting) return;
-    std::cout<<elapsed_time<<"\n";
     elapsed_time += deltaTime;
     node_insert->SetPosition(Vector2({std::min(position.x,(elapsed_time/duration)*position.x),std::min(position.y,(elapsed_time/duration)*position.y)}));
     if (elapsed_time >= duration) {

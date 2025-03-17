@@ -5,32 +5,36 @@
 #include "PolyNode.h"
 #include "..\DataStructures\Graph\Graph.h"
 
-class GraphNode 
+class GraphNode : public PolyNode
 {
-private:
-    vector<GraphNode*> nAdj;
-    Vector2 nVelocity;
+public:
+    int val;
     Vector2 nPosition;
-public:
-    typedef unique_ptr<GraphNode> Ptr;
-    static const float repulse;
-    static const float attract;
-    static const float lenghtLimit;
-    static const float left, right, top, bottom;
-public:
-    GraphNode();
-    void setVelocity(Vector2 nVelocity);
-    void makeAdjacent(GraphNode* node);
- 
-    Vector2 getRepulsion(const GraphNode& node) const;
-    bool isAdjacent(const GraphNode& node) const;
-    Vector2 getTotalAttraction() const;
-    Vector2 getAttraction(const GraphNode& node) const;
-    const std::vector<GraphNode*>& getAdj() const;
+    std::vector<std::pair<GraphNode*, int>> edges;
 
-    void draw() const;
+    GraphNode(Vector2 position, float radius, int value);
+    
+    void addEdge(GraphNode* to, int weight);
+
+    bool Draw() override;
+    void drawNodes() const;
     void drawEdges() const;
-    void updateCurrent(float dt);
     void setPosition(Vector2 position);
     Vector2 getPosition() const;
+
+    // Vector2 nVelocity;
+    // void setVelocity(Vector2 nVelocity);
+    // void updateCurrent(float dt);
+    // Vector2 getRepulsion(const GraphNode& node) const;
+    // bool isAdjacent(const GraphNode& node) const;
+    // Vector2 getTotalAttraction() const;
+    // Vector2 getAttraction(const GraphNode& node) const;
+    // const std::vector<GraphNode*>& getAdj() const;
+
+// public:
+//     typedef unique_ptr<GraphNode> Ptr;
+//     static const float repulse;
+//     static const float attract;
+//     static const float lenghtLimit;
+//     static const float left, right, top, bottom;
 };

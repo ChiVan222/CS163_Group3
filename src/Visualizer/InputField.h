@@ -13,7 +13,9 @@ class InputField
      Rectangle inputbox; 
      InputType type; 
      bool isActive;
+     float wait_time; 
      Button* button; 
+     float last_deletedtime; 
     public :   
      bool Send(std::string & buffer); 
      void HandleInput(std::string& buffer,Vector2 mousePos); 

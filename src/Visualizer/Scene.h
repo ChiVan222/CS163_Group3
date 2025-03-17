@@ -67,6 +67,7 @@ class Singly_Scene:public NodeScene
      std::vector<std::pair<int, std::function<void()>>>, 
     FunctionComparator> animation_queue;
         Ani_LinkedListSearching a;
+        bool isDragging;
         Ani_LinkedListInsert i; 
         Ani_LinkedListDelete d; 
         static Ani_DrawEdge de; 
@@ -84,24 +85,21 @@ class Singly_Scene:public NodeScene
         void Draw();
         static void addFunction(int priority, std::function<void()> func);
         void executeFunctions();
-
 };
 
 class Graph_Scene: public NodeScene 
 {
   public:
-    Dijkstra* dijkstra;
-    std::vector<GraphNode> graphNodes;
-    GraphNode* curNode;
+    std::vector<GraphNode*> graphNodes;
     bool created;
-  
   public:
     void CheckBuffer() override;
     void run(Scenes& mscene);
     Graph_Scene();
     ~Graph_Scene();
     void Draw();
-    void AddNode(Vector2 position);
+    GraphNode* findNodeByVal(int value);
+    void AddNode(Vector2 position, int value);
     void AddEdge(int from, int to, int weight);
-    void RemoveNode(Vector2 position);
+    // void RemoveNode(Vector2 position);
 };

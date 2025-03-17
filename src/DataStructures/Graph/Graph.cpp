@@ -1,7 +1,7 @@
 #include "Graph.h"
 #include <queue>
 #include <cassert>
-
+#include "..\..\Visualizer\Scene.h"
 const int Dijkstra::INF = 1e5;
 
 Dijkstra::Dijkstra(int nodes, int start) : nodes(nodes), start(start), isRun(false) {

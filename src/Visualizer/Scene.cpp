@@ -5,6 +5,8 @@ SinglyLinkedListNode Singly_Scene::Nodes = SinglyLinkedListNode();
 std::vector<Edge*>Singly_Scene::Edges;
 SinglyNode* Singly_Scene::cur =nullptr;
 bool Singly_Scene::created = false; 
+//  std::vector<Edge*>  Graph_Scene::Edges; 
+
 animation Singly_Scene:: ani = None; 
 Ani_DrawEdge Singly_Scene::de;  
 std::priority_queue<std::pair<int, std::function<void()>>, 
@@ -192,9 +194,23 @@ void Singly_Scene::run(Scenes& mscene)
     m.updateAnimations(deltaTime); 
     d.updateAnimations(deltaTime);
     de.updateAnimations(deltaTime);
+    
     executeFunctions();
     Nodes.UpdateHightLight();
     Draw();
+    if(ani ==None && cur &&cur->isClicked())
+    {
+        isDragging = true;  
+    }
+    if(isDragging)
+    {
+        cur->SetPosition(UI::mousePos);
+        Nodes.get_root()->ForwardDistanceConstraints(2*Node_radius +50);
+        if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+            isDragging = false;  
+        }
+    }
+
 }
 SceneManager::SceneManager()
 {
@@ -225,62 +241,62 @@ NodeScene::NodeScene()
     Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-210}),InputType::Remove));
     Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-320}),InputType::Search));
 }
-Singly_Scene::Singly_Scene(): NodeScene(),a(0.3,0), i(0.5,0,20,Vector2({300,300})),d(0.5,0){
+Singly_Scene::Singly_Scene(): NodeScene(),a(0.3,0), i(0.5,0,20,Vector2({300,300})),d(0.5,0),isDragging(false){
     Edges.clear(); 
 }
 
 #include <iostream>
-Graph_Scene::Graph_Scene() : NodeScene(), dijkstra(nullptr), curNode(nullptr), created(false) {
-    dijkstra = new Dijkstra(0, 0);
+Graph_Scene::Graph_Scene() : NodeScene(), created(false) {
     Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-430}),InputType::AddEdge));
 }
 
 Graph_Scene::~Graph_Scene() {
-    delete dijkstra;
+
 }   
 
 void Graph_Scene::CheckBuffer() {
     int type;
     std::stringstream ss(buffer);
     bool inputted = false;
-    if (!created) {
-        ss >> type;
-        inputted = true;
-    }
+    ss >> type;
+    inputted = true;
     switch(type)
     {
         case 0:
         {
-            Vector2 pos = GetMousePosition();
-            AddNode(pos);
+            Vector2 pos = UI::mousePos;
+            int value;
+            ss >> value;
+            AddNode(pos, value);
             created = true;
-        }
+        } 
         break;
-        case 1:
+
+        case 4:
         {
-            int from, to, weight;
-            ss >> from >> to >> weight;
-            AddEdge(from, to, weight);
+            int fromVal, toVal, weight;
+            ss >> fromVal >> toVal >> weight;
+            AddEdge(fromVal, toVal, weight);
         }
         break;
-        if (inputted) {
-            std::string newBuffer;
-            std::string word;
-            while (ss >> word) {
-                newBuffer += word + " ";
-            }
-            buffer = newBuffer;
-            inputted = false;
+    }
+    if (inputted) {
+        std::string newBuffer;
+        std::string word;
+        while (ss >> word) {
+            newBuffer += word + " ";
         }
+        buffer = newBuffer;
+        inputted = false;
     }
 }
 
 void Graph_Scene::Draw() {
     for (const auto& node : graphNodes) {
-        node.drawEdges();
+        node->drawEdges();
     }
     for (const auto& node : graphNodes) {
-        node.draw();
+        node->drawNodes();
     }
 }   
 
@@ -293,33 +309,45 @@ void Graph_Scene::run(Scenes& mscene) {
     if (IsKeyPressed(KEY_LEFT)) {
         mscene = Menu;
         created = false;
-        delete dijkstra;
-        dijkstra = new Dijkstra(0, 0);
         graphNodes.clear();
-        curNode = nullptr;
         return;
     }
     Draw();
 }
 
-void Graph_Scene::   AddNode(Vector2 position) {
-    GraphNode node;
-    node.setPosition(position);
+GraphNode* Graph_Scene::findNodeByVal(int value) {
+    for (auto& node : graphNodes) {
+        if (node->val == value) {
+            return node;
+        }
+    }
+    std::cout << "Node with value " << value << " not found." << std::endl;
+    return nullptr;
+}
+
+void Graph_Scene::AddNode(Vector2 position, int value) {
+    GraphNode* node = new GraphNode(position, 20, value);
     graphNodes.push_back(node);
+    std::cout << "Added node with value: " << value << " at position: (" << position.x << ", " << position.y << ")" << std::endl;
 }
 
 void Graph_Scene::AddEdge(int from, int to, int weight) {
-    if (from < graphNodes.size() && to < graphNodes.size()) {
-        graphNodes[from].makeAdjacent(&graphNodes[to]);
-        dijkstra->addEdge(from, to, weight);
+    GraphNode* fromNode = findNodeByVal(from);
+    GraphNode* toNode = findNodeByVal(to);
+
+    if (!fromNode || !toNode) {
+        std::cout << "Invalid node indices for edge: " << from << " -> " << to << std::endl;
+        return;
     }
+    fromNode->addEdge(toNode, weight);
+    std::cout << "Edge added from " << from << " to " << to << " with weight " << weight << std::endl;
 }
 
-void Graph_Scene::RemoveNode(Vector2 position) {
-    for (auto it = graphNodes.begin(); it != graphNodes.end(); ++it) {
-        if (CheckCollisionPointCircle(position, it->getPosition(), 18)) {
-            graphNodes.erase(it);
-            break;
-        }
-    }
-}
+// void Graph_Scene::RemoveNode(Vector2 position) {
+//     for (auto it = graphNodes.begin(); it != graphNodes.end(); ++it) {
+//         if (CheckCollisionPointCircle(position, it->getPosition(), 18)) {
+//             graphNodes.erase(it);
+//             break;
+//         }
+//     }
+// }
