@@ -5,18 +5,18 @@
 #include "PolyNode.h"
 #include "..\DataStructures\Graph\Graph.h"
 
-class GraphNode 
+class GraphNode : public PolyNode
 {
 public:
     int val;
     Vector2 nPosition;
     std::vector<std::pair<GraphNode*, int>> edges;
 
-    GraphNode();
-    GraphNode(Vector2 position, int value);
+    GraphNode(Vector2 position, float radius, int value);
     
     void addEdge(GraphNode* to, int weight);
 
+    bool Draw() override;
     void drawNodes() const;
     void drawEdges() const;
     void setPosition(Vector2 position);

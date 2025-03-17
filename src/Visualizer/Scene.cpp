@@ -326,7 +326,7 @@ GraphNode* Graph_Scene::findNodeByVal(int value) {
 }
 
 void Graph_Scene::AddNode(Vector2 position, int value) {
-    GraphNode* node = new GraphNode(position, value);
+    GraphNode* node = new GraphNode(position, 20, value);
     graphNodes.push_back(node);
     std::cout << "Added node with value: " << value << " at position: (" << position.x << ", " << position.y << ")" << std::endl;
 }

@@ -13,16 +13,17 @@
 // const float GraphNode::top = 0.f;
 // const float GraphNode::bottom = 600.f;
 
-GraphNode::GraphNode() {
-    // this->nVelocity = {0, 0};
-    this->nPosition = {0, 0};
-    this->val = INT_MIN;
-}
-
-GraphNode::GraphNode(Vector2 position, int value) : nPosition(position), val(value){}
+// need to be modified the construct of polynode
+GraphNode::GraphNode(Vector2 position, float radius, int value) : PolyNode(position, radius), nPosition(position), val(value){}
 
 void GraphNode::addEdge(GraphNode* to, int weight) {
     edges.push_back({to, weight});
+}
+
+bool GraphNode::Draw() {
+    drawNodes();
+    drawEdges();
+    return true;
 }
 
 void GraphNode::drawNodes() const {
@@ -32,9 +33,8 @@ void GraphNode::drawNodes() const {
 
 void GraphNode::drawEdges() const {
     for (const auto& edge : edges) {
-        DrawLineV(nPosition, edge.first->nPosition, WHITE);
-        Vector2 midPoint = {(nPosition.x + edge.first->nPosition.x)/2, (nPosition.y + edge.first->nPosition.y)/2};
-        DrawText(TextFormat("%d", edge.second), midPoint.x, midPoint.y, 20, BLUE);
+        Edge newEdge(static_cast<PolyNode*>(const_cast<GraphNode*>(this)), static_cast<PolyNode*>(edge.first));
+        newEdge.Draw();
     }
 }
 
