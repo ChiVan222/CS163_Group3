@@ -246,7 +246,7 @@ Singly_Scene::Singly_Scene(): NodeScene(),a(0.3,0), i(0.5,0,20,Vector2({300,300}
 }
 
 #include <iostream>
-Graph_Scene::Graph_Scene() : NodeScene(), curNode(nullptr), created(false) {
+Graph_Scene::Graph_Scene() : NodeScene(), created(false) {
     Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-430}),InputType::AddEdge));
 }
 
@@ -265,12 +265,14 @@ void Graph_Scene::CheckBuffer() {
         case 0:
         {
             Vector2 pos = UI::mousePos;
-            AddNode(pos, type);
+            int value;
+            ss >> value;
+            AddNode(pos, value);
             created = true;
         } 
         break;
 
-        case 3:
+        case 4:
         {
             int fromVal, toVal, weight;
             ss >> fromVal >> toVal >> weight;
@@ -308,7 +310,6 @@ void Graph_Scene::run(Scenes& mscene) {
         mscene = Menu;
         created = false;
         graphNodes.clear();
-        curNode = nullptr;
         return;
     }
     Draw();
@@ -320,23 +321,26 @@ GraphNode* Graph_Scene::findNodeByVal(int value) {
             return node;
         }
     }
+    std::cout << "Node with value " << value << " not found." << std::endl;
     return nullptr;
 }
 
 void Graph_Scene::AddNode(Vector2 position, int value) {
     GraphNode* node = new GraphNode(position, value);
     graphNodes.push_back(node);
+    std::cout << "Added node with value: " << value << " at position: (" << position.x << ", " << position.y << ")" << std::endl;
 }
 
 void Graph_Scene::AddEdge(int from, int to, int weight) {
     GraphNode* fromNode = findNodeByVal(from);
     GraphNode* toNode = findNodeByVal(to);
 
-    if (fromNode == nullptr || toNode == nullptr) {
+    if (!fromNode || !toNode) {
         std::cout << "Invalid node indices for edge: " << from << " -> " << to << std::endl;
         return;
     }
     fromNode->addEdge(toNode, weight);
+    std::cout << "Edge added from " << from << " to " << to << " with weight " << weight << std::endl;
 }
 
 // void Graph_Scene::RemoveNode(Vector2 position) {

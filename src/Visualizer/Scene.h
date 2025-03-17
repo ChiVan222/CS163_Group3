@@ -91,7 +91,6 @@ class Graph_Scene: public NodeScene
 {
   public:
     std::vector<GraphNode*> graphNodes;
-    GraphNode* curNode;
     bool created;
   public:
     void CheckBuffer() override;
@@ -102,5 +101,5 @@ class Graph_Scene: public NodeScene
     GraphNode* findNodeByVal(int value);
     void AddNode(Vector2 position, int value);
     void AddEdge(int from, int to, int weight);
-    void RemoveNode(Vector2 position);
+    // void RemoveNode(Vector2 position);
 };

@@ -3,6 +3,8 @@
 #include "GraphNode.h"
 #include "Edge.h"
 #include "Scene.h"
+
+#include <iostream>
 // const float GraphNode::repulse = 5000000.f;
 // const float GraphNode::attract = 2000.f;
 // const float GraphNode::lenghtLimit = 175.f;
@@ -14,12 +16,10 @@
 GraphNode::GraphNode() {
     // this->nVelocity = {0, 0};
     this->nPosition = {0, 0};
+    this->val = INT_MIN;
 }
 
-GraphNode::GraphNode(Vector2 position, int value) {
-    this->val = value;
-    setPosition(position);
-}
+GraphNode::GraphNode(Vector2 position, int value) : nPosition(position), val(value){}
 
 void GraphNode::addEdge(GraphNode* to, int weight) {
     edges.push_back({to, weight});
@@ -27,7 +27,7 @@ void GraphNode::addEdge(GraphNode* to, int weight) {
 
 void GraphNode::drawNodes() const {
     DrawCircleV(nPosition, 20, WHITE);
-    DrawText(TextFormat("%d", val), nPosition.x - 10, nPosition.y - 10, 40, BLUE);
+    DrawText(TextFormat("%d", val), nPosition.x - 10, nPosition.y - 10, 20, BLUE);
 }
 
 void GraphNode::drawEdges() const {
