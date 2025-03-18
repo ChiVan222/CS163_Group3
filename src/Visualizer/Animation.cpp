@@ -28,7 +28,6 @@ void Ani_LinkedListSearching::updateAnimations(float deltaTime) {
     if(isDone||!Singly_Scene::cur||Singly_Scene::ani != Searching) return; 
     elapsed_time += deltaTime;
     Singly_Scene::cur->SetPrimaryHighLight();
-    std::cout<<duration/Singly_Scene::Nodes.get_size();
     if (elapsed_time >= duration/Singly_Scene::Nodes.get_size()) {
         if (Singly_Scene::cur && Singly_Scene::cur->value != target) {
             Singly_Scene::cur->SetNullHighLight();
