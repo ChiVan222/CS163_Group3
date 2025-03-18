@@ -6,8 +6,10 @@
 #include "Ultility.h"
 #include "Button.h" 
 #include "Animation.h"
+#include "GraphAnimation.h"
 #include <queue>
 #include <functional>
+#include <algorithm>
 #pragma once
 class Scene
 { 
@@ -90,8 +92,9 @@ class Singly_Scene:public NodeScene
 class Graph_Scene: public NodeScene 
 {
   public:
-    std::vector<GraphNode*> graphNodes;
+    static std::vector<GraphNode*> graphNodes;
     bool created;
+    Ani_GraphInsert ani_insert;
   public:
     void CheckBuffer() override;
     void run(Scenes& mscene);
