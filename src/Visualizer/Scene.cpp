@@ -272,6 +272,26 @@ void Graph_Scene::CheckBuffer() {
         } 
         break;
 
+        case 1: 
+        {
+            int value;
+            ss >> value;
+            RemoveNode(value);
+        }
+        break;
+
+        case 3: 
+        {
+            int value;
+            ss >> value;
+            if (findNodeByVal(value)) {
+                std::cout << "Found " << value << std::endl;
+
+            }
+            else std::cout << "Not found " << value << std::endl;
+        }
+        break;
+
         case 4:
         {
             int fromVal, toVal, weight;
@@ -343,11 +363,23 @@ void Graph_Scene::AddEdge(int from, int to, int weight) {
     std::cout << "Edge added from " << from << " to " << to << " with weight " << weight << std::endl;
 }
 
-// void Graph_Scene::RemoveNode(Vector2 position) {
-//     for (auto it = graphNodes.begin(); it != graphNodes.end(); ++it) {
-//         if (CheckCollisionPointCircle(position, it->getPosition(), 18)) {
-//             graphNodes.erase(it);
-//             break;
-//         }
-//     }
-// }
+void Graph_Scene::RemoveNode(int value) {
+    for (auto& node : graphNodes) {
+        for (auto& edge : node->edges){
+            if (edge.first->val == value) {
+                swap(edge, node->edges.back());
+                node->edges.pop_back();
+                std::cout << "Deleted edge from " << node->val << " to " << value << std::endl;
+                break;
+            }
+        }
+    }
+    for (auto& node : graphNodes) {
+        if (node->val == value) {
+            swap(node, graphNodes.back());
+            graphNodes.pop_back();
+            std::cout << "Deleted node " << value << std::endl; 
+            return;
+        }
+    }
+}
