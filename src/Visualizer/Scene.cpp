@@ -246,8 +246,14 @@ Singly_Scene::Singly_Scene(): NodeScene(),a(0.3,0), i(0.5,0,20,Vector2({300,300}
 }
 
 #include <iostream>
-Graph_Scene::Graph_Scene() : NodeScene(), created(false) {
+#include <cstdlib>
+#include <ctime>
+
+std::vector<GraphNode*> Graph_Scene::graphNodes;
+
+Graph_Scene::Graph_Scene() : NodeScene(), created(false), ani_insert(0.3, 0, 20, {0,0}) {
     Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-430}),InputType::AddEdge));
+    std::srand(static_cast<unsigned int>(std::time(nullptr)));
 }
 
 Graph_Scene::~Graph_Scene() {
@@ -264,12 +270,36 @@ void Graph_Scene::CheckBuffer() {
     {
         case 0:
         {
-            Vector2 pos = UI::mousePos;
             int value;
             ss >> value;
+            Vector2 pos = {static_cast<float>(std::rand() % GetScreenWidth()), static_cast<float>(std::rand() % GetScreenHeight())};
+            if (pos.x + 500 < GetScreenWidth()) pos.x += 500;
+            if (pos.y + 200 < GetScreenHeight()) pos.y += 200;
+            if (pos.x > GetScreenWidth() - 100) pos.x -= 100;
+            if (pos.y > GetScreenHeight() - 100) pos.y -= 100;
             AddNode(pos, value);
             created = true;
         } 
+        break;
+
+        case 1: 
+        {
+            int value;
+            ss >> value;
+            RemoveNode(value);
+        }
+        break;
+
+        case 3: 
+        {
+            int value;
+            ss >> value;
+            if (findNodeByVal(value)) {
+                std::cout << "Found " << value << std::endl;
+
+            }
+            else std::cout << "Not found " << value << std::endl;
+        }
         break;
 
         case 4:
@@ -296,6 +326,8 @@ void Graph_Scene::Draw() {
         node->drawEdges();
     }
     for (const auto& node : graphNodes) {
+        Vector2 pos = node->getPosition();
+        std::cout << "Drawing node at position: (" << pos.x << ", " << pos.y << ")" << std::endl;
         node->drawNodes();
     }
 }   
@@ -312,6 +344,7 @@ void Graph_Scene::run(Scenes& mscene) {
         graphNodes.clear();
         return;
     }
+    ani_insert.updateAnimations(deltatime);
     Draw();
 }
 
@@ -321,14 +354,11 @@ GraphNode* Graph_Scene::findNodeByVal(int value) {
             return node;
         }
     }
-    std::cout << "Node with value " << value << " not found." << std::endl;
     return nullptr;
 }
 
 void Graph_Scene::AddNode(Vector2 position, int value) {
-    GraphNode* node = new GraphNode(position, 20, value);
-    graphNodes.push_back(node);
-    std::cout << "Added node with value: " << value << " at position: (" << position.x << ", " << position.y << ")" << std::endl;
+    ani_insert.updateTarget(value, 20, position);
 }
 
 void Graph_Scene::AddEdge(int from, int to, int weight) {
@@ -343,11 +373,24 @@ void Graph_Scene::AddEdge(int from, int to, int weight) {
     std::cout << "Edge added from " << from << " to " << to << " with weight " << weight << std::endl;
 }
 
-// void Graph_Scene::RemoveNode(Vector2 position) {
-//     for (auto it = graphNodes.begin(); it != graphNodes.end(); ++it) {
-//         if (CheckCollisionPointCircle(position, it->getPosition(), 18)) {
-//             graphNodes.erase(it);
-//             break;
-//         }
-//     }
-// }
+void Graph_Scene::RemoveNode(int value) {
+    for (auto& node : graphNodes) {
+        node->edges.erase(std::remove_if(node->edges.begin(), node->edges.end(), [value](const std::pair<GraphNode*, int>& edge) {
+            if (edge.first->val == value) {
+                return true;
+            }
+            return false;
+        }), node->edges.end());
+    }
+
+    auto it = std::remove_if(graphNodes.begin(), graphNodes.end(), [value](GraphNode* node){
+        if (node->val == value) {
+            std::cout << "Deleted node " << value << "\n";\
+            delete node;
+            return true;
+        }
+        return false;
+    });
+
+    graphNodes.erase(it, graphNodes.end());
+}
