@@ -12,12 +12,14 @@ Trie::~Trie() {
 
 
 void Trie::clear(TrieNode* node) {
-    if (!node) return;
+    if (!node) 
+        return;
+    
     for (auto& pair : node->children) {
         clear(pair.second);
-        delete pair.second;
     }
     node->children.clear();
+    delete node;
 }
 
 

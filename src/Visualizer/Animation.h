@@ -3,6 +3,7 @@
 #include "../DataStructures/Graph/Graph.h"
 #include "SinglyNode.h"
 #include "GraphNode.h"
+#include "TrieNode.h"
 #include "Edge.h"
 #include <vector>
 
@@ -87,3 +88,28 @@ class Ani_DrawEdge:public Animations
    void play() override;
    void updateTarget(Edge* egde);
 }; 
+
+class Ani_TrieInsert : public Animations {
+  private:
+      TrieNodePrimary* node_insert;
+      Vector2 startPos;
+      Vector2 targetPos;
+      float radius;
+      bool inserted;
+
+  public:
+      Ani_TrieInsert();
+      Ani_TrieInsert(float duration);
+  
+      void updateTarget(Vector2 targetPos, float radius, TrieNodePrimary* node);
+      void play() override;
+      void updateAnimations(float deltaTime) override;
+      bool isInserted() const;
+      TrieNodePrimary* getNode() const;
+      void setDuration(float nduration);
+  };
+  
+  class Ani_TrieDelete : public Animations{
+    private:
+
+  };

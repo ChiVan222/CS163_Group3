@@ -219,6 +219,8 @@ SceneManager::SceneManager()
     scenes.push_back(new Menu_Scene()); 
     scenes.push_back(new Singly_Scene()); 
     scenes.push_back(new Graph_Scene());
+    scenes.push_back(new Trie_Scene());
+
 }
 SceneManager::~SceneManager() {
     for (Scene* scene : scenes) {
@@ -394,3 +396,159 @@ void Graph_Scene::RemoveNode(int value) {
 
     graphNodes.erase(it, graphNodes.end());
 }
+// void Graph_Scene::RemoveNode(Vector2 position) {
+//     for (auto it = graphNodes.begin(); it != graphNodes.end(); ++it) {
+//         if (CheckCollisionPointCircle(position, it->getPosition(), 18)) {
+//             graphNodes.erase(it);
+//             break;
+//         }
+//     }
+// }
+Ani_TrieInsert Trie_Scene::i;
+TrieNodePrimary* Trie_Scene::proot = new TrieNodePrimary(Vector2{300, 300}, 20, '*');
+animation Trie_Scene::ani = None; 
+int Trie_Scene::Node_radius = 20; 
+std::vector<Edge*>Trie_Scene::edges;
+
+
+Trie_Scene::Trie_Scene(): NodeScene() {
+    edges.clear();
+    cur = proot;
+}
+
+
+void Trie_Scene:: run(Scenes& mscene){
+    if (proot->isEndOfWord)
+         std::cout<< "true" <<'\n';
+    deltaTime = IsWindowFocused() ? GetFrameTime() : 0;
+    ClearBackground(BLACK);
+    DrawCommonUI();
+    DrawText("Trie", 360, 0, 40, WHITE);
+    CheckBuffer();
+    
+    if (IsKeyPressed(KEY_LEFT)) {
+        mscene = Menu;
+        for(int i =0; i<edges.size();i++)
+        {
+             Edge* tmp = edges[i];
+             edges[i] = nullptr;
+             delete tmp;
+        }
+        edges.clear();
+        cur = nullptr;
+        proot = nullptr;
+        return; 
+
+    };
+    i.updateAnimations(deltaTime);
+    Draw();
+}
+
+void Trie_Scene::Draw() {   
+
+    TrieNodePrimary* tmp = proot;
+    proot->Traverse(tmp);
+    for (int i = 0; i <Trie_Scene::edges.size();) {
+        if(Trie_Scene::edges[i]->Draw())
+        { 
+            i++;
+        }
+        else{
+           Trie_Scene::edges.erase(Trie_Scene::edges.begin()+i);
+        }
+    }
+}
+
+void Trie_Scene::CheckBuffer() {
+    int type;
+    std::stringstream ss(buffer);
+    bool inputted = false;
+    std::string key;
+    if (ani!=None) return;
+    if (ani == None) {
+        ss >> type;
+        ss >> key;
+        inputted = true;
+    }
+    std::stringstream ss1(key);
+    char x;
+    ss1 >> x;
+    switch (type) {
+        case 0: {  // Insert operation
+            if (i.getState()) {  
+                ani = Inserting; 
+                std::cout << "!"; 
+                Insert(x, 1.0f); 
+
+
+            }
+        }
+        break;
+        
+        case 1: {
+
+        }
+        break;
+
+        case 3: {
+            std::string x;
+            ss >> x;
+            ani = Searching;
+        }
+        break;
+
+    }
+
+
+    if (inputted && key.size() > 1) {
+        std::string newBuffer;
+        std::string word;
+        newBuffer += std::to_string(type);  
+        while (ss1 >> word) newBuffer += word + " ";
+        while (ss >> word) {
+            newBuffer += word + " ";
+        }
+        buffer = newBuffer;
+        inputted = false;
+    }
+
+    else if (inputted && key.size() == 1) {
+        std::string newBuffer;
+        std::string word;
+        cur->isEndOfWord = true;
+        cur = proot;
+        while (ss >> word) {
+            newBuffer += word + " ";
+        }
+        buffer = newBuffer;
+        inputted = false;
+    }
+
+
+}
+
+//main trie function
+#include <algorithm>
+void Trie_Scene::Insert(const char& word, float duration){
+    Vector2 curPos = cur->getPosition();
+    Vector2 nextPos = Vector2({curPos.x, curPos.y + 60}); 
+    TrieNodePrimary* tmp = cur;
+    if (cur->children.find(word) == cur->children.end()) {
+        TrieNodePrimary* newNode = new TrieNodePrimary(Vector2({100, 100}), 20, word);
+        std::cout << newNode->key << "\n"; 
+        Trie_Scene::i.setDuration(duration);
+        Trie_Scene::i.updateTarget(nextPos, 20, newNode);
+        bool edgeExists = std::any_of(Trie_Scene::edges.begin(), Trie_Scene::edges.end(), [tmp, newNode](Edge* edge) {
+            return edge->getFrom() == tmp && edge->getTo() == newNode;
+            });
+            
+        if (!edgeExists) {
+            Trie_Scene::edges.push_back(new Edge(cur, newNode));                
+            cur->children[word] = newNode;
+        }
+
+    }
+    cur = cur->children[word];
+    curPos = cur->getPosition(); 
+}
+

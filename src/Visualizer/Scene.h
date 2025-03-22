@@ -71,7 +71,7 @@ class Singly_Scene:public NodeScene
         Ani_LinkedListSearching a;
         bool isDragging;
         Ani_LinkedListInsert i; 
-        Ani_LinkedListDelete d; 
+        Ani_LinkedListDelete d;
         static Ani_DrawEdge de; 
         static Ani_MoveList m ;
         static SinglyNode* cur;
@@ -105,4 +105,26 @@ class Graph_Scene: public NodeScene
     void AddNode(Vector2 position, int value);
     void AddEdge(int from, int to, int weight);
     void RemoveNode(int value);
+    // void RemoveNode(Vector2 position);
+};
+
+class Trie_Scene:public NodeScene{
+  public :
+        static Ani_TrieInsert i;
+        static std::vector<Edge*> edges;
+        static animation ani; 
+        static int Node_radius; 
+        TrieNodePrimary* cur;
+        float deltaTime;
+        static TrieNodePrimary* proot;
+        std::queue<std::string> insertQueue;  // Hàng đợi từ cần insert
+        bool isInserting = false;   
+        
+    public: 
+        void CheckBuffer() override; 
+        void run(Scenes& mscene); 
+        Trie_Scene();
+        void Draw();
+        void Insert(const char& word, float duration);
+      
 };

@@ -1,4 +1,4 @@
-#include "Heap.hpp"
+#include "Heap.h"
 
 Heap::Heap() {}
 
