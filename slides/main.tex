@@ -1,0 +1,119 @@
+\documentclass [aspectratio=169]{beamer}
+\usepackage{listings}
+\usepackage{enumitem}
+\usepackage[T5]{fontenc}
+\usepackage[utf8]{inputenc}
+\beamertemplatenavigationsymbolsempty
+\usetheme{Boadilla}
+\usepackage{textpos} % package for the positioning
+\usepackage[]{graphicx}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{algorithm,algpseudocode}
+\usepackage[export]{adjustbox}
+\usepackage{tikz}
+\usepackage[square,numbers]{natbib}
+\usepackage[byname]{smartref}
+\usetikzlibrary{positioning}
+\usetikzlibrary{arrows, shapes, decorations, automata, backgrounds, fit, petri, calc}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning}
+\definecolor{blue}{RGB}{173,216,230}
+\definecolor{green}{RGB}{144, 238, 144}
+\newcommand*{\logofont}{\fontfamily{phv}\selectfont}
+
+\definecolor{uwopurple}{RGB}{79,38,131} % official purple color for uwo
+
+\title[]{\vspace{60pt} \\
+Dysarthria and Non-Dysarthria Speech Classification} % Change the lecture topic right here!
+%\subtitle{n}
+\author[]{Vo Tran Hien - Pham Minh Duc - Vu Mai Thuy - Nguyen Dang Huu Thinh}
+\institute[]{University of Science, Viet Nam National University, HCMC\\
+             Faculty of Information Technology}
+\date{\today}
+
+% Math notations
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{lem}[thm]{Lemma}
+
+\newtheorem{defn}[thm]{Definition}
+\newtheorem{eg}[thm]{Example}
+\newtheorem{ex}[thm]{Exercise}
+\newtheorem{conj}[thm]{Conjecture}
+\newtheorem{cor}[thm]{Corollary}
+\newtheorem{claim}[thm]{Claim}
+\newtheorem{rmk}[thm]{Remark}
+
+\newcommand{\ie}{\emph{i.e.} }
+\newcommand{\cf}{\emph{cf.} }
+\newcommand{\into}{\hookrightarrow}
+\newcommand{\dirac}{\slashed{\partial}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\LieT}{\mathfrak{t}}
+\newcommand{\T}{\mathbb{T}}
+\newcommand{\A}{\mathds{A}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Var}{\text{Var}}
+\newcommand\equalhat{%
+\let\savearraystretch\arraystretch
+\renewcommand\arraystretch{0.3}
+\begin{array}{c}
+\stretchto{
+    \scalerel*[\widthof{=}]{\wedge}
+    {\rule{1ex}{3ex}}%
+}{0.5ex}\\ 
+=%
+\end{array}
+\let\arraystretch\savearraystretch
+}
+
+% set color
+\setbeamercolor{title in head/foot}{bg=white}
+\setbeamercolor{author in head/foot}{bg=white}
+\setbeamercolor{date in head/foot}{fg=uwopurple}
+\setbeamercolor{date in head/foot}{bg=white}
+\setbeamercolor{title}{fg=uwopurple}
+\setbeamerfont{title}{series=\bfseries}
+\setbeamercolor{frametitle}{fg=uwopurple}
+\setbeamerfont{frametitle}{series=\bfseries}
+\setbeamercolor{block title}{bg=uwopurple!30,fg=black}
+\setbeamercolor{item}{fg=uwopurple}
+\setbeamercolor{caption name}{fg=uwopurple!70!}
+
+
+
+
+
+% set logo at non-title pages
+\logo{\includegraphics[height=0.9cm]{im.jpg}\vspace*{-.055\paperheight}\hspace*{.85\paperwidth}}
+
+\begin{document}
+
+{
+\setbeamertemplate{logo}{}
+\begin{frame}
+    \titlepage
+    \begin{textblock*}{2cm}(2.5cm,-7.5cm)
+        \includegraphics[width=2cm]{im.jpg}
+    \end{textblock*}
+    \begin{textblock*}{8cm}(5.0cm,-7.0cm)
+        \huge \color{uwopurple}{$\Bigr\rvert$ \hspace{0.15cm} \textbf{Group 09}} % Change the lecture # right here! 
+    \end{textblock*}
+\end{frame}
+}
+
+\include{intro}
+\include{DataStructure}
+\include{implement}
+\include{apply}
+\include{adv}
+\include{quiz}
+\end{document}

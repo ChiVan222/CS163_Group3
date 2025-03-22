@@ -1,0 +1,31 @@
+\section{Main Data Structure and Algorithms}
+
+\begin{frame}{Main Data Structure}
+    \begin{itemize}[label=$\star$]
+    \item A Trie consists of nodes, where each node represents a character of a stored key.
+    \item Each node contains an array (or hash map) of child nodes, representing possible next characters in stored keys.
+    \item A boolean flag is often used at each node to indicate whether it marks the end of a valid word.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Insertion}
+    \begin{itemize}[label=$\star$]
+    \item Starting from the root, check if the current character exists as a child node. If not, create a new node. 
+    \item Move to the child node and repeat for the next character.
+    \item Mark the last node as the end of a word.
+\end{itemize}
+\end{frame}
+\begin{frame}{Searching}
+    \begin{itemize}[label=$\star$]
+    \item Start at the root and follow the path of characters in the query string.
+    \item If a path exists for the entire query string, check if the final node is marked as the end of a word.
+    \item Return true if the word is found, otherwise return false.
+\end{itemize}
+\end{frame}
+\begin{frame}{Deletion}
+    \begin{itemize}[label=$\star$]
+    \item Traverse the Trie following the word's characters.
+    \item Unmark the last character node as the end of a word.
+    \item If the node has no other children, recursively remove it to save space.
+\end{itemize}
+\end{frame}
