@@ -34,12 +34,14 @@ run()
     InitWindow(wWidth, wHeight, "Hello, World!");
     UI::background = LoadTexture("../assets/Images/background.png");
     SetTargetFPS(mFPS);
+    SetWindowState(FLAG_WINDOW_RESIZABLE);
     scene_manager = new SceneManager();
     while (!WindowShouldClose())
     {
         time = GetTime();
         BeginDrawing();
         mousePos  = GetMousePosition(); 
+        DrawFPS(wWidth-100,100);
         scene_manager->runScene(); 
         EndDrawing();
     }

@@ -7,6 +7,7 @@
 #include "Button.h" 
 #include "Animation.h"
 #include "GraphAnimation.h"
+#include "SinglyAnimation.h"
 #include <queue>
 #include <functional>
 #include <algorithm>
@@ -70,11 +71,14 @@ class Singly_Scene:public NodeScene
     FunctionComparator> animation_queue;
         Ani_LinkedListSearching a;
         bool isDragging;
-        Ani_LinkedListInsert i; 
-        Ani_LinkedListDelete d;
+        Ani_LinkedListInsert insert; 
+        Ani_LinkedListDelete d; 
+        Ani_Straighten st; 
+        Ani_InsertRandomList insert_2; 
         static Ani_DrawEdge de; 
         static Ani_MoveList m ;
         static SinglyNode* cur;
+        static Ani_MoveNode mn ;   
         static std::vector<Edge*> Edges;
         static bool created; 
         static SinglyLinkedListNode Nodes; 
@@ -82,6 +86,7 @@ class Singly_Scene:public NodeScene
         static int Node_radius; 
     public: 
         void CheckBuffer() override; 
+        std::vector<Button*> buttons ;   
         void run(Scenes& mscene); 
         Singly_Scene();
         void Draw();
@@ -108,23 +113,23 @@ class Graph_Scene: public NodeScene
     // void RemoveNode(Vector2 position);
 };
 
-class Trie_Scene:public NodeScene{
-  public :
-        static Ani_TrieInsert i;
-        static std::vector<Edge*> edges;
-        static animation ani; 
-        static int Node_radius; 
-        TrieNodePrimary* cur;
-        float deltaTime;
-        static TrieNodePrimary* proot;
-        std::queue<std::string> insertQueue;  // Hàng đợi từ cần insert
-        bool isInserting = false;   
+// class Trie_Scene:public NodeScene{
+//   public :
+//         static Ani_TrieInsert i;
+//         static std::vector<Edge*> edges;
+//         static animation ani; 
+//         static int Node_radius; 
+//         TrieNodePrimary* cur;
+//         float deltaTime;
+//         static TrieNodePrimary* proot;
+//         std::queue<std::string> insertQueue;  // Hàng đợi từ cần insert
+//         bool isInserting = false;   
         
-    public: 
-        void CheckBuffer() override; 
-        void run(Scenes& mscene); 
-        Trie_Scene();
-        void Draw();
-        void Insert(const char& word, float duration);
+//     public: 
+//         void CheckBuffer() override; 
+//         void run(Scenes& mscene); 
+//         Trie_Scene();
+//         void Draw();
+//         void Insert(const char& word, float duration);
       
-};
+// };

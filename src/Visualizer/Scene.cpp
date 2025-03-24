@@ -1,6 +1,7 @@
 #include "Scene.h"
 #include "UI.h"
 Ani_MoveList Singly_Scene::m ;
+Ani_MoveNode Singly_Scene::mn(0.5);
 SinglyLinkedListNode Singly_Scene::Nodes = SinglyLinkedListNode();
 std::vector<Edge*>Singly_Scene::Edges;
 SinglyNode* Singly_Scene::cur =nullptr;
@@ -120,10 +121,10 @@ void Singly_Scene::CheckBuffer()
             {
                 insert_pos = Vector2({300,300});
             }
-            if(i.getState())
+            if(insert.getState())
             {
                 ss>>x; 
-                addFunction(1, std::bind(&Ani_LinkedListInsert::updateTarget, &i, x, 20, insert_pos));          
+                addFunction(1, std::bind(&Ani_LinkedListInsert::updateTarget, &insert, x, 20, insert_pos));          
            }
         }
         break;
@@ -190,11 +191,23 @@ void Singly_Scene::run(Scenes& mscene)
 
     }
     a.updateAnimations(deltaTime);
-    i.updateAnimations(deltaTime); 
+    insert.updateAnimations(deltaTime); 
     m.updateAnimations(deltaTime); 
     d.updateAnimations(deltaTime);
     de.updateAnimations(deltaTime);
-    
+    mn.updateAnimations(deltaTime);
+    st.updateAnimations(deltaTime);
+    insert_2.updateAnimations(deltaTime); 
+    for(int i =0 ; i<buttons.size();i++)
+    {
+       buttons[i]->Draw();
+       buttons[i]->DrawButtonText_center();
+       if(buttons[i]->IsHovered(UI::mousePos) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+       {
+         buttons[i]->OnClick();
+       }
+
+    }
     executeFunctions();
     Nodes.UpdateHightLight();
     Draw();
@@ -206,6 +219,7 @@ void Singly_Scene::run(Scenes& mscene)
     {
         cur->SetPosition(UI::mousePos);
         Nodes.get_root()->ForwardDistanceConstraints(2*Node_radius +50);
+        // Nodes.get_root()->ForwardAngleConstraints(2*PI/3);
         if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
             isDragging = false;  
         }
@@ -219,7 +233,7 @@ SceneManager::SceneManager()
     scenes.push_back(new Menu_Scene()); 
     scenes.push_back(new Singly_Scene()); 
     scenes.push_back(new Graph_Scene());
-    scenes.push_back(new Trie_Scene());
+    // scenes.push_back(new Trie_Scene());
 
 }
 SceneManager::~SceneManager() {
@@ -243,8 +257,24 @@ NodeScene::NodeScene()
     Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-210}),InputType::Remove));
     Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-320}),InputType::Search));
 }
-Singly_Scene::Singly_Scene(): NodeScene(),a(0.3,0), i(0.5,0,20,Vector2({300,300})),d(0.5,0),isDragging(false){
+Singly_Scene::Singly_Scene(): NodeScene(),a(0.3,0), insert(0.5,0,20,Vector2({300,300})),d(0.5,0),isDragging(false), insert_2(1),st(1){
     Edges.clear(); 
+    buttons.push_back(new Button("",Vector2({0,UI::wHeight-430}),Vector2({100,100}),"Randomize")); 
+    buttons[0]->OnClick=  [this]() {
+        int n = std::rand() % 11 +1; 
+        for(int i =0 ; i <n;i++)
+        {
+            Vector2 pos = {static_cast<float>(std::rand() % GetScreenWidth()), static_cast<float>(std::rand() % GetScreenHeight())};
+            if (pos.x + 500 < GetScreenWidth()) pos.x += 500;
+            if (pos.y + 200 < GetScreenHeight()) pos.y += 200;
+            if (pos.x > GetScreenWidth() - 100) pos.x -= 100;
+            if (pos.y > GetScreenHeight() - 100) pos.y -= 100;
+            int value = std::rand() % 1000;
+            SinglyNode* insertnode = new SinglyNode(pos,Node_radius,value);
+            addFunction(1, std::bind(&Ani_InsertRandomList ::updateTarget, &insert_2, insertnode));       
+        }
+        addFunction(0,std::bind(&Ani_Straighten::updateTarget, &st, Vector2{100,100}));
+    };
 }
 
 #include <iostream>
@@ -329,7 +359,7 @@ void Graph_Scene::Draw() {
     }
     for (const auto& node : graphNodes) {
         Vector2 pos = node->getPosition();
-        std::cout << "Drawing node at position: (" << pos.x << ", " << pos.y << ")" << std::endl;
+        // std::cout << "Drawing node at position: (" << pos.x << ", " << pos.y << ")" << "\n";
         node->drawNodes();
     }
 }   
@@ -404,151 +434,151 @@ void Graph_Scene::RemoveNode(int value) {
 //         }
 //     }
 // }
-Ani_TrieInsert Trie_Scene::i;
-TrieNodePrimary* Trie_Scene::proot = new TrieNodePrimary(Vector2{300, 300}, 20, '*');
-animation Trie_Scene::ani = None; 
-int Trie_Scene::Node_radius = 20; 
-std::vector<Edge*>Trie_Scene::edges;
+// Ani_TrieInsert Trie_Scene::i;
+// TrieNodePrimary* Trie_Scene::proot = new TrieNodePrimary(Vector2{300, 300}, 20, '*');
+// animation Trie_Scene::ani = None; 
+// int Trie_Scene::Node_radius = 20; 
+// std::vector<Edge*>Trie_Scene::edges;
 
 
-Trie_Scene::Trie_Scene(): NodeScene() {
-    edges.clear();
-    cur = proot;
-}
+// Trie_Scene::Trie_Scene(): NodeScene() {
+//     edges.clear();
+//     cur = proot;
+// }
 
 
-void Trie_Scene:: run(Scenes& mscene){
-    if (proot->isEndOfWord)
-         std::cout<< "true" <<'\n';
-    deltaTime = IsWindowFocused() ? GetFrameTime() : 0;
-    ClearBackground(BLACK);
-    DrawCommonUI();
-    DrawText("Trie", 360, 0, 40, WHITE);
-    CheckBuffer();
+// void Trie_Scene:: run(Scenes& mscene){
+//     if (proot->isEndOfWord)
+//          std::cout<< "true" <<'\n';
+//     deltaTime = IsWindowFocused() ? GetFrameTime() : 0;
+//     ClearBackground(BLACK);
+//     DrawCommonUI();
+//     DrawText("Trie", 360, 0, 40, WHITE);
+//     CheckBuffer();
     
-    if (IsKeyPressed(KEY_LEFT)) {
-        mscene = Menu;
-        for(int i =0; i<edges.size();i++)
-        {
-             Edge* tmp = edges[i];
-             edges[i] = nullptr;
-             delete tmp;
-        }
-        edges.clear();
-        cur = nullptr;
-        proot = nullptr;
-        return; 
+//     if (IsKeyPressed(KEY_LEFT)) {
+//         mscene = Menu;
+//         for(int i =0; i<edges.size();i++)
+//         {
+//              Edge* tmp = edges[i];
+//              edges[i] = nullptr;
+//              delete tmp;
+//         }
+//         edges.clear();
+//         cur = nullptr;
+//         proot = nullptr;
+//         return; 
 
-    };
-    i.updateAnimations(deltaTime);
-    Draw();
-}
+//     };
+//     i.updateAnimations(deltaTime);
+//     Draw();
+// }
 
-void Trie_Scene::Draw() {   
+// void Trie_Scene::Draw() {   
 
-    TrieNodePrimary* tmp = proot;
-    proot->Traverse(tmp);
-    for (int i = 0; i <Trie_Scene::edges.size();) {
-        if(Trie_Scene::edges[i]->Draw())
-        { 
-            i++;
-        }
-        else{
-           Trie_Scene::edges.erase(Trie_Scene::edges.begin()+i);
-        }
-    }
-}
+//     TrieNodePrimary* tmp = proot;
+//     proot->Traverse(tmp);
+//     for (int i = 0; i <Trie_Scene::edges.size();) {
+//         if(Trie_Scene::edges[i]->Draw())
+//         { 
+//             i++;
+//         }
+//         else{
+//            Trie_Scene::edges.erase(Trie_Scene::edges.begin()+i);
+//         }
+//     }
+// }
 
-void Trie_Scene::CheckBuffer() {
-    int type;
-    std::stringstream ss(buffer);
-    bool inputted = false;
-    std::string key;
-    if (ani!=None) return;
-    if (ani == None) {
-        ss >> type;
-        ss >> key;
-        inputted = true;
-    }
-    std::stringstream ss1(key);
-    char x;
-    ss1 >> x;
-    switch (type) {
-        case 0: {  // Insert operation
-            if (i.getState()) {  
-                ani = Inserting; 
-                std::cout << "!"; 
-                Insert(x, 1.0f); 
+// void Trie_Scene::CheckBuffer() {
+//     int type;
+//     std::stringstream ss(buffer);
+//     bool inputted = false;
+//     std::string key;
+//     if (ani!=None) return;
+//     if (ani == None) {
+//         ss >> type;
+//         ss >> key;
+//         inputted = true;
+//     }
+//     std::stringstream ss1(key);
+//     char x;
+//     ss1 >> x;
+//     switch (type) {
+//         case 0: {  // Insert operation
+//             if (i.getState()) {  
+//                 ani = Inserting; 
+//                 std::cout << "!"; 
+//                 Insert(x, 1.0f); 
 
 
-            }
-        }
-        break;
+//             }
+//         }
+//         break;
         
-        case 1: {
+//         case 1: {
 
-        }
-        break;
+//         }
+//         break;
 
-        case 3: {
-            std::string x;
-            ss >> x;
-            ani = Searching;
-        }
-        break;
+//         case 3: {
+//             std::string x;
+//             ss >> x;
+//             ani = Searching;
+//         }
+//         break;
 
-    }
-
-
-    if (inputted && key.size() > 1) {
-        std::string newBuffer;
-        std::string word;
-        newBuffer += std::to_string(type);  
-        while (ss1 >> word) newBuffer += word + " ";
-        while (ss >> word) {
-            newBuffer += word + " ";
-        }
-        buffer = newBuffer;
-        inputted = false;
-    }
-
-    else if (inputted && key.size() == 1) {
-        std::string newBuffer;
-        std::string word;
-        cur->isEndOfWord = true;
-        cur = proot;
-        while (ss >> word) {
-            newBuffer += word + " ";
-        }
-        buffer = newBuffer;
-        inputted = false;
-    }
+//     }
 
 
-}
+//     if (inputted && key.size() > 1) {
+//         std::string newBuffer;
+//         std::string word;
+//         newBuffer += std::to_string(type);  
+//         while (ss1 >> word) newBuffer += word + " ";
+//         while (ss >> word) {
+//             newBuffer += word + " ";
+//         }
+//         buffer = newBuffer;
+//         inputted = false;
+//     }
 
-//main trie function
-#include <algorithm>
-void Trie_Scene::Insert(const char& word, float duration){
-    Vector2 curPos = cur->getPosition();
-    Vector2 nextPos = Vector2({curPos.x, curPos.y + 60}); 
-    TrieNodePrimary* tmp = cur;
-    if (cur->children.find(word) == cur->children.end()) {
-        TrieNodePrimary* newNode = new TrieNodePrimary(Vector2({100, 100}), 20, word);
-        std::cout << newNode->key << "\n"; 
-        Trie_Scene::i.setDuration(duration);
-        Trie_Scene::i.updateTarget(nextPos, 20, newNode);
-        bool edgeExists = std::any_of(Trie_Scene::edges.begin(), Trie_Scene::edges.end(), [tmp, newNode](Edge* edge) {
-            return edge->getFrom() == tmp && edge->getTo() == newNode;
-            });
+//     else if (inputted && key.size() == 1) {
+//         std::string newBuffer;
+//         std::string word;
+//         cur->isEndOfWord = true;
+//         cur = proot;
+//         while (ss >> word) {
+//             newBuffer += word + " ";
+//         }
+//         buffer = newBuffer;
+//         inputted = false;
+//     }
+
+
+// }
+
+// //main trie function
+// #include <algorithm>
+// void Trie_Scene::Insert(const char& word, float duration){
+//     Vector2 curPos = cur->getPosition();
+//     Vector2 nextPos = Vector2({curPos.x, curPos.y + 60}); 
+//     TrieNodePrimary* tmp = cur;
+//     if (cur->children.find(word) == cur->children.end()) {
+//         TrieNodePrimary* newNode = new TrieNodePrimary(Vector2({100, 100}), 20, word);
+//         std::cout << newNode->key << "\n"; 
+//         Trie_Scene::i.setDuration(duration);
+//         Trie_Scene::i.updateTarget(nextPos, 20, newNode);
+//         bool edgeExists = std::any_of(Trie_Scene::edges.begin(), Trie_Scene::edges.end(), [tmp, newNode](Edge* edge) {
+//             return edge->getFrom() == tmp && edge->getTo() == newNode;
+//             });
             
-        if (!edgeExists) {
-            Trie_Scene::edges.push_back(new Edge(cur, newNode));                
-            cur->children[word] = newNode;
-        }
+//         if (!edgeExists) {
+//             Trie_Scene::edges.push_back(new Edge(cur, newNode));                
+//             cur->children[word] = newNode;
+//         }
 
-    }
-    cur = cur->children[word];
-    curPos = cur->getPosition(); 
-}
+//     }
+//     cur = cur->children[word];
+//     curPos = cur->getPosition(); 
+// }
 

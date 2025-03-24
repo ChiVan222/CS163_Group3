@@ -1,12 +1,14 @@
 #pragma once 
 #include <raylib.h> 
 #include "Ultility.h"
+#include <functional>
 class Button 
 {
   public : 
     Button(const char* imgpath, Vector2 pos,Vector2 rect, const char* title); 
     ~Button();
     Button(); 
+    std::function<void()> OnClick;
     void Draw();     
     void DrawButtonText(Vector2 textpos); 
     void DrawButtonText_center();
