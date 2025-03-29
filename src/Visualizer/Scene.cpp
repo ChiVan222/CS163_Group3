@@ -349,7 +349,7 @@ std::vector<GraphNode*> Graph_Scene::graphNodes;
 std::vector<Edge*>  Graph_Scene::Edges; 
 
 Graph_Scene::Graph_Scene() : NodeScene(), created(false), ani_insert(0.3, 0, 20, {0,0}) {
-    Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-430}),InputType::AddEdge));
+    Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-540}),InputType::AddEdge));
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
 }
 
