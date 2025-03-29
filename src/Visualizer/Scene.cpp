@@ -1,10 +1,12 @@
 #include "Scene.h"
 #include "UI.h"
+#include <raymath.h>
 Ani_MoveList Singly_Scene::m ;
 Ani_MoveNode Singly_Scene::mn(0.5);
 SinglyLinkedListNode Singly_Scene::Nodes = SinglyLinkedListNode();
 std::vector<Edge*>Singly_Scene::Edges;
 SinglyNode* Singly_Scene::cur =nullptr;
+int Singly_Scene::cur_priority;
 bool Singly_Scene::created = false; 
 
 animation Singly_Scene:: ani = None; 
@@ -12,7 +14,9 @@ Ani_DrawEdge Singly_Scene::de;
 std::priority_queue<std::pair<int, std::function<void()>>, 
      std::vector<std::pair<int, std::function<void()>>>, 
     FunctionComparator> Singly_Scene:: animation_queue ; 
-
+    std::priority_queue<std::pair<int, std::function<void()>>, 
+    std::vector<std::pair<int, std::function<void()>>>, 
+   FunctionComparator> Singly_Scene:: UI_animation_queue ; 
 int Singly_Scene::Node_radius = 20; 
 Scenes SceneManager::get_scene()
 {
@@ -82,19 +86,44 @@ void Menu_Scene::run(Scenes& mscene)
 }
 #include <sstream>
 #include <iostream>
-void Singly_Scene::addFunction(int priority, std::function<void()> func)
+void Singly_Scene::addFunction(std::priority_queue<std::pair<int, std::function<void()>>, 
+std::vector<std::pair<int, std::function<void()>>>, 
+FunctionComparator>& q,int priority, std::function<void()> func)
 {
-    animation_queue.push({priority, func});
+    q.push({priority, func});
 }
-void Singly_Scene::executeFunctions()
+void Singly_Scene::executeFunctions(std::priority_queue<std::pair<int, std::function<void()>>, 
+std::vector<std::pair<int, std::function<void()>>>, 
+FunctionComparator>& q)
 {
-    while (!animation_queue.empty()&& ani == None) {
-        auto topFunction = animation_queue.top();
-        animation_queue.pop();
+    while (!q.empty()&& ani == None) {
+        auto topFunction = q.top();
+        q.pop();
         topFunction.second();  
     }
 }
-
+void Singly_Scene::UI_executeFunctions()
+{ 
+    //   while (!UI_animation_queue.empty()) {
+    //         auto topFunction = UI_animation_queue.top();
+    //         if(topFunction.first == cur_priority){ 
+    //             UI_animation_queue.pop();
+    //             topFunction.second();  
+    //         }else 
+    //         { 
+    //              if(ani == None)
+    //              { 
+    //                 cur_priority = topFunction.first; 
+    //              }
+    //              else break;  
+    //         }
+    //     }
+    while (!UI_animation_queue.empty()) {
+        auto topFunction = UI_animation_queue.top();
+        UI_animation_queue.pop();
+        topFunction.second();  
+    }
+}
 
 void Singly_Scene::CheckBuffer()
 {
@@ -123,7 +152,7 @@ void Singly_Scene::CheckBuffer()
             if(insert.getState())
             {
                 ss>>x; 
-                addFunction(1, std::bind(&Ani_LinkedListInsert::updateTarget, &insert, x, 20, insert_pos));          
+                addFunction(animation_queue,1, std::bind(&Ani_LinkedListInsert::updateTarget, &insert, x, 20, insert_pos));          
            }
         }
         break;
@@ -133,7 +162,7 @@ void Singly_Scene::CheckBuffer()
             if(d.getState())
             {
                 ss>>x; 
-                addFunction(1, std::bind(&Ani_LinkedListDelete::updateTarget, &d, x));          
+                addFunction(animation_queue, 1, std::bind(&Ani_LinkedListDelete::updateTarget, &d, x));          
             }
         }
         break;
@@ -143,7 +172,7 @@ void Singly_Scene::CheckBuffer()
             {
                 int x ;
                 ss>>x; 
-               addFunction(1, std::bind(&Ani_LinkedListSearching::updateTarget, &a, x)); 
+               addFunction(animation_queue,1, std::bind(&Ani_LinkedListSearching::updateTarget, &a, x)); 
             }
         }
         break; 
@@ -168,10 +197,10 @@ void Singly_Scene::Draw() {
 #include "iostream"
 void Singly_Scene::run(Scenes& mscene)
 {
-    float deltaTime = IsWindowFocused() ? GetFrameTime() : 0;
+   
     ClearBackground(BLACK);
-    DrawCommonUI();
-    DrawText("Singly Linked List", 200, 200, 40, WHITE);
+    float deltaTime = IsWindowFocused() ? GetFrameTime() : 0;
+    deltaTime *= ani_state; 
     CheckBuffer();
     if (IsKeyPressed(KEY_LEFT)) {
         mscene = Menu;
@@ -185,10 +214,14 @@ void Singly_Scene::run(Scenes& mscene)
              delete tmp;
         }
         Edges.clear();
+        UI::resetCamera(); 
+        ani = None;
         cur = nullptr; 
         return; 
 
     }
+    BeginMode2D(UI::camera);
+    UI::mousePos =  GetScreenToWorld2D(GetMousePosition(), UI::camera);
     a.updateAnimations(deltaTime);
     insert.updateAnimations(deltaTime); 
     m.updateAnimations(deltaTime); 
@@ -197,19 +230,15 @@ void Singly_Scene::run(Scenes& mscene)
     mn.updateAnimations(deltaTime);
     st.updateAnimations(deltaTime);
     insert_2.updateAnimations(deltaTime); 
-    for(int i =0 ; i<buttons.size();i++)
-    {
-       buttons[i]->Draw();
-       buttons[i]->DrawButtonText_center();
-       if(buttons[i]->IsHovered(UI::mousePos) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
-       {
-         buttons[i]->OnClick();
-       }
-
-    }
-    executeFunctions();
+    executeFunctions(animation_queue);
     Nodes.UpdateHightLight();
     Draw();
+    Nodes.TraverseCheck();
+
+    EndMode2D();
+    UI_executeFunctions();
+
+
     if(ani ==None && cur &&cur->isClicked())
     {
         isDragging = true;  
@@ -222,6 +251,23 @@ void Singly_Scene::run(Scenes& mscene)
         if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
             isDragging = false;  
         }
+    }else{ 
+        UI::updateCamera();
+    }
+    UI::mousePos = GetMousePosition();
+    DrawText("Singly Linked List", 200, 200, 40, WHITE);
+
+    DrawText(std::to_string(deltaTime).c_str(), 500, 10, 20, WHITE);
+    DrawCommonUI();
+    for(int i =0 ; i<buttons.size();i++)
+    {
+       buttons[i]->Draw();
+       buttons[i]->DrawButtonText_center();
+       if(buttons[i]->IsHovered(UI::mousePos) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+       {
+         buttons[i]->OnClick();
+       }
+
     }
 
 }
@@ -249,18 +295,28 @@ void NodeScene::DrawCommonUI()
         Inputs[i]->Draw(true);
         Inputs[i]->Send(buffer);
     }
+    for(int i = 0; i<buttons.size(); i++)
+    {
+        buttons[i]->Draw(); 
+    }
 }
 NodeScene::NodeScene()
 {
     Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-100}),InputType::Insert));
     Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-210}),InputType::Remove));
     Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-320}),InputType::Search));
+    buttons.push_back(new Button("",Vector2({0,UI::wHeight-430}),Vector2({100,100}),"Randomize"));
+    buttons.push_back(new Button("",Vector2({UI::wWidth -200,UI::wHeight-430}),Vector2({100,100}),"Backward")); 
+    buttons.push_back(new Button("",Vector2({UI::wWidth -200,UI::wHeight-320}),Vector2({100,100}),"Pause")); 
+    buttons.push_back(new Button("",Vector2({UI::wWidth -200,UI::wHeight-210}),Vector2({100,100}),"Forward")); 
+    ani_state = animation_state::Forward;
 }
 Singly_Scene::Singly_Scene(): NodeScene(),a(0.3,0), insert(0.5,0,20,Vector2({300,300})),d(0.5,0),isDragging(false), insert_2(1),st(1){
     Edges.clear(); 
-    buttons.push_back(new Button("",Vector2({0,UI::wHeight-430}),Vector2({100,100}),"Randomize")); 
     buttons[0]->OnClick=  [this]() {
+    
         int n = std::rand() % 11 +1; 
+        std::cout<<n<<"\n";
         for(int i =0 ; i <n;i++)
         {
             Vector2 pos = {static_cast<float>(std::rand() % GetScreenWidth()), static_cast<float>(std::rand() % GetScreenHeight())};
@@ -270,10 +326,19 @@ Singly_Scene::Singly_Scene(): NodeScene(),a(0.3,0), insert(0.5,0,20,Vector2({300
             if (pos.y > GetScreenHeight() - 100) pos.y -= 100;
             int value = std::rand() % 1000;
             SinglyNode* insertnode = new SinglyNode(pos,Node_radius,value);
-            addFunction(1, std::bind(&Ani_InsertRandomList ::updateTarget, &insert_2, insertnode));       
+            addFunction(animation_queue,1, std::bind(&Ani_InsertRandomList ::updateTarget, &insert_2, insertnode));       
         }
-        addFunction(0,std::bind(&Ani_Straighten::updateTarget, &st, Vector2{100,100}));
+        addFunction(animation_queue,0,std::bind(&Ani_Straighten::updateTarget, &st, Vector2{100,100}));
     };
+    buttons[1]->OnClick=  [this]() {
+       this->ani_state =  animation_state::Backward ; 
+    };
+    buttons[2]->OnClick=  [this]() {
+        this->ani_state =  animation_state::Pause ; 
+     };
+     buttons[3]->OnClick=  [this]() {
+        this->ani_state =  animation_state::Forward ; 
+     };
 }
 
 #include <iostream>

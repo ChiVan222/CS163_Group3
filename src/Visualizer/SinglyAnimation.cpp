@@ -2,6 +2,8 @@
 #include <iostream>
 #include "Scene.h"
 #include <math.h>
+#include <raymath.h>
+#include "UI.h"
 Ani_LinkedListSearching::Ani_LinkedListSearching(float duration, int target)
     : Animations(duration),  target(target){
         isDone =true;
@@ -91,7 +93,7 @@ void Ani_LinkedListInsert::play()
     {
       Singly_Scene::de.setDuration(0.5);
       Singly_Scene::Edges.push_back(new Edge(Singly_Scene::cur,node_insert));
-      Singly_Scene::addFunction(2, std::bind(&Ani_DrawEdge::updateTarget, &Singly_Scene::de,Singly_Scene::Edges.back()));
+      Singly_Scene::addFunction(Singly_Scene::animation_queue,2, std::bind(&Ani_DrawEdge::updateTarget, &Singly_Scene::de,Singly_Scene::Edges.back()));
     }
     Singly_Scene::Nodes.Insert(node_insert,duration/5);  
     Singly_Scene::cur = node_insert; 
@@ -235,6 +237,7 @@ void Ani_InsertRandomList::updateTarget(SinglyNode* node){
     { 
          Singly_Scene::Nodes.set_root(node); 
          Singly_Scene::cur = node; 
+         UI::camera.target  =  node->getPosition();
          return; 
     }
     Singly_Scene::ani = Inserting_2; 
@@ -245,6 +248,7 @@ void Ani_InsertRandomList::updateTarget(SinglyNode* node){
 void Ani_InsertRandomList::updateAnimations(float deltaTime)
 { 
     if(isDone||!target||Singly_Scene::ani != Inserting_2) return;
+    
     target->Draw(); 
     elapsed_time += deltaTime;
     float t = elapsed_time / duration;
@@ -252,6 +256,13 @@ void Ani_InsertRandomList::updateAnimations(float deltaTime)
     Vector2 newPos = { startpos.x + t * (position.x - startpos.x),
                        startpos.y + t * (position.y - startpos.y) };
     Singly_Scene::Nodes.get_root()->SetPosition(newPos);
+    Singly_Scene::addFunction(Singly_Scene::UI_animation_queue,2, [newPos]() {
+        UI::ChangeCameraTarget(newPos); 
+    });
+    float newzoom = 1; 
+    Singly_Scene::addFunction(Singly_Scene::UI_animation_queue,2,[newzoom]() {
+        UI::ChangeCameraZoom(newzoom); 
+    });
     Singly_Scene::Nodes.get_root()->ForwardDistanceConstraints(2*Singly_Scene::Node_radius +50);
     // Singly_Scene::Nodes.get_root()->ForwardAngleConstraints(2*PI/3);
     if(CheckCollisionCircles(Singly_Scene::Nodes.get_root()->getPosition(),Singly_Scene::Node_radius,target->getPosition(),Singly_Scene::Node_radius))
@@ -305,6 +316,11 @@ void Ani_MoveNode::updateAnimations(float deltaTime)
         Vector2 newPos = { startpos.x + t * (endpos.x - startpos.x),
                        startpos.y + t * (endpos.y - startpos.y) };
         target->SetPosition(newPos); 
+        if(target == Singly_Scene::Nodes.get_root())
+        {
+            UI::camera.target = Vector2Lerp(UI::camera.target, newPos, 0.3);
+            UI::camera.zoom =1; 
+        }
         target->ForwardDistanceConstraints(2*Singly_Scene::Node_radius+50);
         // target->ForwardAngleConstraints(2*PI/3);
 

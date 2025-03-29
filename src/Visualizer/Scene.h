@@ -15,7 +15,8 @@
 class Scene
 { 
     public: 
-      virtual void run(Scenes& mscene)= 0; 
+      virtual void run(Scenes& mscene)= 0;  
+      
 }; 
 class SceneManager
 {
@@ -36,6 +37,8 @@ class NodeScene: public Scene{
     //  std::vector<PolyNode*> Node; 
      std::string buffer; 
      std::vector<InputField*> Inputs; 
+     std::vector<Button*>  buttons;  
+     animation_state ani_state; 
     public :
     void DrawCommonUI(); 
     NodeScene(); 
@@ -69,6 +72,10 @@ class Singly_Scene:public NodeScene
    static std::priority_queue<std::pair<int, std::function<void()>>, 
      std::vector<std::pair<int, std::function<void()>>>, 
     FunctionComparator> animation_queue;
+    static std::priority_queue<std::pair<int, std::function<void()>>, 
+    std::vector<std::pair<int, std::function<void()>>>, 
+   FunctionComparator> UI_animation_queue;
+      static int cur_priority;  
         Ani_LinkedListSearching a;
         bool isDragging;
         Ani_LinkedListInsert insert; 
@@ -86,12 +93,16 @@ class Singly_Scene:public NodeScene
         static int Node_radius; 
     public: 
         void CheckBuffer() override; 
-        std::vector<Button*> buttons ;   
         void run(Scenes& mscene); 
         Singly_Scene();
         void Draw();
-        static void addFunction(int priority, std::function<void()> func);
-        void executeFunctions();
+        static void addFunction(std::priority_queue<std::pair<int, std::function<void()>>, 
+        std::vector<std::pair<int, std::function<void()>>>, 
+       FunctionComparator>& q, int priority, std::function<void()> func);
+        void executeFunctions(std::priority_queue<std::pair<int, std::function<void()>>, 
+        std::vector<std::pair<int, std::function<void()>>>, 
+       FunctionComparator>& q);
+       void UI_executeFunctions();
 };
 
 class Graph_Scene: public NodeScene 

@@ -41,6 +41,8 @@ class SinglyLinkedListNode
 
       void DeleteNode(SinglyNode* cur2, float duration); 
       void Traverse();
+      void TraverseCheck();
+
       void UpdateHightLight(); 
 
 }; 

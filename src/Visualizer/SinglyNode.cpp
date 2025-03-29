@@ -94,7 +94,7 @@ void SinglyLinkedListNode::Insert(SinglyNode* node, float duration)
         cur2->next = node;
         node->next = tmp;
         Singly_Scene::Edges.push_back(new Edge(node,tmp)); 
-        Singly_Scene::addFunction(2, std::bind(&Ani_DrawEdge::updateTarget, &Singly_Scene::de,Singly_Scene::Edges.back())); 
+        Singly_Scene::addFunction(Singly_Scene::animation_queue,2, std::bind(&Ani_DrawEdge::updateTarget, &Singly_Scene::de,Singly_Scene::Edges.back())); 
 
     }else{
         cur2->next = node;
@@ -129,7 +129,7 @@ void SinglyLinkedListNode::InsertAtEnd(SinglyNode* node,float maxDistance)
         cur2->getPosition().y + direction.y * maxDistance }));
 
     Singly_Scene::Edges.push_back(new Edge(cur2,node)); 
-    Singly_Scene::addFunction(2, std::bind(&Ani_DrawEdge::updateTarget, &Singly_Scene::de,Singly_Scene::Edges.back())); 
+    Singly_Scene::addFunction(Singly_Scene::animation_queue,2, std::bind(&Ani_DrawEdge::updateTarget, &Singly_Scene::de,Singly_Scene::Edges.back())); 
 
 }
 void SinglyLinkedListNode::Traverse()
@@ -139,6 +139,16 @@ void SinglyLinkedListNode::Traverse()
     while(cur)
     {
          cur->Draw(); 
+         cur = cur->next; 
+    }
+
+}
+void SinglyLinkedListNode::TraverseCheck()
+{
+    if(!root) return; 
+    SinglyNode* cur = root; 
+    while(cur)
+    {
          if(cur->isClicked()&& Singly_Scene::ani == None)
          {
             Singly_Scene::cur = cur;
@@ -202,7 +212,7 @@ void SinglyLinkedListNode::DeleteNode(SinglyNode* cur2, float duration)
         {
             
             Singly_Scene::Edges.push_back(new Edge(cur2,tmp->next));
-            Singly_Scene::addFunction(2, std::bind(&Ani_DrawEdge::updateTarget, &Singly_Scene::de,Singly_Scene::Edges.back()));
+            Singly_Scene::addFunction(Singly_Scene::animation_queue,2, std::bind(&Ani_DrawEdge::updateTarget, &Singly_Scene::de,Singly_Scene::Edges.back()));
             Singly_Scene::m.setDuration(duration);
             Singly_Scene::m.updateTarget(Vector2({(float)(-Singly_Scene::Node_radius*2-50),0}),tmp->next); 
         }
