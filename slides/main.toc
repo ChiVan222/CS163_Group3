@@ -1,9 +1,0 @@
-\beamer@sectionintoc {1}{Introduction}{2}{0}{1}
-\beamer@subsectionintoc {1}{1}{History}{2}{0}{1}
-\beamer@subsectionintoc {1}{2}{Definition}{3}{0}{1}
-\beamer@subsectionintoc {1}{3}{Purpose}{4}{0}{1}
-\beamer@sectionintoc {2}{Main Data Structure and Algorithms}{5}{0}{2}
-\beamer@sectionintoc {3}{Implementation and visualization}{9}{0}{3}
-\beamer@sectionintoc {4}{Applications}{53}{0}{4}
-\beamer@sectionintoc {5}{Advantages and Disadvantages of Trie}{56}{0}{5}
-\beamer@sectionintoc {6}{Quizzes}{58}{0}{6}
