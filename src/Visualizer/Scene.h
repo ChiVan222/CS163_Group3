@@ -98,6 +98,7 @@ class Graph_Scene: public NodeScene
 {
   public:
     static std::vector<GraphNode*> graphNodes;
+    static std::vector<Edge*> Edges; 
     bool created;
     Ani_GraphInsert ani_insert;
   public:
@@ -109,8 +110,7 @@ class Graph_Scene: public NodeScene
     GraphNode* findNodeByVal(int value);
     void AddNode(Vector2 position, int value);
     void AddEdge(int from, int to, int weight);
-    void RemoveNode(int value);
-    // void RemoveNode(Vector2 position);
+    // void RemoveNode(int value);
 };
 
 // class Trie_Scene:public NodeScene{

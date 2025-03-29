@@ -9,13 +9,7 @@ class GraphNode : public PolyNode
 {
 public:
     int val;
-    Vector2 nPosition;
-    std::vector<std::pair<GraphNode*, int>> edges;
-
     GraphNode(Vector2 position, float radius, int value);
-    
-    void addEdge(GraphNode* to, int weight);
-
     bool Draw() override;
     void drawNodes() const;
     void drawEdges() const;

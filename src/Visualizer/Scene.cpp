@@ -6,7 +6,6 @@ SinglyLinkedListNode Singly_Scene::Nodes = SinglyLinkedListNode();
 std::vector<Edge*>Singly_Scene::Edges;
 SinglyNode* Singly_Scene::cur =nullptr;
 bool Singly_Scene::created = false; 
-//  std::vector<Edge*>  Graph_Scene::Edges; 
 
 animation Singly_Scene:: ani = None; 
 Ani_DrawEdge Singly_Scene::de;  
@@ -282,6 +281,7 @@ Singly_Scene::Singly_Scene(): NodeScene(),a(0.3,0), insert(0.5,0,20,Vector2({300
 #include <ctime>
 
 std::vector<GraphNode*> Graph_Scene::graphNodes;
+std::vector<Edge*>  Graph_Scene::Edges; 
 
 Graph_Scene::Graph_Scene() : NodeScene(), created(false), ani_insert(0.3, 0, 20, {0,0}) {
     Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-430}),InputType::AddEdge));
@@ -318,7 +318,7 @@ void Graph_Scene::CheckBuffer() {
         {
             int value;
             ss >> value;
-            RemoveNode(value);
+            // RemoveNode(value);
         }
         break;
 
@@ -327,10 +327,10 @@ void Graph_Scene::CheckBuffer() {
             int value;
             ss >> value;
             if (findNodeByVal(value)) {
-                std::cout << "Found " << value << std::endl;
+                std::cout << "Found " << value << "\n";
 
             }
-            else std::cout << "Not found " << value << std::endl;
+            else std::cout << "Not found " << value << "\n";
         }
         break;
 
@@ -358,8 +358,6 @@ void Graph_Scene::Draw() {
         node->drawEdges();
     }
     for (const auto& node : graphNodes) {
-        Vector2 pos = node->getPosition();
-        // std::cout << "Drawing node at position: (" << pos.x << ", " << pos.y << ")" << "\n";
         node->drawNodes();
     }
 }   
@@ -373,6 +371,18 @@ void Graph_Scene::run(Scenes& mscene) {
     if (IsKeyPressed(KEY_LEFT)) {
         mscene = Menu;
         created = false;
+        for(int i = 0; i < Edges.size(); i++)
+        {
+             Edge* tmp = Edges[i];
+             Edges[i] = nullptr;
+             delete tmp;
+        }
+        Edges.clear();
+        for(int i = 0; i < graphNodes.size(); i++) {
+            GraphNode* tmp = graphNodes[i];
+            graphNodes[i] = nullptr;
+            delete tmp;
+        }
         graphNodes.clear();
         return;
     }
@@ -398,42 +408,15 @@ void Graph_Scene::AddEdge(int from, int to, int weight) {
     GraphNode* toNode = findNodeByVal(to);
 
     if (!fromNode || !toNode) {
-        std::cout << "Invalid node indices for edge: " << from << " -> " << to << std::endl;
         return;
     }
-    fromNode->addEdge(toNode, weight);
-    std::cout << "Edge added from " << from << " to " << to << " with weight " << weight << std::endl;
+    Edges.push_back(new Edge(fromNode, toNode));
 }
 
-void Graph_Scene::RemoveNode(int value) {
-    for (auto& node : graphNodes) {
-        node->edges.erase(std::remove_if(node->edges.begin(), node->edges.end(), [value](const std::pair<GraphNode*, int>& edge) {
-            if (edge.first->val == value) {
-                return true;
-            }
-            return false;
-        }), node->edges.end());
-    }
-
-    auto it = std::remove_if(graphNodes.begin(), graphNodes.end(), [value](GraphNode* node){
-        if (node->val == value) {
-            std::cout << "Deleted node " << value << "\n";\
-            delete node;
-            return true;
-        }
-        return false;
-    });
-
-    graphNodes.erase(it, graphNodes.end());
-}
-// void Graph_Scene::RemoveNode(Vector2 position) {
-//     for (auto it = graphNodes.begin(); it != graphNodes.end(); ++it) {
-//         if (CheckCollisionPointCircle(position, it->getPosition(), 18)) {
-//             graphNodes.erase(it);
-//             break;
-//         }
-//     }
+// void Graph_Scene::RemoveNode(int value) {
+//     Edges.erase (std::remove_if())
 // }
+
 // Ani_TrieInsert Trie_Scene::i;
 // TrieNodePrimary* Trie_Scene::proot = new TrieNodePrimary(Vector2{300, 300}, 20, '*');
 // animation Trie_Scene::ani = None; 
