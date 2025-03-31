@@ -104,8 +104,8 @@ void drawPicture(Texture2D texture, Rectangle desRec, float rotation, Vector2 or
 
 void drawRectangleWithBorder(Rectangle rec, Color colorRec, float widthBorder, Color colorBorder, int radiusBorder) {
     DrawRectangleRounded(rec, 1.0*radiusBorder/100, 64, colorRec);
-    //DrawRectangleRoundedLines(rec, 1.0*radiusBorder/100, 64, widthBorder, colorBorder);
-    DrawRectangleRoundedLinesEx(rec, 1.0*radiusBorder/100, 64, widthBorder, colorBorder);
+    DrawRectangleRoundedLines(rec, 1.0*radiusBorder/100, 64, colorBorder);
+    //DrawRectangleRoundedLinesEx(rec, 1.0*radiusBorder/100, 64, widthBorder, colorBorder);
 }
 
 Texture2D textureFromImageWithRoundedCorner(const char* path, int radius) {
@@ -154,6 +154,7 @@ void drawShrinkingText(const char* text, Vector2 position, int fontSize, float* 
     DrawTextEx(FONT, text, textPosition, fontSize* (*scale), 1, Fade(BLACK, *alpha));
 }
 
-void DrawRectangleRoundedLinesEx(Rectangle rec, float roundness, int segments, float lineThick, Color color) {
+/* void DrawRectangleRoundedLinesEx(Rectangle rec, float roundness, int segments, float lineThick, Color color) {
     DrawRectangleRoundedLines(rec, roundness, segments, color);
 }
+ */
