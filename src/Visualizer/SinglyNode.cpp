@@ -3,6 +3,7 @@
 #include <string>
 #include "Scene.h"
 #include "UI.h"
+#include <raymath.h>
 SinglyNode:: SinglyNode(Vector2 pos,float radius, int value):PolyNode(pos,radius),next(nullptr), value(value)
 { }
 
@@ -54,7 +55,7 @@ void SinglyLinkedListNode::DeleteList()
 }
 SinglyNode& SinglyNode::operator=(SinglyNode&& other) noexcept {
     if (this == &other) return *this;
-     next =other.next;
+     next =other.next;      
      value = other.value; 
     return *this;
 }
@@ -93,11 +94,43 @@ void SinglyLinkedListNode::Insert(SinglyNode* node, float duration)
         cur2->next = node;
         node->next = tmp;
         Singly_Scene::Edges.push_back(new Edge(node,tmp)); 
-        Singly_Scene::addFunction(2, std::bind(&Ani_DrawEdge::updateTarget, &Singly_Scene::de,Singly_Scene::Edges.back())); 
+        Singly_Scene::addFunction(Singly_Scene::animation_queue,2, std::bind(&Ani_DrawEdge::updateTarget, &Singly_Scene::de,Singly_Scene::Edges.back())); 
 
     }else{
         cur2->next = node;
     }
+}
+#include <math.h>
+float getDistance(Vector2 a, Vector2 b)
+{ 
+    return std::sqrt((a.x-b.x)*(a.x-b.x) + (a.y-b.y)*(a.y-b.y)); 
+}
+void SinglyLinkedListNode::InsertAtEnd(SinglyNode* node,float maxDistance)
+{ 
+    if(!root) 
+    {
+        root = node; 
+        size++;
+        return ; 
+    }
+    SinglyNode* cur2 = root; 
+    size++;  
+    Vector2 direction = {1,0};
+
+    while(cur2->next)
+    {
+        float distance = getDistance(cur2->next->getPosition(),cur2->getPosition());
+        direction.x = (cur2->next->getPosition().x-cur2->getPosition().x)/distance;
+        direction.y =  (cur2->next->getPosition().y-cur2->getPosition().y)/distance;
+        cur2 = cur2->next; 
+    }
+    cur2->next = node;
+    node->SetPosition(Vector2({ cur2->getPosition().x + direction.x * maxDistance,
+        cur2->getPosition().y + direction.y * maxDistance }));
+
+    Singly_Scene::Edges.push_back(new Edge(cur2,node)); 
+    Singly_Scene::addFunction(Singly_Scene::animation_queue,2, std::bind(&Ani_DrawEdge::updateTarget, &Singly_Scene::de,Singly_Scene::Edges.back())); 
+
 }
 void SinglyLinkedListNode::Traverse()
 {
@@ -106,6 +139,16 @@ void SinglyLinkedListNode::Traverse()
     while(cur)
     {
          cur->Draw(); 
+         cur = cur->next; 
+    }
+
+}
+void SinglyLinkedListNode::TraverseCheck()
+{
+    if(!root) return; 
+    SinglyNode* cur = root; 
+    while(cur)
+    {
          if(cur->isClicked()&& Singly_Scene::ani == None)
          {
             Singly_Scene::cur = cur;
@@ -169,7 +212,7 @@ void SinglyLinkedListNode::DeleteNode(SinglyNode* cur2, float duration)
         {
             
             Singly_Scene::Edges.push_back(new Edge(cur2,tmp->next));
-            Singly_Scene::addFunction(2, std::bind(&Ani_DrawEdge::updateTarget, &Singly_Scene::de,Singly_Scene::Edges.back()));
+            Singly_Scene::addFunction(Singly_Scene::animation_queue,2, std::bind(&Ani_DrawEdge::updateTarget, &Singly_Scene::de,Singly_Scene::Edges.back()));
             Singly_Scene::m.setDuration(duration);
             Singly_Scene::m.updateTarget(Vector2({(float)(-Singly_Scene::Node_radius*2-50),0}),tmp->next); 
         }
@@ -187,11 +230,7 @@ void SinglyLinkedListNode::DeleteNode(SinglyNode* cur2, float duration)
         delete tmp;
     }
 }
-#include <math.h>
-float getDistance(Vector2 a, Vector2 b)
-{ 
-    return std::sqrt((a.x-b.x)*(a.x-b.x) + (a.y-b.y)*(a.y-b.y)); 
-}
+
 void  SinglyNode::ForwardDistanceConstraints(float maxDistance)
 { 
     if(!next) return; 
@@ -220,4 +259,69 @@ void  SinglyNode::BackwardDistanceConstraints(float maxDistance)
             position.y - direction.y * maxDistance
         }));
    next->BackwardDistanceConstraints(maxDistance);
+}
+void  SinglyNode::ForwardAngleConstraints(float maxAngle)
+{ 
+    if(!next || ! next->next) return; 
+    
+    if(this ==  Singly_Scene::cur||this->next == Singly_Scene::cur) 
+    {
+        Singly_Scene::cur->BackwardAngleConstraints(maxAngle); 
+        return;
+    }
+    next->ForwardAngleConstraints(maxAngle); 
+    Vector2 A =  position; 
+    Vector2 B = next->position; 
+    Vector2 C = next->next->position;
+    Vector2 BA = A-B;
+    Vector2 BC = C-B;
+    float dotProduct = Vector2DotProduct(BA,BC); 
+    float magnitudeBA = Vector2Length(BA); 
+    float magnitudeBC = Vector2Length(BC);
+    float cosTheta = dotProduct / (magnitudeBA * magnitudeBC);
+    cosTheta = std::max(-1.0f, std::min(1.0f, cosTheta));
+    float theta = acos(cosTheta);
+    if (theta > maxAngle)
+    {
+    Vector2 AB = B - A;
+    float lengthAB = Vector2Length(AB);
+    float currentAngle = atan2(AB.y, AB.x);
+    Vector2 AC = C - A;
+    float targetAngle = (Vector2DotProduct(AB, AC) > 0) ? maxAngle : -maxAngle;
+    Vector2 newB = {
+        A.x + lengthAB * cos(targetAngle),
+        A.y + lengthAB * sin(targetAngle)
+    };
+    next->SetPosition(newB);
+    }
+    
+}
+void SinglyNode::BackwardAngleConstraints(float maxAngle)
+{
+    if (!next || !next->next) return;
+    Vector2 A =  position; 
+    Vector2 B = next->position; 
+    Vector2 C = next->next->position;
+    Vector2 BA = A-B;
+    Vector2 BC = C-B;
+    float dotProduct = Vector2DotProduct(BA,BC); 
+    float magnitudeBA = Vector2Length(BA); 
+    float magnitudeBC = Vector2Length(BC);
+    float cosTheta = dotProduct / (magnitudeBA * magnitudeBC);
+    cosTheta = std::max(-1.0f, std::min(1.0f, cosTheta));
+    float theta = acos(cosTheta);
+    if (theta > maxAngle)
+    {
+        Vector2 AB = B - A;
+        float lengthAB = Vector2Length(AB);
+        float currentAngle = atan2(AB.y, AB.x);
+        Vector2 AC = C - A;
+        float targetAngle = (Vector2DotProduct(AB, AC) > 0) ? maxAngle : -maxAngle;
+        Vector2 newB = {
+            A.x + lengthAB * cos(targetAngle),
+            A.y + lengthAB * sin(targetAngle)
+        };
+        next->SetPosition(newB);
+    }
+    next->BackwardAngleConstraints(maxAngle);
 }

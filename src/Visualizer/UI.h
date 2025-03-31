@@ -10,9 +10,11 @@ class UI
      static constexpr int mFPS = 60; 
      static  Vector2 mousePos;
      static float fontsize; 
+     static  Camera2D camera;
+
     private: 
       SceneManager* scene_manager; 
-      Font mFont; 
+      Font mFont;
         private : 
    //   void initAssets(); 
     public : 
@@ -22,5 +24,9 @@ class UI
      void UILoadFont(); 
      void UIUnLoadFont();
      static void DrawFadingText(float time, int x, int y, int fontsize,const char* text); 
+     static void updateCamera();
+     static void resetCamera();
+     static void ChangeCameraTarget(Vector2 newtarget); 
+     static void ChangeCameraZoom(float newzoom);  
      Font getFont();
 };

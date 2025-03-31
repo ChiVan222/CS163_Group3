@@ -14,11 +14,7 @@
 // const float GraphNode::bottom = 600.f;
 
 // need to be modified the construct of polynode
-GraphNode::GraphNode(Vector2 position, float radius, int value) : PolyNode(position, radius), nPosition(position), val(value){}
-
-void GraphNode::addEdge(GraphNode* to, int weight) {
-    edges.push_back({to, weight});
-}
+GraphNode::GraphNode(Vector2 position, float radius, int value) : PolyNode(position, radius), val(value){}
 
 bool GraphNode::Draw() {
     drawNodes();
@@ -27,23 +23,22 @@ bool GraphNode::Draw() {
 }
 
 void GraphNode::drawNodes() const {
-    DrawCircleV(nPosition, 20, WHITE);
-    DrawText(TextFormat("%d", val), nPosition.x - 10, nPosition.y - 10, 20, BLUE);
+    DrawCircleV(position, 20, WHITE);
+    DrawText(TextFormat("%d", val), position.x - 10, position.y - 10, 20, BLUE);
 }
 
 void GraphNode::drawEdges() const {
-    for (const auto& edge : edges) {
-        Edge newEdge(static_cast<PolyNode*>(const_cast<GraphNode*>(this)), static_cast<PolyNode*>(edge.first));
-        newEdge.Draw();
+    for (auto& edge : Graph_Scene::Edges) {
+        edge->Draw();
     }
 }
 
 void GraphNode::setPosition(Vector2 position){
-    nPosition = position;
+    this->position = position;
 }
 
 Vector2 GraphNode::getPosition() const {
-    return nPosition;
+    return position;
 }
 
 

@@ -1,18 +1,22 @@
 #include "Scene.h"
 #include "UI.h"
+#include <raymath.h>
 Ani_MoveList Singly_Scene::m ;
+Ani_MoveNode Singly_Scene::mn(0.5);
 SinglyLinkedListNode Singly_Scene::Nodes = SinglyLinkedListNode();
 std::vector<Edge*>Singly_Scene::Edges;
 SinglyNode* Singly_Scene::cur =nullptr;
+int Singly_Scene::cur_priority;
 bool Singly_Scene::created = false; 
-//  std::vector<Edge*>  Graph_Scene::Edges; 
 
 animation Singly_Scene:: ani = None; 
 Ani_DrawEdge Singly_Scene::de;  
 std::priority_queue<std::pair<int, std::function<void()>>, 
      std::vector<std::pair<int, std::function<void()>>>, 
     FunctionComparator> Singly_Scene:: animation_queue ; 
-
+    std::priority_queue<std::pair<int, std::function<void()>>, 
+    std::vector<std::pair<int, std::function<void()>>>, 
+   FunctionComparator> Singly_Scene:: UI_animation_queue ; 
 int Singly_Scene::Node_radius = 20; 
 Scenes SceneManager::get_scene()
 {
@@ -82,19 +86,44 @@ void Menu_Scene::run(Scenes& mscene)
 }
 #include <sstream>
 #include <iostream>
-void Singly_Scene::addFunction(int priority, std::function<void()> func)
+void Singly_Scene::addFunction(std::priority_queue<std::pair<int, std::function<void()>>, 
+std::vector<std::pair<int, std::function<void()>>>, 
+FunctionComparator>& q,int priority, std::function<void()> func)
 {
-    animation_queue.push({priority, func});
+    q.push({priority, func});
 }
-void Singly_Scene::executeFunctions()
+void Singly_Scene::executeFunctions(std::priority_queue<std::pair<int, std::function<void()>>, 
+std::vector<std::pair<int, std::function<void()>>>, 
+FunctionComparator>& q)
 {
-    while (!animation_queue.empty()&& ani == None) {
-        auto topFunction = animation_queue.top();
-        animation_queue.pop();
+    while (!q.empty()&& ani == None) {
+        auto topFunction = q.top();
+        q.pop();
         topFunction.second();  
     }
 }
-
+void Singly_Scene::UI_executeFunctions()
+{ 
+    //   while (!UI_animation_queue.empty()) {
+    //         auto topFunction = UI_animation_queue.top();
+    //         if(topFunction.first == cur_priority){ 
+    //             UI_animation_queue.pop();
+    //             topFunction.second();  
+    //         }else 
+    //         { 
+    //              if(ani == None)
+    //              { 
+    //                 cur_priority = topFunction.first; 
+    //              }
+    //              else break;  
+    //         }
+    //     }
+    while (!UI_animation_queue.empty()) {
+        auto topFunction = UI_animation_queue.top();
+        UI_animation_queue.pop();
+        topFunction.second();  
+    }
+}
 
 void Singly_Scene::CheckBuffer()
 {
@@ -120,10 +149,10 @@ void Singly_Scene::CheckBuffer()
             {
                 insert_pos = Vector2({300,300});
             }
-            if(i.getState())
+            if(insert.getState())
             {
                 ss>>x; 
-                addFunction(1, std::bind(&Ani_LinkedListInsert::updateTarget, &i, x, 20, insert_pos));          
+                addFunction(animation_queue,1, std::bind(&Ani_LinkedListInsert::updateTarget, &insert, x, 20, insert_pos));          
            }
         }
         break;
@@ -133,7 +162,7 @@ void Singly_Scene::CheckBuffer()
             if(d.getState())
             {
                 ss>>x; 
-                addFunction(1, std::bind(&Ani_LinkedListDelete::updateTarget, &d, x));          
+                addFunction(animation_queue, 1, std::bind(&Ani_LinkedListDelete::updateTarget, &d, x));          
             }
         }
         break;
@@ -143,7 +172,7 @@ void Singly_Scene::CheckBuffer()
             {
                 int x ;
                 ss>>x; 
-               addFunction(1, std::bind(&Ani_LinkedListSearching::updateTarget, &a, x)); 
+               addFunction(animation_queue,1, std::bind(&Ani_LinkedListSearching::updateTarget, &a, x)); 
             }
         }
         break; 
@@ -168,10 +197,10 @@ void Singly_Scene::Draw() {
 #include "iostream"
 void Singly_Scene::run(Scenes& mscene)
 {
-    float deltaTime = IsWindowFocused() ? GetFrameTime() : 0;
+   
     ClearBackground(BLACK);
-    DrawCommonUI();
-    DrawText("Singly Linked List", 200, 200, 40, WHITE);
+    float deltaTime = IsWindowFocused() ? GetFrameTime() : 0;
+    deltaTime *= ani_state; 
     CheckBuffer();
     if (IsKeyPressed(KEY_LEFT)) {
         mscene = Menu;
@@ -185,19 +214,31 @@ void Singly_Scene::run(Scenes& mscene)
              delete tmp;
         }
         Edges.clear();
+        UI::resetCamera(); 
+        ani = None;
         cur = nullptr; 
         return; 
 
     }
+    BeginMode2D(UI::camera);
+    UI::mousePos =  GetScreenToWorld2D(GetMousePosition(), UI::camera);
     a.updateAnimations(deltaTime);
-    i.updateAnimations(deltaTime); 
+    insert.updateAnimations(deltaTime); 
     m.updateAnimations(deltaTime); 
     d.updateAnimations(deltaTime);
     de.updateAnimations(deltaTime);
-    
-    executeFunctions();
+    mn.updateAnimations(deltaTime);
+    st.updateAnimations(deltaTime);
+    insert_2.updateAnimations(deltaTime); 
+    executeFunctions(animation_queue);
     Nodes.UpdateHightLight();
     Draw();
+    Nodes.TraverseCheck();
+
+    EndMode2D();
+    UI_executeFunctions();
+
+
     if(ani ==None && cur &&cur->isClicked())
     {
         isDragging = true;  
@@ -206,9 +247,27 @@ void Singly_Scene::run(Scenes& mscene)
     {
         cur->SetPosition(UI::mousePos);
         Nodes.get_root()->ForwardDistanceConstraints(2*Node_radius +50);
+        // Nodes.get_root()->ForwardAngleConstraints(2*PI/3);
         if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
             isDragging = false;  
         }
+    }else{ 
+        UI::updateCamera();
+    }
+    UI::mousePos = GetMousePosition();
+    DrawText("Singly Linked List", 200, 200, 40, WHITE);
+
+    DrawText(std::to_string(deltaTime).c_str(), 500, 10, 20, WHITE);
+    DrawCommonUI();
+    for(int i =0 ; i<buttons.size();i++)
+    {
+       buttons[i]->Draw();
+       buttons[i]->DrawButtonText_center();
+       if(buttons[i]->IsHovered(UI::mousePos) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+       {
+         buttons[i]->OnClick();
+       }
+
     }
 
 }
@@ -219,6 +278,8 @@ SceneManager::SceneManager()
     scenes.push_back(new Menu_Scene()); 
     scenes.push_back(new Singly_Scene()); 
     scenes.push_back(new Graph_Scene());
+    // scenes.push_back(new Trie_Scene());
+
 }
 SceneManager::~SceneManager() {
     for (Scene* scene : scenes) {
@@ -234,15 +295,50 @@ void NodeScene::DrawCommonUI()
         Inputs[i]->Draw(true);
         Inputs[i]->Send(buffer);
     }
+    for(int i = 0; i<buttons.size(); i++)
+    {
+        buttons[i]->Draw(); 
+    }
 }
 NodeScene::NodeScene()
 {
     Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-100}),InputType::Insert));
     Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-210}),InputType::Remove));
     Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-320}),InputType::Search));
+    buttons.push_back(new Button("",Vector2({0,UI::wHeight-430}),Vector2({100,100}),"Randomize"));
+    buttons.push_back(new Button("",Vector2({UI::wWidth -200,UI::wHeight-430}),Vector2({100,100}),"Backward")); 
+    buttons.push_back(new Button("",Vector2({UI::wWidth -200,UI::wHeight-320}),Vector2({100,100}),"Pause")); 
+    buttons.push_back(new Button("",Vector2({UI::wWidth -200,UI::wHeight-210}),Vector2({100,100}),"Forward")); 
+    ani_state = animation_state::Forward;
 }
-Singly_Scene::Singly_Scene(): NodeScene(),a(0.3,0), i(0.5,0,20,Vector2({300,300})),d(0.5,0),isDragging(false){
+Singly_Scene::Singly_Scene(): NodeScene(),a(0.3,0), insert(0.5,0,20,Vector2({300,300})),d(0.5,0),isDragging(false), insert_2(1),st(1){
     Edges.clear(); 
+    buttons[0]->OnClick=  [this]() {
+    
+        int n = std::rand() % 11 +1; 
+        std::cout<<n<<"\n";
+        for(int i =0 ; i <n;i++)
+        {
+            Vector2 pos = {static_cast<float>(std::rand() % GetScreenWidth()), static_cast<float>(std::rand() % GetScreenHeight())};
+            if (pos.x + 500 < GetScreenWidth()) pos.x += 500;
+            if (pos.y + 200 < GetScreenHeight()) pos.y += 200;
+            if (pos.x > GetScreenWidth() - 100) pos.x -= 100;
+            if (pos.y > GetScreenHeight() - 100) pos.y -= 100;
+            int value = std::rand() % 1000;
+            SinglyNode* insertnode = new SinglyNode(pos,Node_radius,value);
+            addFunction(animation_queue,1, std::bind(&Ani_InsertRandomList ::updateTarget, &insert_2, insertnode));       
+        }
+        addFunction(animation_queue,0,std::bind(&Ani_Straighten::updateTarget, &st, Vector2{100,100}));
+    };
+    buttons[1]->OnClick=  [this]() {
+       this->ani_state =  animation_state::Backward ; 
+    };
+    buttons[2]->OnClick=  [this]() {
+        this->ani_state =  animation_state::Pause ; 
+     };
+     buttons[3]->OnClick=  [this]() {
+        this->ani_state =  animation_state::Forward ; 
+     };
 }
 
 #include <iostream>
@@ -250,9 +346,10 @@ Singly_Scene::Singly_Scene(): NodeScene(),a(0.3,0), i(0.5,0,20,Vector2({300,300}
 #include <ctime>
 
 std::vector<GraphNode*> Graph_Scene::graphNodes;
+std::vector<Edge*>  Graph_Scene::Edges; 
 
 Graph_Scene::Graph_Scene() : NodeScene(), created(false), ani_insert(0.3, 0, 20, {0,0}) {
-    Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-430}),InputType::AddEdge));
+    Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-540}),InputType::AddEdge));
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
 }
 
@@ -286,7 +383,7 @@ void Graph_Scene::CheckBuffer() {
         {
             int value;
             ss >> value;
-            RemoveNode(value);
+            // RemoveNode(value);
         }
         break;
 
@@ -295,10 +392,10 @@ void Graph_Scene::CheckBuffer() {
             int value;
             ss >> value;
             if (findNodeByVal(value)) {
-                std::cout << "Found " << value << std::endl;
+                std::cout << "Found " << value << "\n";
 
             }
-            else std::cout << "Not found " << value << std::endl;
+            else std::cout << "Not found " << value << "\n";
         }
         break;
 
@@ -326,8 +423,6 @@ void Graph_Scene::Draw() {
         node->drawEdges();
     }
     for (const auto& node : graphNodes) {
-        Vector2 pos = node->getPosition();
-        std::cout << "Drawing node at position: (" << pos.x << ", " << pos.y << ")" << std::endl;
         node->drawNodes();
     }
 }   
@@ -341,6 +436,18 @@ void Graph_Scene::run(Scenes& mscene) {
     if (IsKeyPressed(KEY_LEFT)) {
         mscene = Menu;
         created = false;
+        for(int i = 0; i < Edges.size(); i++)
+        {
+             Edge* tmp = Edges[i];
+             Edges[i] = nullptr;
+             delete tmp;
+        }
+        Edges.clear();
+        for(int i = 0; i < graphNodes.size(); i++) {
+            GraphNode* tmp = graphNodes[i];
+            graphNodes[i] = nullptr;
+            delete tmp;
+        }
         graphNodes.clear();
         return;
     }
@@ -366,31 +473,160 @@ void Graph_Scene::AddEdge(int from, int to, int weight) {
     GraphNode* toNode = findNodeByVal(to);
 
     if (!fromNode || !toNode) {
-        std::cout << "Invalid node indices for edge: " << from << " -> " << to << std::endl;
         return;
     }
-    fromNode->addEdge(toNode, weight);
-    std::cout << "Edge added from " << from << " to " << to << " with weight " << weight << std::endl;
+    Edges.push_back(new Edge(fromNode, toNode));
 }
 
-void Graph_Scene::RemoveNode(int value) {
-    for (auto& node : graphNodes) {
-        node->edges.erase(std::remove_if(node->edges.begin(), node->edges.end(), [value](const std::pair<GraphNode*, int>& edge) {
-            if (edge.first->val == value) {
-                return true;
-            }
-            return false;
-        }), node->edges.end());
-    }
+// void Graph_Scene::RemoveNode(int value) {
+//     Edges.erase (std::remove_if())
+// }
 
-    auto it = std::remove_if(graphNodes.begin(), graphNodes.end(), [value](GraphNode* node){
-        if (node->val == value) {
-            std::cout << "Deleted node " << value << "\n";\
-            delete node;
-            return true;
-        }
-        return false;
-    });
+// Ani_TrieInsert Trie_Scene::i;
+// TrieNodePrimary* Trie_Scene::proot = new TrieNodePrimary(Vector2{300, 300}, 20, '*');
+// animation Trie_Scene::ani = None; 
+// int Trie_Scene::Node_radius = 20; 
+// std::vector<Edge*>Trie_Scene::edges;
 
-    graphNodes.erase(it, graphNodes.end());
-}
+
+// Trie_Scene::Trie_Scene(): NodeScene() {
+//     edges.clear();
+//     cur = proot;
+// }
+
+
+// void Trie_Scene:: run(Scenes& mscene){
+//     if (proot->isEndOfWord)
+//          std::cout<< "true" <<'\n';
+//     deltaTime = IsWindowFocused() ? GetFrameTime() : 0;
+//     ClearBackground(BLACK);
+//     DrawCommonUI();
+//     DrawText("Trie", 360, 0, 40, WHITE);
+//     CheckBuffer();
+    
+//     if (IsKeyPressed(KEY_LEFT)) {
+//         mscene = Menu;
+//         for(int i =0; i<edges.size();i++)
+//         {
+//              Edge* tmp = edges[i];
+//              edges[i] = nullptr;
+//              delete tmp;
+//         }
+//         edges.clear();
+//         cur = nullptr;
+//         proot = nullptr;
+//         return; 
+
+//     };
+//     i.updateAnimations(deltaTime);
+//     Draw();
+// }
+
+// void Trie_Scene::Draw() {   
+
+//     TrieNodePrimary* tmp = proot;
+//     proot->Traverse(tmp);
+//     for (int i = 0; i <Trie_Scene::edges.size();) {
+//         if(Trie_Scene::edges[i]->Draw())
+//         { 
+//             i++;
+//         }
+//         else{
+//            Trie_Scene::edges.erase(Trie_Scene::edges.begin()+i);
+//         }
+//     }
+// }
+
+// void Trie_Scene::CheckBuffer() {
+//     int type;
+//     std::stringstream ss(buffer);
+//     bool inputted = false;
+//     std::string key;
+//     if (ani!=None) return;
+//     if (ani == None) {
+//         ss >> type;
+//         ss >> key;
+//         inputted = true;
+//     }
+//     std::stringstream ss1(key);
+//     char x;
+//     ss1 >> x;
+//     switch (type) {
+//         case 0: {  // Insert operation
+//             if (i.getState()) {  
+//                 ani = Inserting; 
+//                 std::cout << "!"; 
+//                 Insert(x, 1.0f); 
+
+
+//             }
+//         }
+//         break;
+        
+//         case 1: {
+
+//         }
+//         break;
+
+//         case 3: {
+//             std::string x;
+//             ss >> x;
+//             ani = Searching;
+//         }
+//         break;
+
+//     }
+
+
+//     if (inputted && key.size() > 1) {
+//         std::string newBuffer;
+//         std::string word;
+//         newBuffer += std::to_string(type);  
+//         while (ss1 >> word) newBuffer += word + " ";
+//         while (ss >> word) {
+//             newBuffer += word + " ";
+//         }
+//         buffer = newBuffer;
+//         inputted = false;
+//     }
+
+//     else if (inputted && key.size() == 1) {
+//         std::string newBuffer;
+//         std::string word;
+//         cur->isEndOfWord = true;
+//         cur = proot;
+//         while (ss >> word) {
+//             newBuffer += word + " ";
+//         }
+//         buffer = newBuffer;
+//         inputted = false;
+//     }
+
+
+// }
+
+// //main trie function
+// #include <algorithm>
+// void Trie_Scene::Insert(const char& word, float duration){
+//     Vector2 curPos = cur->getPosition();
+//     Vector2 nextPos = Vector2({curPos.x, curPos.y + 60}); 
+//     TrieNodePrimary* tmp = cur;
+//     if (cur->children.find(word) == cur->children.end()) {
+//         TrieNodePrimary* newNode = new TrieNodePrimary(Vector2({100, 100}), 20, word);
+//         std::cout << newNode->key << "\n"; 
+//         Trie_Scene::i.setDuration(duration);
+//         Trie_Scene::i.updateTarget(nextPos, 20, newNode);
+//         bool edgeExists = std::any_of(Trie_Scene::edges.begin(), Trie_Scene::edges.end(), [tmp, newNode](Edge* edge) {
+//             return edge->getFrom() == tmp && edge->getTo() == newNode;
+//             });
+            
+//         if (!edgeExists) {
+//             Trie_Scene::edges.push_back(new Edge(cur, newNode));                
+//             cur->children[word] = newNode;
+//         }
+
+//     }
+//     cur = cur->children[word];
+//     curPos = cur->getPosition(); 
+// }
+

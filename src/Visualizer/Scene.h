@@ -7,6 +7,7 @@
 #include "Button.h" 
 #include "Animation.h"
 #include "GraphAnimation.h"
+#include "SinglyAnimation.h"
 #include <queue>
 #include <functional>
 #include <algorithm>
@@ -14,7 +15,8 @@
 class Scene
 { 
     public: 
-      virtual void run(Scenes& mscene)= 0; 
+      virtual void run(Scenes& mscene)= 0;  
+      
 }; 
 class SceneManager
 {
@@ -35,6 +37,8 @@ class NodeScene: public Scene{
     //  std::vector<PolyNode*> Node; 
      std::string buffer; 
      std::vector<InputField*> Inputs; 
+     std::vector<Button*>  buttons;  
+     animation_state ani_state; 
     public :
     void DrawCommonUI(); 
     NodeScene(); 
@@ -68,13 +72,20 @@ class Singly_Scene:public NodeScene
    static std::priority_queue<std::pair<int, std::function<void()>>, 
      std::vector<std::pair<int, std::function<void()>>>, 
     FunctionComparator> animation_queue;
+    static std::priority_queue<std::pair<int, std::function<void()>>, 
+    std::vector<std::pair<int, std::function<void()>>>, 
+   FunctionComparator> UI_animation_queue;
+      static int cur_priority;  
         Ani_LinkedListSearching a;
         bool isDragging;
-        Ani_LinkedListInsert i; 
+        Ani_LinkedListInsert insert; 
         Ani_LinkedListDelete d; 
+        Ani_Straighten st; 
+        Ani_InsertRandomList insert_2; 
         static Ani_DrawEdge de; 
         static Ani_MoveList m ;
         static SinglyNode* cur;
+        static Ani_MoveNode mn ;   
         static std::vector<Edge*> Edges;
         static bool created; 
         static SinglyLinkedListNode Nodes; 
@@ -85,14 +96,20 @@ class Singly_Scene:public NodeScene
         void run(Scenes& mscene); 
         Singly_Scene();
         void Draw();
-        static void addFunction(int priority, std::function<void()> func);
-        void executeFunctions();
+        static void addFunction(std::priority_queue<std::pair<int, std::function<void()>>, 
+        std::vector<std::pair<int, std::function<void()>>>, 
+       FunctionComparator>& q, int priority, std::function<void()> func);
+        void executeFunctions(std::priority_queue<std::pair<int, std::function<void()>>, 
+        std::vector<std::pair<int, std::function<void()>>>, 
+       FunctionComparator>& q);
+       void UI_executeFunctions();
 };
 
 class Graph_Scene: public NodeScene 
 {
   public:
     static std::vector<GraphNode*> graphNodes;
+    static std::vector<Edge*> Edges; 
     bool created;
     Ani_GraphInsert ani_insert;
   public:
@@ -104,5 +121,26 @@ class Graph_Scene: public NodeScene
     GraphNode* findNodeByVal(int value);
     void AddNode(Vector2 position, int value);
     void AddEdge(int from, int to, int weight);
-    void RemoveNode(int value);
+    // void RemoveNode(int value);
 };
+
+// class Trie_Scene:public NodeScene{
+//   public :
+//         static Ani_TrieInsert i;
+//         static std::vector<Edge*> edges;
+//         static animation ani; 
+//         static int Node_radius; 
+//         TrieNodePrimary* cur;
+//         float deltaTime;
+//         static TrieNodePrimary* proot;
+//         std::queue<std::string> insertQueue;  // Hàng đợi từ cần insert
+//         bool isInserting = false;   
+        
+//     public: 
+//         void CheckBuffer() override; 
+//         void run(Scenes& mscene); 
+//         Trie_Scene();
+//         void Draw();
+//         void Insert(const char& word, float duration);
+      
+// };
