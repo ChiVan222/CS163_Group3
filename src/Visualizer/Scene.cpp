@@ -310,7 +310,7 @@ NodeScene::NodeScene()
     buttons.push_back(new Button("",Vector2({UI::wWidth -200,UI::wHeight-320}),Vector2({100,100}),"Pause")); 
     buttons.push_back(new Button("",Vector2({UI::wWidth -200,UI::wHeight-210}),Vector2({100,100}),"Forward")); 
     ani_state = animation_state::Forward;
-}
+}   
 Singly_Scene::Singly_Scene(): NodeScene(),a(0.3,0), insert(0.5,0,20,Vector2({300,300})),d(0.5,0),isDragging(false), insert_2(1),st(1){
     Edges.clear(); 
     buttons[0]->OnClick=  [this]() {
@@ -344,18 +344,68 @@ Singly_Scene::Singly_Scene(): NodeScene(),a(0.3,0), insert(0.5,0,20,Vector2({300
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
+#include <set>
 
 std::vector<GraphNode*> Graph_Scene::graphNodes;
-std::vector<Edge*>  Graph_Scene::Edges; 
+std::vector<Edge*> Graph_Scene::Edges; 
+std::priority_queue<std::pair<int, std::function<void()>>, 
+                    std::vector<std::pair<int, std::function<void()>>>, 
+                    FunctionComparator> Graph_Scene::animation_queue;
+animation Graph_Scene:: ani = None;
+float MIN_DISTANCE = 100.0f;
 
-Graph_Scene::Graph_Scene() : NodeScene(), created(false), ani_insert(0.3, 0, 20, {0,0}) {
-    Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-540}),InputType::AddEdge));
+Graph_Scene::Graph_Scene() : NodeScene(), created(false), ani_insert(0.3, 0, 20, {0,0}), isDragging(false), draggedNode(nullptr){
+    Inputs.push_back(new InputField(100.0f,100.0f,Vector2({210,UI::wHeight-100}),InputType::AddEdge));
+    buttons.push_back(new Button("",Vector2({0,UI::wHeight-540}),Vector2({100,100}),"Clear"));
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
+
+    buttons[0]->OnClick = [this]() {
+        int numNodes = std::rand() % 8 + 3;
+        std::cout << "Randomizing with " << numNodes << " nodes\n";
+        randomize(numNodes);
+    };
+    buttons.back()->OnClick = [this]() {
+        clear();
+    };
 }
 
 Graph_Scene::~Graph_Scene() {
+    for (auto* edge : Edges) delete edge;
+    for (auto* node : graphNodes) delete node;
+    Edges.clear();
+    graphNodes.clear(); 
+}    
 
-}   
+void Graph_Scene::run(Scenes& mscene) {
+    float deltatime = IsWindowFocused() ? GetFrameTime() : 0;
+    ClearBackground(BLACK);
+    DrawCommonUI();
+    DrawText("Graph", 200, 200, 40, WHITE);
+    CheckBuffer();
+    if (IsKeyPressed(KEY_LEFT)) {
+        mscene = Menu;
+        created = false;
+        return;
+    }
+    draggingNode();
+    ani_insert.updateAnimations(deltatime);
+    executeFunctions(animation_queue);
+    Draw();
+}
+
+void Graph_Scene::Draw() {
+    DrawRectangleLines(GraphNode::LEFT, GraphNode::TOP, 
+        GraphNode::RIGHT - GraphNode::LEFT, 
+        GraphNode::BOTTOM - GraphNode::TOP, WHITE);
+    for (const auto& node : graphNodes) node->Draw();
+    for(int i = 0; i < buttons.size(); i++) {
+        buttons[i]->Draw();
+        buttons[i]->DrawButtonText_center();
+        if(buttons[i]->IsHovered(UI::mousePos) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+            buttons[i]->OnClick();
+        }
+    }
+}  
 
 void Graph_Scene::CheckBuffer() {
     int type;
@@ -365,18 +415,7 @@ void Graph_Scene::CheckBuffer() {
     inputted = true;
     switch(type)
     {
-        case 0:
-        {
-            int value;
-            ss >> value;
-            Vector2 pos = {static_cast<float>(std::rand() % GetScreenWidth()), static_cast<float>(std::rand() % GetScreenHeight())};
-            if (pos.x + 500 < GetScreenWidth()) pos.x += 500;
-            if (pos.y + 200 < GetScreenHeight()) pos.y += 200;
-            if (pos.x > GetScreenWidth() - 100) pos.x -= 100;
-            if (pos.y > GetScreenHeight() - 100) pos.y -= 100;
-            AddNode(pos, value);
-            created = true;
-        } 
+        case 0: AddNode(ss);
         break;
 
         case 1: 
@@ -384,8 +423,7 @@ void Graph_Scene::CheckBuffer() {
             int value;
             ss >> value;
             // RemoveNode(value);
-        }
-        break;
+        } break;
 
         case 3: 
         {
@@ -396,16 +434,14 @@ void Graph_Scene::CheckBuffer() {
 
             }
             else std::cout << "Not found " << value << "\n";
-        }
-        break;
+        } break;
 
         case 4:
         {
             int fromVal, toVal, weight;
             ss >> fromVal >> toVal >> weight;
             AddEdge(fromVal, toVal, weight);
-        }
-        break;
+        } break;
     }
     if (inputted) {
         std::string newBuffer;
@@ -418,76 +454,208 @@ void Graph_Scene::CheckBuffer() {
     }
 }
 
-void Graph_Scene::Draw() {
-    for (const auto& node : graphNodes) {
-        node->drawEdges();
-    }
-    for (const auto& node : graphNodes) {
-        node->drawNodes();
-    }
-}   
-
-void Graph_Scene::run(Scenes& mscene) {
-    float deltatime = IsWindowFocused() ? GetFrameTime() : 0;
-    ClearBackground(BLACK);
-    DrawCommonUI();
-    DrawText("Graph", 200, 200, 40, WHITE);
-    CheckBuffer();
-    if (IsKeyPressed(KEY_LEFT)) {
-        mscene = Menu;
-        created = false;
-        for(int i = 0; i < Edges.size(); i++)
-        {
-             Edge* tmp = Edges[i];
-             Edges[i] = nullptr;
-             delete tmp;
-        }
-        Edges.clear();
-        for(int i = 0; i < graphNodes.size(); i++) {
-            GraphNode* tmp = graphNodes[i];
-            graphNodes[i] = nullptr;
-            delete tmp;
-        }
-        graphNodes.clear();
-        return;
-    }
-    ani_insert.updateAnimations(deltatime);
-    Draw();
-}
-
 GraphNode* Graph_Scene::findNodeByVal(int value) {
-    for (auto& node : graphNodes) {
-        if (node->val == value) {
-            return node;
-        }
+    for (auto* node : graphNodes) {
+        if (node->val == value) return node;
     }
     return nullptr;
 }
 
-void Graph_Scene::AddNode(Vector2 position, int value) {
-    ani_insert.updateTarget(value, 20, position);
+void Graph_Scene::AddNode(stringstream& ss) {
+    int value;
+    if (ss >> value) {
+        Vector2 pos;
+        bool tooClose;
+        int attempts = 0;
+        do {
+            tooClose = false;
+            // Place node within the rectangular boundaries
+            pos = {GraphNode::LEFT + static_cast<float>(std::rand()) / RAND_MAX * (GraphNode::RIGHT - GraphNode::LEFT),
+                   GraphNode::TOP + static_cast<float>(std::rand()) / RAND_MAX * (GraphNode::BOTTOM - GraphNode::TOP)};
+            
+            // Check for overlap with existing nodes
+            for (const auto* node : graphNodes) {
+                Vector2 existingPos = node->getPosition();
+                float dist = sqrt(pow(pos.x - existingPos.x, 2) + pow(pos.y - existingPos.y, 2));
+                if (dist < MIN_DISTANCE) {
+                    tooClose = true;
+                    break;
+                }
+            }
+            attempts++;
+        } while (tooClose && attempts < 100); // Limit attempts to avoid infinite loop
+
+        if (attempts >= 100) {
+            std::cout << "Warning: Could not find a non-overlapping position for node " << value << " after 100 attempts\n";
+            return;
+        }
+
+        std::cout << "Adding node " << value << " at (" << pos.x << ", " << pos.y << ")\n";
+        GraphNode* newNode = new GraphNode(pos, 20, value);
+        addFunction(animation_queue, 1, std::bind(&Ani_GraphInsert::updateTarget, &ani_insert, newNode));
+        created = true;
+    }
 }
 
 void Graph_Scene::AddEdge(int from, int to, int weight) {
-    GraphNode* fromNode = findNodeByVal(from);
-    GraphNode* toNode = findNodeByVal(to);
-
-    if (!fromNode || !toNode) {
-        return;
+    if (ani == None) {
+        ani = EdgeDrawing;
+        GraphNode* fromNode = findNodeByVal(from);
+        GraphNode* toNode = findNodeByVal(to);
+        if (fromNode && toNode) {
+            // Check if edge already exists
+            auto& adj = fromNode->getAdj();
+            if (std::find(adj.begin(), adj.end(), toNode) == adj.end()) {
+                fromNode->makeAdjacent(toNode);
+                toNode->makeAdjacent(fromNode);
+                Edges.push_back(new Edge(fromNode, toNode));
+                std::cout << "Edge added: " << from << " -> " << to << " (weight: " << weight << ")\n";
+            } else {
+                std::cout << "Edge already exists: " << from << " -> " << to << "\n";
+            }
+        } else {
+            std::cout << "Failed to add edge: Node " << (fromNode ? to : from) << " not found\n";
+        }
+        ani = None;
     }
-    Edges.push_back(new Edge(fromNode, toNode));
 }
 
-// void Graph_Scene::RemoveNode(int value) {
-//     Edges.erase (std::remove_if())
-// }
+void Graph_Scene::randomize(int nodes) {
+    clear();
+    std::vector<Vector2> positions;
+    std::vector<GraphNode*> tempGraph;
+    for (int i = 0; i < nodes; i++) {
+        Vector2 pos;
+        bool tooClose;
+        int attempts = 0;
+        do {
+            tooClose = false;
+            // Place nodes within the rectangular boundaries
+            pos = {GraphNode::LEFT + static_cast<float>(std::rand()) / RAND_MAX * (GraphNode::RIGHT - GraphNode::LEFT),
+                   GraphNode::TOP + static_cast<float>(std::rand()) / RAND_MAX * (GraphNode::BOTTOM - GraphNode::TOP)};
+
+            // Check for overlap with existing nodes
+            for (const auto& existingPos : positions) {
+                float dist = sqrt(pow(pos.x - existingPos.x, 2) + pow(pos.y - existingPos.y, 2));
+                if (dist < MIN_DISTANCE) {
+                    tooClose = true;
+                    break;
+                }
+            }
+            attempts++;
+        } while (tooClose && attempts < 100); // Limit attempts to avoid infinite loop
+        positions.push_back(pos);
+        
+        int value = i;
+        std::cout << "Adding node " << value << " at (" << pos.x << ", " << pos.y << ")\n";
+        GraphNode* newNode = new GraphNode(pos, 20, value);
+        tempGraph.push_back(newNode);
+        addFunction(animation_queue, 1, std::bind(&Ani_GraphInsert::updateTarget, &ani_insert, newNode));
+    }
+    created = true;
+
+    // Add Edges
+    int minEdges = nodes - 1;
+    int maxPossibleEdges = (nodes * (nodes - 1)) / 2;
+    int maxEdges = std::min(maxPossibleEdges, 3 * minEdges);
+    int numEdges = (minEdges < maxEdges) ? (std::rand() % (maxEdges - minEdges + 1) + minEdges) : minEdges;
+    std::cout << "Generating " << numEdges << " edges (range: " << minEdges << " to " << maxEdges << ")\n";
+    int edgeCount = 0;
+    while (edgeCount < numEdges && tempGraph.size() >= 2) {
+        int fromIdx = std::rand() % tempGraph.size();
+        int toIdx = std::rand() % tempGraph.size();
+        if (fromIdx != toIdx) {
+            int weight = std::rand() % 50;
+            std::cout << "Queuing edge: " << tempGraph[fromIdx]->val << " -> " << tempGraph[toIdx]->val << " (weight: " << weight << ")\n";            
+            addFunction(animation_queue, 0, std::bind(&Graph_Scene::AddEdge, this, tempGraph[fromIdx]->val, tempGraph[toIdx]->val, weight));
+            edgeCount++;
+        }
+    }
+
+    tempGraph.clear();
+}
+
+void Graph_Scene::clear() {
+    for (auto* edge : Edges) delete edge;
+    for (auto* node : graphNodes) delete node;
+    Edges.clear();
+    graphNodes.clear();
+}
+
+void Graph_Scene::runDijkstra(int start) {
+
+}
+
+void Graph_Scene::draggingNode() {
+    if (ani == None) {
+        if (!isDragging && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+            Vector2 mousePos = GetMousePosition();
+            for (auto* node : graphNodes) {
+                Vector2 nodePos = node->getPosition();
+                float dist = sqrt(pow(mousePos.x - nodePos.x, 2) + pow(mousePos.y - nodePos.y, 2));
+                if (dist < node->getRadius()) {
+                    isDragging = true;
+                    draggedNode = node;
+                    break;
+                }
+            }
+        }
+        if (isDragging && draggedNode) {
+            Vector2 mousePos = GetMousePosition();
+            float newX = std::max(GraphNode::LEFT, std::min(GraphNode::RIGHT, mousePos.x));
+            float newY = std::max(GraphNode::TOP, std::min(GraphNode::BOTTOM, mousePos.y));
+            draggedNode->setPosition({newX, newY});
+
+            draggedNode->repulseNearbyNodes(MIN_DISTANCE);
+
+            // Ensure the dragged node doesn't overlap others
+            for (auto* otherNode : graphNodes) {
+                if (otherNode == draggedNode) continue;
+                Vector2 delta = {draggedNode->getPosition().x - otherNode->getPosition().x, 
+                                 draggedNode->getPosition().y - otherNode->getPosition().y};
+                float dist = sqrt(delta.x * delta.x + delta.y * delta.y);
+                if (dist < MIN_DISTANCE && dist > 0.1f) {
+                    // Adjust the dragged node's position to avoid overlap
+                    float overlap = MIN_DISTANCE - dist;
+                    newX += (delta.x / dist) * overlap * GraphNode::REPULSE_STRENGTH; // Move dragged node slightly
+                    newY += (delta.y / dist) * overlap * GraphNode::REPULSE_STRENGTH;
+                    newX = std::max(GraphNode::LEFT, std::min(GraphNode::RIGHT, newX));
+                    newY = std::max(GraphNode::TOP, std::min(GraphNode::BOTTOM, newY));
+                    draggedNode->setPosition({newX, newY});
+                }
+            }
+
+            if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
+                isDragging = false;
+                draggedNode = nullptr;
+            }
+        }
+    }
+}
+
+void Graph_Scene::addFunction(std::priority_queue<std::pair<int, std::function<void()>>, 
+                std::vector<pair<int, std::function<void()>>>,
+                FunctionComparator>& q, int priority, std::function<void()> func) {
+    q.push({priority, func});
+}
+
+void Graph_Scene::executeFunctions(std::priority_queue<std::pair<int, std::function<void()>>, 
+                                std::vector<std::pair<int, std::function<void()>>>, 
+                                FunctionComparator>& q) {
+    while (!q.empty() && ani == None) {
+        auto topFunc = q.top();
+        if (!ani_insert.getState() && topFunc.first == 0) break;
+        q.pop();
+        topFunc.second();
+        std::cout << "Executed function with priority " << topFunc.first << "\n";
+    }
+}
 
 // Ani_TrieInsert Trie_Scene::i;
 // TrieNodePrimary* Trie_Scene::proot = new TrieNodePrimary(Vector2{300, 300}, 20, '*');
 // animation Trie_Scene::ani = None; 
 // int Trie_Scene::Node_radius = 20; 
 // std::vector<Edge*>Trie_Scene::edges;
-
 
 // Trie_Scene::Trie_Scene(): NodeScene() {
 //     edges.clear();

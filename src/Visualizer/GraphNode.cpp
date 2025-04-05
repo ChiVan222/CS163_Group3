@@ -5,16 +5,13 @@
 #include "Scene.h"
 
 #include <iostream>
-// const float GraphNode::repulse = 5000000.f;
-// const float GraphNode::attract = 2000.f;
-// const float GraphNode::lenghtLimit = 175.f;
-// const float GraphNode::left = -520.f;
-// const float GraphNode::right = 520.f;
-// const float GraphNode::top = 0.f;
-// const float GraphNode::bottom = 600.f;
+const float GraphNode::LEFT = 500.0f;
+const float GraphNode::RIGHT = 1600.0f;
+const float GraphNode::TOP = 100.0f;
+const float GraphNode::BOTTOM = 900.0f;
+const float GraphNode::REPULSE_STRENGTH = 3.0f;
 
-// need to be modified the construct of polynode
-GraphNode::GraphNode(Vector2 position, float radius, int value) : PolyNode(position, radius), val(value){}
+GraphNode::GraphNode(Vector2 position, float radius, int value) : PolyNode(position, radius), val(value), velocity({0,0})   {}
 
 bool GraphNode::Draw() {
     drawNodes();
@@ -23,12 +20,12 @@ bool GraphNode::Draw() {
 }
 
 void GraphNode::drawNodes() const {
-    DrawCircleV(position, 20, WHITE);
+    DrawCircleV(position, radius, WHITE);
     DrawText(TextFormat("%d", val), position.x - 10, position.y - 10, 20, BLUE);
 }
 
 void GraphNode::drawEdges() const {
-    for (auto& edge : Graph_Scene::Edges) {
+    for(auto* edge : Graph_Scene::Edges) {
         edge->Draw();
     }
 }
@@ -41,56 +38,32 @@ Vector2 GraphNode::getPosition() const {
     return position;
 }
 
+void GraphNode::makeAdjacent(GraphNode* node) {
+    if (std::find(adj.begin(), adj.end(), node) == adj.end()) {
+        adj.push_back(node);
+    }
+}
 
-// void GraphNode::setVelocity(Vector2 nVelocity) {
-//     this->nVelocity = nVelocity;
-// }
+const std::vector<GraphNode*>& GraphNode::getAdj() const {
+    return adj;
+}
 
-// Vector2 GraphNode::getRepulsion(const GraphNode& node) const {
-//     Vector2 delta = {nPosition.x - node.nPosition.x, nPosition.y - node.nPosition.y};
-//     float eDist = sqrt(delta.x * delta.x + delta.y * delta.y);
-//     float eDistSquare = eDist * eDist;
-//     return {(delta.x/eDist)/eDistSquare*repulse, (delta.y/eDist)/eDistSquare*repulse}; 
-// }
+void GraphNode::repulseNearbyNodes(float minDistance) {
+    for (auto* otherNode : Graph_Scene::graphNodes) {
+        if (otherNode == this) continue;
+        Vector2 delta = {position.x - otherNode->position.x, position.y - otherNode->position.y};
+        float dist = sqrt(delta.x * delta.x + delta.y * delta.y);
+        if (dist < minDistance && dist > 0.1f) {
+            float force = REPULSE_STRENGTH * (minDistance - dist) / dist;
+            Vector2 repulsion = {delta.x * force, delta.y * force};
+            Vector2 newPos = otherNode->getPosition();
+            newPos.x += repulsion.x;
+            newPos.y += repulsion.y;    
 
-// bool GraphNode::isAdjacent(const GraphNode& node) const {
-//     for (auto& cur : nAdj) {
-//         if (cur == &node) return true;
-//     }
-//     return false;
-// }
+            newPos.x = std::max(LEFT, std::min(RIGHT, newPos.x));
+            newPos.y = std::max(TOP, std::min(BOTTOM, newPos.y));
 
-// Vector2 GraphNode::getTotalAttraction() const {
-//     Vector2 nAttract = {0, 0};
-//     for(auto& cur : nAdj) {
-//         Vector2 attraction = getAttraction(*cur);
-//         nAttract.x += attraction.x;
-//         nAttract.y += attraction.y;
-//     }
-//     return nAttract;
-// }
-
-// Vector2 GraphNode::getAttraction(const GraphNode& node) const {
-//     Vector2 delta = {nPosition.x - node.nPosition.x, nPosition.y - node.nPosition.y};
-//     float eDist = sqrt(delta.x * delta.x + delta.y * delta.y);
-//     float ratio = log(eDist/lenghtLimit);
-//     Vector2 repulsion = getRepulsion(node);
-//     return {(delta.x/eDist)/ratio*attract - repulsion.x, (delta.y/eDist)/ratio*attract - repulsion.y};   
-// }
-
-// const std::vector<GraphNode*>& GraphNode::getAdj() const {
-//     return nAdj;
-// }
-
-// void GraphNode::updateCurrent(float dt) {
-//     nPosition.x += nVelocity.x * dt;
-//     nPosition.y += nVelocity.y * dt;
-
-//     nPosition.x = min(nPosition.x, right);
-//     nPosition.x = max(nPosition.x, left);
-//     nPosition.y = min(nPosition.y, bottom);
-//     nPosition.y = max(nPosition.y, top);
-
-//     nPosition.x = round(nPosition.x);
-//     nPosition.y = round(nPosition.y);
-// }
+            otherNode->setPosition(newPos);
+        }
+    }
+}

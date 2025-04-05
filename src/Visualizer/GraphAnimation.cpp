@@ -24,20 +24,26 @@ void Ani_GraphInsert::updateAnimations(float deltaTime) {
     if (elapsed_time >= duration) {
         isDone = true;
         elapsed_time = 0;
+        Graph_Scene::ani = None;
     }
 }
 
-void Ani_GraphInsert::play() {
-    node_insert = new GraphNode(src_pos, radius, value);
+void Ani_GraphInsert::play(GraphNode*& node) {
+    node_insert = node;
+    node_insert->setPosition(src_pos);
     Graph_Scene::graphNodes.push_back(node_insert);
     isDone = false;
 }
 
-void Ani_GraphInsert::updateTarget(int value, float radius, Vector2 position) {
-    if (isDone) {
-        this->value = value;
-        this->radius = radius;
-        this->position = position;
-        play();
+void Ani_GraphInsert::play() {}
+
+void Ani_GraphInsert::updateTarget(GraphNode*& node) {
+    if (isDone && Graph_Scene::ani == None) {
+        cout << "Update target " << value << "\n";
+        Graph_Scene::ani = Inserting;
+        this->value = node->val;
+        this->radius = node->getRadius();
+        this->position = node->getPosition();
+        play(node);
     }
 }

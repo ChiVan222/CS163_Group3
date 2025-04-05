@@ -108,20 +108,39 @@ class Singly_Scene:public NodeScene
 class Graph_Scene: public NodeScene 
 {
   public:
-    static std::vector<GraphNode*> graphNodes;
-    static std::vector<Edge*> Edges; 
-    bool created;
-    Ani_GraphInsert ani_insert;
-  public:
-    void CheckBuffer() override;
-    void run(Scenes& mscene);
     Graph_Scene();
     ~Graph_Scene();
+    void run(Scenes& mscene);
     void Draw();
+    void CheckBuffer() override;
     GraphNode* findNodeByVal(int value);
-    void AddNode(Vector2 position, int value);
+    void AddNode(std::stringstream& ss);
     void AddEdge(int from, int to, int weight);
     // void RemoveNode(int value);
+    void randomize(int nodes);
+    void clear();
+    void runDijkstra(int start);
+
+    static std::vector<GraphNode*> graphNodes;
+    static std::vector<Edge*> Edges; 
+    static std::priority_queue<std::pair<int, std::function<void()>>, 
+                               std::vector<std::pair<int, std::function<void()>>>, 
+                               FunctionComparator> animation_queue;
+    static animation ani;
+
+  private:
+    bool created;
+    bool isDragging;
+    GraphNode* draggedNode;
+    void draggingNode();
+    Ani_GraphInsert ani_insert;
+    void addFunction(std::priority_queue<std::pair<int, std::function<void()>>, 
+                     std::vector<pair<int, std::function<void()>>>,
+                     FunctionComparator>& q, int priority, std::function<void()> func); 
+    void executeFunctions(std::priority_queue<std::pair<int, std::function<void()>>, 
+                          std::vector<std::pair<int, std::function<void()>>>, 
+                          FunctionComparator>& q);
+
 };
 
 // class Trie_Scene:public NodeScene{
