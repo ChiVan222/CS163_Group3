@@ -11,6 +11,8 @@ class PolyNode
         HighLight highlight;
         float radius;   
         Vector2 position; 
+        Color lightNode{250,123,76,255};
+        Color darkNode{243,80,0,255};
    public : 
     virtual bool Draw() =0 ; 
     explicit PolyNode(Vector2 pos,float radius);  

@@ -46,3 +46,15 @@ class InputButton: public Button
   public : 
     
 };
+class Switch: public Button{
+  public:
+      Vector2 centerC;
+      float cradius;
+      bool isOn;
+    public:
+    Switch(Vector2 pos, Vector2 rect1);
+    void SwitchDraw();
+    bool mode(Vector2 mousePos);
+    void setCircle(Vector2 newPos);
+   };
+  

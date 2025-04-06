@@ -10,6 +10,7 @@ class Edge
   public : 
      Edge(PolyNode* from , PolyNode* to);
      bool Draw();
+     bool TrieDraw();
      PolyNode* getFrom();
      PolyNode* getTo(); 
      int getsize(); 

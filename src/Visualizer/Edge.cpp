@@ -32,6 +32,21 @@ Vector2 dpos = Vector2({to->getPosition().x - Singly_Scene::Node_radius * cos(th
     }
     return false;
 }
+bool Edge::TrieDraw(){
+    if(from && to){
+        float theta = atan2(to->getPosition().y - from->getPosition().y,to->getPosition().x - from->getPosition().x);
+
+        Vector2 cpos = Vector2({Trie_Scene::Node_radius * cos(theta) + from->getPosition().x,Trie_Scene::Node_radius * sin(theta) + from->getPosition().y});
+
+        Vector2 dpos = Vector2({to->getPosition().x - Trie_Scene::Node_radius * cos(theta),to->getPosition().y - Trie_Scene::Node_radius * sin(theta)});
+
+        DrawLineEx(cpos,dpos,size,WHITE);
+        return true;
+    }
+    return false;
+}
+
+
 PolyNode* Edge::getFrom()
 {
     return from;
