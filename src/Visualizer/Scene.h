@@ -114,7 +114,7 @@ class Graph_Scene: public NodeScene
     void Draw();
     void CheckBuffer() override;
     GraphNode* findNodeByVal(int value);
-    void AddNode(std::stringstream& ss);
+    void AddNode(int value);
     void AddEdge(int from, int to, int weight);
     // void RemoveNode(int value);
     void randomize(int nodes);
@@ -134,6 +134,8 @@ class Graph_Scene: public NodeScene
     GraphNode* draggedNode;
     void draggingNode();
     Ani_GraphInsert ani_insert;
+    Ani_GraphSearch ani_search;
+    Ani_GraphRemove ani_remove;
     void addFunction(std::priority_queue<std::pair<int, std::function<void()>>, 
                      std::vector<pair<int, std::function<void()>>>,
                      FunctionComparator>& q, int priority, std::function<void()> func); 
