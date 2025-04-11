@@ -30,7 +30,7 @@ void Ani_GraphInsert::updateAnimations(float deltaTime) {
     }
 }
 
-void Ani_GraphInsert::play(GraphNode*& node) {
+void Ani_GraphInsert::play(GraphNode* node) {
     node_insert = node;
     node_insert->setPosition(src_pos);
     Graph_Scene::graphNodes.push_back(node_insert);
@@ -39,7 +39,7 @@ void Ani_GraphInsert::play(GraphNode*& node) {
 
 void Ani_GraphInsert::play() {}
 
-void Ani_GraphInsert::updateTarget(GraphNode*& node) {
+void Ani_GraphInsert::updateTarget(GraphNode* node) {
     if (isDone && Graph_Scene::ani == None) {
         std::cout << "Update target " << value << "\n";
         Graph_Scene::ani = Inserting;
@@ -49,7 +49,7 @@ void Ani_GraphInsert::updateTarget(GraphNode*& node) {
         play(node);
     }
     else {
-        cout << "ani != None or !isDone\n";
+        std::cout << "ani != None or !isDone\n";
     }
 }
 
@@ -66,18 +66,26 @@ void Ani_GraphSearch::updateAnimations(float deltaTime) {
 
     if (!curNode || elapsed_time >= duration && curNode->val != value) {
         if (curNode) {
-            const std::vector<GraphNode*> adj = curNode->getAdj();
+            visited.insert(curNode);
+            auto& adj = curNode->getAdj();
             for (auto* neighbor : adj) {
                 if (visited.find(neighbor) == visited.end()) {
                     toVisit.push(neighbor);
-                    visited.insert(neighbor);
                 }
             }
         }
-        if (!toVisit.empty()) {
+        if (!toVisit.empty() && visited.size() != Graph_Scene::graphNodes.size()) {
             curNode = toVisit.top();
             toVisit.pop();
             elapsed_time = 0;
+        }
+        else if (visited.size() != Graph_Scene::graphNodes.size()) {
+            for (auto* left : Graph_Scene::graphNodes) {
+                if (visited.find(left) == visited.end()) {
+                    toVisit.push(left);
+                    break;
+                }
+            }
         }
         else {
             curNode = nullptr;
@@ -89,7 +97,7 @@ void Ani_GraphSearch::updateAnimations(float deltaTime) {
     }
 
     if (curNode->val == value) {
-        DrawCircleV(curNode->getPosition(), curNode->getRadius() + 5, GREEN);
+        curNode->highlight(GREEN);
         if (elapsed_time >= duration) {
             isDone = true;
             Graph_Scene::ani = None;
@@ -98,7 +106,7 @@ void Ani_GraphSearch::updateAnimations(float deltaTime) {
         }
     }
     else {
-        DrawCircleV(curNode->getPosition(), curNode->getRadius() + 5, RED);
+        curNode->highlight(RED);
     }
 }
 
@@ -113,14 +121,8 @@ void Ani_GraphSearch::updateTarget(GraphNode* startNode) {
         Graph_Scene::ani = Searching;
         curNode = nullptr;
         visited.clear();
-        for (auto* node : Graph_Scene::graphNodes) {
-            if (node->getAdj().empty() && node != startNode) {
-                toVisit.push(node);
-                visited.insert(node);
-            }
-        }
+        while(!toVisit.empty()) toVisit.pop();
         toVisit.push(startNode);
-        visited.insert(startNode);
         play();
     }
 }
@@ -136,20 +138,10 @@ void Ani_GraphRemove::updateAnimations(float deltaTime) {
     if (isDone || !targetNode) return;
     elapsed_time += deltaTime;
 
-    for (float r = targetNode->getRadius(); r <= targetNode->getRadius() + 5.0f; r += 1.0f) {
-        DrawCircleLinesV(targetNode->getPosition(), r, RED);
-    }
+    targetNode->highlight(RED);
     for (auto* edge : Graph_Scene::Edges) {
         if (edge->getFrom() == targetNode || edge->getTo() == targetNode) {
-            float theta = atan2(edge->getTo()->getPosition().y - edge->getFrom()->getPosition().y, 
-                                edge->getTo()->getPosition().x - edge->getFrom()->getPosition().x);
-
-            Vector2 cpos = Vector2({targetNode->getRadius() * cos(theta) + edge->getFrom()->getPosition().x,
-                                    targetNode->getRadius() * sin(theta) + edge->getFrom()->getPosition().y});
-
-            Vector2 dpos = Vector2({edge->getTo()->getPosition().x - targetNode->getRadius() * cos(theta),
-                                    edge->getTo()->getPosition().y - targetNode->getRadius() * sin(theta)});
-            DrawLineEx(cpos, dpos, 2, RED);
+            edge->Draw(RED, 1);
         }
     }
 
@@ -182,6 +174,124 @@ void Ani_GraphRemove::updateTarget(GraphNode* removeNode) {
         std::cout << "Update Target Removing\n";
         Graph_Scene::ani = Removing;
         targetNode = removeNode;
+        play();
+    }
+}
+
+// Dijkstra Algorithm Animations
+const int INF = INT_MAX;
+Ani_Dijkstra::Ani_Dijkstra() : Animations(1.0), cur(nullptr), curEdge(nullptr) {
+    std::cout << "Construct Ani_Dijkstra1\n";
+}
+Ani_Dijkstra::Ani_Dijkstra(float duration, int nodes) : Animations(duration), cur(nullptr), curEdge(nullptr) {
+    isDone = true;
+    dist.resize(nodes, INF);
+    std::cout << "Construct Ani_Dijkstra\n";
+}
+Ani_Dijkstra::~Ani_Dijkstra() { 
+    cur = nullptr;
+    delete cur;
+    curEdge = nullptr;
+    delete curEdge;
+}
+
+void Ani_Dijkstra::updateAnimations(float deltaTime) {
+    if (isDone || !cur) return;
+    elapsed_time += deltaTime;
+
+    for (auto* node : Graph_Scene::graphNodes) {
+        if (node) {
+            std::string text = (dist[node->val] == INF) ? "INF" : std::to_string(dist[node->val]);
+            DrawText(text.c_str(), node->getPosition().x - 10, node->getPosition().y - 50, 15, YELLOW);
+
+            if (visited.find(node) != visited.end() && node != cur) {
+                node->highlight(GREEN); 
+            } 
+            else if (cur && node == cur && elapsed_time < duration) {
+                node->highlight(ORANGE); 
+            }
+        }
+    }
+    if (curEdge && elapsed_time < duration) {
+        curEdge->Draw(ORANGE, 1);
+        static_cast<GraphNode*>(curEdge->getTo())->highlight(ORANGE);
+    }
+    if (elapsed_time >= duration && cur) {
+        auto neighbors = cur->getAdj();
+        bool processedAllNeighbors = true;
+
+        for (auto* v : neighbors) {
+            if (mp[cur].find(v) != mp[cur].end()) continue;
+            curEdge = nullptr;
+            for (auto* edge : Graph_Scene::Edges) {
+                if ((edge->getFrom() == cur && edge->getTo() == v) ||
+                    (edge->getFrom() == v && edge->getTo() == cur)) {
+                    curEdge = edge;
+                    break;
+                }
+            }
+            if (!curEdge) std::cout << "Warning no edges from " << cur->val << "\n";
+            mp[cur].insert(v);
+            mp[v].insert(cur);
+
+            if (visited.find(v) == visited.end()) {
+                int weight = curEdge->weight;
+                if (dist[v->val] > dist[cur->val] + weight) {
+                    dist[v->val] = dist[cur->val] + weight;
+                    pq.push({dist[v->val], v});
+                    std::cout << "Updated dist[" << v->val << "] = " << dist[v->val] << "\n";
+                }
+            }
+
+            elapsed_time = 0;
+            processedAllNeighbors = false;
+            break;
+        }
+
+        if (processedAllNeighbors) {
+            visited.insert(cur);
+            mp.erase(cur);
+            cur = nullptr;
+            curEdge = nullptr;
+            while (!pq.empty()) {
+                auto [d, v] = pq.top();
+                pq.pop();
+                if (visited.find(v) == visited.end()) {
+                    cur = v;
+                    std::cout << "Processing node with value: " << cur->val << " and dist: " << d << "\n";
+                    break;
+                }
+            }
+        }
+
+        if (!cur) {
+            isDone = true;
+            Graph_Scene::ani = None;
+            std::cout << "Dijkstra is completed!\n";
+        }
+
+    }
+}
+
+void Ani_Dijkstra::play() {
+    std::cout << "Play Dijkstra for undirected graph\n";
+    isDone = false;
+}
+
+void Ani_Dijkstra::updateTarget(GraphNode* start) {
+    if (isDone && Graph_Scene::ani == None) {
+        std::cout << "Update Target Dijkstra\n";
+        Graph_Scene::ani = DijkstraRunning;
+        cur = start;
+        curEdge = nullptr;
+        dist.resize(Graph_Scene::graphNodes.size(), INF);
+        dist[start->val] = 0;
+        visited.clear();
+        mp.clear();
+        while (!pq.empty()) pq.pop();
+        pq.push({0, start});
+        visited.insert(start);
+        std::cout << "Next to play\n";
         play();
     }
 }

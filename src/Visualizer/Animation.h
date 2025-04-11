@@ -15,8 +15,7 @@
   public:
       virtual void updateAnimations(float deltaTime) = 0;
       virtual void play() = 0;
-      bool getState(); 
-
+      bool getState();
       int getDuration();
       void setDuration(float newduration);
       // virtual void Draw() = 0;

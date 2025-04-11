@@ -7,9 +7,10 @@ class Edge
      PolyNode* to; 
    public :
      bool isDraw; 
+     int weight;
   public : 
      Edge(PolyNode* from , PolyNode* to);
-     bool Draw();
+     bool Draw(Color color, int flat); //1 for Graph (weight), 0 for others
      PolyNode* getFrom();
      PolyNode* getTo(); 
      int getsize(); 

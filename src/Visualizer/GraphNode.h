@@ -15,6 +15,7 @@ public:
     const std::vector<GraphNode*>& getAdj() const;
     void repulseNearbyNodes(float minDistance);
     int val;
+    void highlight(Color color);
 
     static const float REPULSE_STRENGTH;
     static const float LEFT, RIGHT, TOP, BOTTOM;

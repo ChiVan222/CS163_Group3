@@ -191,7 +191,7 @@ void Singly_Scene::CheckBuffer()
 void Singly_Scene::Draw() {
     Nodes.Traverse(); 
     for (int i = 0; i <Edges.size();i++) {
-        if(Edges[i]->isDraw)Edges[i]->Draw();
+        if(Edges[i]->isDraw)Edges[i]->Draw(WHITE, 0);
     }
 }
 #include "iostream"
@@ -354,18 +354,27 @@ std::priority_queue<std::pair<int, std::function<void()>>,
 animation Graph_Scene:: ani = None;
 float MIN_DISTANCE = 100.0f;
 
-Graph_Scene::Graph_Scene() : NodeScene(), created(false), ani_insert(0.2, 0, 20, {0,0}), ani_search(1.0, 0), ani_remove(1.0), isDragging(false), draggedNode(nullptr){
+Graph_Scene::Graph_Scene() : NodeScene(), created(false), ani_insert(0.2, 0, 20, {0,0}), 
+ani_search(1.0, 0), ani_remove(1.0), ani_dijkstra(),isDragging(false), draggedNode(nullptr){
     Inputs.push_back(new InputField(100.0f,100.0f,Vector2({210,UI::wHeight-100}),InputType::AddEdge));
     buttons.push_back(new Button("",Vector2({0,UI::wHeight-540}),Vector2({100,100}),"Clear"));
+    buttons.push_back(new Button("",Vector2({0,UI::wHeight-650}),Vector2({100,100}),"Dijkstra"));
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
 
     buttons[0]->OnClick = [this]() {
-        int numNodes = std::rand() % 8 + 5;
+        int numNodes = 5;
         std::cout << "Randomizing with " << numNodes << " nodes\n";
         randomize(numNodes);
     };
     buttons[4]->OnClick = [this]() {
         clear();
+    };
+    buttons[5]->OnClick = [this]() {
+        if (ani == None && !graphNodes.empty()) {
+            std:: cout << "Running Dijkstra with start: " << graphNodes[0]->val << "\n"; 
+            ani_dijkstra = Ani_Dijkstra(2.0, graphNodes.size());
+            addFunction(animation_queue, 1, std::bind(&Ani_Dijkstra::updateTarget, &ani_dijkstra, graphNodes[0]));
+        }
     };
 }
 
@@ -373,7 +382,8 @@ Graph_Scene::~Graph_Scene() {
     for (auto* edge : Edges) delete edge;
     for (auto* node : graphNodes) delete node;
     Edges.clear();
-    graphNodes.clear(); 
+    graphNodes.clear();
+    ani_dijkstra.~Ani_Dijkstra(); 
 }    
 
 void Graph_Scene::run(Scenes& mscene) {
@@ -385,14 +395,16 @@ void Graph_Scene::run(Scenes& mscene) {
     if (IsKeyPressed(KEY_LEFT)) {
         mscene = Menu;
         created = false;
+        clear();
         return;
     }
+    Draw();
     draggingNode();
     ani_insert.updateAnimations(deltatime);
     ani_search.updateAnimations(deltatime);
-    executeFunctions(animation_queue);
-    Draw();
     ani_remove.updateAnimations(deltatime);
+    ani_dijkstra.updateAnimations(deltatime);
+    executeFunctions(animation_queue);
 }
 
 void Graph_Scene::Draw() {
@@ -531,17 +543,20 @@ void Graph_Scene::AddEdge(int from, int to, int weight) {
         GraphNode* fromNode = findNodeByVal(from);
         GraphNode* toNode = findNodeByVal(to);
         if (fromNode && toNode) {
-            // Check if edge already exists
             auto& adj = fromNode->getAdj();
             if (std::find(adj.begin(), adj.end(), toNode) == adj.end()) {
                 fromNode->makeAdjacent(toNode);
                 toNode->makeAdjacent(fromNode);
-                Edges.push_back(new Edge(fromNode, toNode));
+                Edge* newEdge = new Edge(fromNode, toNode);
+                newEdge->weight = weight;
+                Edges.push_back(newEdge);
                 std::cout << "Edge added: " << from << " -> " << to << " (weight: " << weight << ")\n";
-            } else {
+            } 
+            else {
                 std::cout << "Edge already exists: " << from << " -> " << to << "\n";
             }
-        } else {
+        } 
+        else {
             std::cout << "Failed to add edge: Node " << (fromNode ? to : from) << " not found\n";
         }
         ani = None;
@@ -645,7 +660,7 @@ void Graph_Scene::draggingNode() {
 }
 
 void Graph_Scene::addFunction(std::priority_queue<std::pair<int, std::function<void()>>, 
-                std::vector<pair<int, std::function<void()>>>,
+                std::vector<std::pair<int, std::function<void()>>>,
                 FunctionComparator>& q, int priority, std::function<void()> func) {
     q.push({priority, func});
     std::cout << "Push function with priority " << priority << "\n";

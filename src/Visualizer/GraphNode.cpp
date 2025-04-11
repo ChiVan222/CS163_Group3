@@ -26,7 +26,7 @@ void GraphNode::drawNodes() const {
 
 void GraphNode::drawEdges() const {
     for(auto* edge : Graph_Scene::Edges) {
-        edge->Draw();
+        edge->Draw(WHITE, 1);
     }
 }
 
@@ -65,5 +65,11 @@ void GraphNode::repulseNearbyNodes(float minDistance) {
 
             otherNode->setPosition(newPos);
         }
+    }
+}
+
+void GraphNode::highlight(Color color) {
+    for (float r = radius; r <= radius + 5.0f; r += 1.0f) {
+        DrawCircleLinesV(position, r, color);
     }
 }

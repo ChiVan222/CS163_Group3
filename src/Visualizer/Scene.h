@@ -116,7 +116,6 @@ class Graph_Scene: public NodeScene
     GraphNode* findNodeByVal(int value);
     void AddNode(int value);
     void AddEdge(int from, int to, int weight);
-    // void RemoveNode(int value);
     void randomize(int nodes);
     void clear();
     void runDijkstra(int start);
@@ -136,8 +135,9 @@ class Graph_Scene: public NodeScene
     Ani_GraphInsert ani_insert;
     Ani_GraphSearch ani_search;
     Ani_GraphRemove ani_remove;
+    Ani_Dijkstra ani_dijkstra;
     void addFunction(std::priority_queue<std::pair<int, std::function<void()>>, 
-                     std::vector<pair<int, std::function<void()>>>,
+                     std::vector<std::pair<int, std::function<void()>>>,
                      FunctionComparator>& q, int priority, std::function<void()> func); 
     void executeFunctions(std::priority_queue<std::pair<int, std::function<void()>>, 
                           std::vector<std::pair<int, std::function<void()>>>, 
