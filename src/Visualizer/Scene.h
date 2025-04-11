@@ -3,17 +3,28 @@
 #include "PolyNode.h"
 #include "InputField.h"
 #include <vector> 
+#include <map>
 #include "Ultility.h"
 #include "Button.h" 
 #include "Animation.h"
 #include "GraphAnimation.h"
 #include "SinglyAnimation.h"
+#include "TrieAnimation.h"
 #include <queue>
 #include <functional>
 #include <algorithm>
 #pragma once
 class Scene
 { 
+  public:
+      static Switch modeSwitch;
+      static bool isDarkMode;
+      Color dark1{27,79,58,255};
+      Color dark2{29,32,30,255};
+      Color light1{80,153,123,255};
+      Color light2{25,32,39,255};
+      Ani_Switch sw;
+  
     public: 
       virtual void run(Scenes& mscene)= 0;  
       
@@ -145,23 +156,35 @@ class Graph_Scene: public NodeScene
 
 };
 
-// class Trie_Scene:public NodeScene{
-//   public :
-//         static Ani_TrieInsert i;
-//         static std::vector<Edge*> edges;
-//         static animation ani; 
-//         static int Node_radius; 
-//         TrieNodePrimary* cur;
-//         float deltaTime;
-//         static TrieNodePrimary* proot;
-//         std::queue<std::string> insertQueue;  // Hàng đợi từ cần insert
-//         bool isInserting = false;   
-        
-//     public: 
-//         void CheckBuffer() override; 
-//         void run(Scenes& mscene); 
-//         Trie_Scene();
-//         void Draw();
-//         void Insert(const char& word, float duration);
-      
-// };
+ class Trie_Scene:public NodeScene{
+     public :
+         static Ani_TrieInsert i;
+          Ani_TrieSearch s;
+          Ani_TrieDelete d;
+          Ani_TrieUpdate u;
+           static std::vector<Edge*> edges;
+         unordered_map <int, vector<TrieNodePrimary*>> levelMap;
+         static animation ani;
+         static int Node_radius;
+         TrieNodePrimary* cur;
+         TrieNodePrimary* balancePointer;
+           float deltaTime;
+          std::queue<TrieNodePrimary*> deleteQueue;
+          static TrieNodePrimary* proot;
+  
+           bool isInserting = false;
+  
+      public:
+          void CheckBuffer() override;
+          void run(Scenes& mscene);
+          Trie_Scene();
+        void Draw();
+          void Insert(const char& word, float duration);
+         bool Search(const string word,float duration);
+          bool removeWord(TrieNodePrimary* node, const string& word, int depth);
+          void deleteNode();
+          bool isTmpPresent(TrieNodePrimary* tmp);
+          void balance(int level);
+          Vector2 calculatePosition(int level, int index);
+           int calculateIndex(int level, const char word);
+};

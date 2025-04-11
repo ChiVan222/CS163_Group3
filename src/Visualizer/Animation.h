@@ -35,27 +35,13 @@ class Ani_DrawEdge:public Animations
    void updateTarget(Edge* egde);
 }; 
 
-// class Ani_TrieInsert : public Animations {
-//   private:
-//       TrieNodePrimary* node_insert;
-//       Vector2 startPos;
-//       Vector2 targetPos;
-//       float radius;
-//       bool inserted;
-
-//   public:
-//       Ani_TrieInsert();
-//       Ani_TrieInsert(float duration);
+class Ani_Switch:public Animations{
+  public:
+    Vector2 startPos = {1185,45};
+    Vector2 targetPos = {1235,45};
+  public:
+    Ani_Switch();
+    void updateAnimations(float deltaTime);
+    void play();
+};
   
-//       void updateTarget(Vector2 targetPos, float radius, TrieNodePrimary* node);
-//       void play() override;
-//       void updateAnimations(float deltaTime) override;
-//       bool isInserted() const;
-//       TrieNodePrimary* getNode() const;
-//       void setDuration(float nduration);
-//   };
-  
-//   class Ani_TrieDelete : public Animations{
-//     private:
-
-//   };

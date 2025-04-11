@@ -96,3 +96,39 @@ Scenes SceneButton::getButtonScenes()
 {
     return bScenes; 
 }
+
+Switch::Switch(Vector2 pos, Vector2 rect1):Button() {
+    position = pos;
+    rect = rect1;
+    cradius = rect.y / 2;
+    centerC.x = position.x + cradius;
+    centerC.y = position.y + rect.y / 2;
+    isOn = false;
+}
+
+void Switch::SwitchDraw(){
+    Color defaultColor = {240,240,240, 255};
+    if (isOn){
+        DrawRectangleRounded((Rectangle){position.x-5.0f, position.y-5.0f, (float)rect.x+10.0f, (float)rect.y+10.0f}, 1, 1000, BLACK);
+    }
+    
+    else{
+        DrawRectangleRounded((Rectangle){position.x-5.0f, position.y-5.0f, (float)rect.x+10.0f, (float)rect.y+10.0f}, 1, 1000, LIGHTGRAY);
+    }
+    DrawCircle(centerC.x, centerC.y, cradius, WHITE);
+    
+}
+    
+bool Switch::mode(Vector2 mousePos){
+    Rectangle rect2 =  {position.x,position.y, rect.x,rect.y};
+    if(CheckCollisionPointRec(mousePos,rect2) && (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)))
+    {
+        return true;
+    }
+    else return false;
+}
+    
+void Switch::setCircle(Vector2 newPos){
+    centerC= newPos;
+}
+    
