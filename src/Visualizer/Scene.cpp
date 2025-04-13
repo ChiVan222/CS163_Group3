@@ -299,7 +299,7 @@ SceneManager::SceneManager()
     scenes.push_back(new Menu_Scene()); 
     scenes.push_back(new Singly_Scene()); 
     scenes.push_back(new Graph_Scene());
-    scenes.push_back(new Trie_Scene());
+    // scenes.push_back(new Trie_Scene());
 
 }
 SceneManager::~SceneManager() {
@@ -373,10 +373,11 @@ std::priority_queue<std::pair<int, std::function<void()>>,
                     std::vector<std::pair<int, std::function<void()>>>, 
                     FunctionComparator> Graph_Scene::animation_queue;
 animation Graph_Scene:: ani = None;
+animation_state Graph_Scene:: ani_state = animation_state::Forward;
 float MIN_DISTANCE = 100.0f;
 
 Graph_Scene::Graph_Scene() : NodeScene(), created(false), ani_insert(0.2, 0, 20, {0,0}), 
-ani_search(1.0, 0), ani_remove(1.0), ani_dijkstra(),isDragging(false), draggedNode(nullptr){
+ani_search(1.0, 0), ani_remove(1.0), ani_dijkstra(2.0, 0),isDragging(false), draggedNode(nullptr){
     Inputs.push_back(new InputField(100.0f,100.0f,Vector2({210,UI::wHeight-100}),InputType::AddEdge));
     buttons.push_back(new Button("",Vector2({0,UI::wHeight-540}),Vector2({100,100}),"Clear"));
     buttons.push_back(new Button("",Vector2({0,UI::wHeight-650}),Vector2({100,100}),"Dijkstra"));
@@ -387,14 +388,25 @@ ani_search(1.0, 0), ani_remove(1.0), ani_dijkstra(),isDragging(false), draggedNo
         std::cout << "Randomizing with " << numNodes << " nodes\n";
         randomize(numNodes);
     };
+    buttons[1]->OnClick = [this]() {
+        this->ani_state = animation_state::Backward;
+    };
+    buttons[2]->OnClick = [this]() {
+        if (this->ani_state == animation_state::Pause) {
+            this->ani_state = animation_state::Continue;
+        }
+        else this->ani_state = animation_state::Pause;
+    };
+    buttons[3]->OnClick = [this]() {
+        this->ani_state = animation_state::Forward;
+    };
     buttons[4]->OnClick = [this]() {
         clear();
     };
     buttons[5]->OnClick = [this]() {
-        if (ani == None && !graphNodes.empty()) {
-            std:: cout << "Running Dijkstra with start: " << graphNodes[0]->val << "\n"; 
+        if (ani == None && ani_dijkstra.getState() && !graphNodes.empty()) {
             ani_dijkstra = Ani_Dijkstra(2.0, graphNodes.size());
-            addFunction(animation_queue, 1, std::bind(&Ani_Dijkstra::updateTarget, &ani_dijkstra, graphNodes[0]));
+            ani_dijkstra.updateTarget(graphNodes[0]);
         }
     };
 }
@@ -699,438 +711,438 @@ void Graph_Scene::executeFunctions(std::priority_queue<std::pair<int, std::funct
     }
 }
 
-Ani_TrieInsert Trie_Scene::i;
-TrieNodePrimary* Trie_Scene::proot = new TrieNodePrimary(Vector2{640, 100}, 30, '*');
-animation Trie_Scene::ani = None;
-int Trie_Scene::Node_radius = 30;
-std::vector<Edge*>Trie_Scene::edges;
+// Ani_TrieInsert Trie_Scene::i;
+// TrieNodePrimary* Trie_Scene::proot = new TrieNodePrimary(Vector2{640, 100}, 30, '*');
+// animation Trie_Scene::ani = None;
+// int Trie_Scene::Node_radius = 30;
+// std::vector<Edge*>Trie_Scene::edges;
 
-bool candelete = false;
+// bool candelete = false;
 
-Trie_Scene::Trie_Scene(): NodeScene() {
-    edges.clear();
-    levelMap[100] = {proot};
-    cur = proot;
-    balancePointer = cur;
-}
+// Trie_Scene::Trie_Scene(): NodeScene() {
+//     edges.clear();
+//     levelMap[100] = {proot};
+//     cur = proot;
+//     balancePointer = cur;
+// }
 
-void Trie_Scene:: run(Scenes& mscene){
-    std::cout << ani << "\n";
-    deltaTime = IsWindowFocused() ? GetFrameTime() : 0;
-    Color Theme = {30,30,30,225};
-    ClearBackground(Theme);
-    DrawCommonUI();
-    DrawText("Trie", 1000, 0, 40, WHITE);
-    CheckBuffer();
-    if (ani ==None){
-        deleteNode();
-    }
-    if (IsKeyPressed(KEY_LEFT)) {
-        mscene = Menu;
-        for(int i =0; i<edges.size();i++)
-        {
-            Edge* tmp = edges[i];
-            edges[i] = nullptr;
-            delete tmp;
-        }
-        edges.clear();
-        return;
+// void Trie_Scene:: run(Scenes& mscene){
+//     std::cout << ani << "\n";
+//     deltaTime = IsWindowFocused() ? GetFrameTime() : 0;
+//     Color Theme = {30,30,30,225};
+//     ClearBackground(Theme);
+//     DrawCommonUI();
+//     DrawText("Trie", 1000, 0, 40, WHITE);
+//     CheckBuffer();
+//     if (ani ==None){
+//         deleteNode();
+//     }
+//     if (IsKeyPressed(KEY_LEFT)) {
+//         mscene = Menu;
+//         for(int i =0; i<edges.size();i++)
+//         {
+//             Edge* tmp = edges[i];
+//             edges[i] = nullptr;
+//             delete tmp;
+//         }
+//         edges.clear();
+//         return;
 
-    };
-    i.updateAnimations(deltaTime);
-    s.updateAnimations(deltaTime);
-    d.updateAnimations(deltaTime);
-    if ( (ani == Updating) ) {
-        std::cout << "Begin balance" << "\n";
-        if (cur!= proot) balance (cur->getPosition().y);
-        else {
-            balance(balancePointer->getPosition().y);
-            balancePointer = cur;
-        }
-    }
-    Draw();
-}
-void Trie_Scene::Draw() {
-    TrieNodePrimary* tmp = proot;
-    proot->Traverse(tmp);
-    for (int i = 0; i <Trie_Scene::edges.size();) {
-        if(Trie_Scene::edges[i]->TrieDraw())
-       {
-            i++;
-        }
-        else{
-            std::cout << "Error in drawing edge!" <<"\n";
-           Trie_Scene::edges.erase(Trie_Scene::edges.begin()+i);
-        }
-    }
+//     };
+//     i.updateAnimations(deltaTime);
+//     s.updateAnimations(deltaTime);
+//     d.updateAnimations(deltaTime);
+//     if ( (ani == Updating) ) {
+//         std::cout << "Begin balance" << "\n";
+//         if (cur!= proot) balance (cur->getPosition().y);
+//         else {
+//             balance(balancePointer->getPosition().y);
+//             balancePointer = cur;
+//         }
+//     }
+//     Draw();
+// }
+// void Trie_Scene::Draw() {
+//     TrieNodePrimary* tmp = proot;
+//     proot->Traverse(tmp);
+//     for (int i = 0; i <Trie_Scene::edges.size();) {
+//         if(Trie_Scene::edges[i]->TrieDraw())
+//        {
+//             i++;
+//         }
+//         else{
+//             std::cout << "Error in drawing edge!" <<"\n";
+//            Trie_Scene::edges.erase(Trie_Scene::edges.begin()+i);
+//         }
+//     }
 
-}
+// }
 
-void Trie_Scene::CheckBuffer() {
-    int type;
-    std::stringstream ss(buffer);
-    bool inputted = false;
-    std::string key;
-    if (ani!=None) return;
-    if (ani == None) {
-        ss >> type;
-        ss >> key;
-        inputted = true;
-    }
-    std::stringstream ss1(key);
-    switch (type) {
-        case 0: {
-            if (i.getState()) {
-                char x;
-                ss1 >> x;
-                ani = Inserting;
-                std::cout << "!";
-                std :: cout << x <<"\n";
-                Insert(x, 1.0f);
-            }
-            if (inputted && key.size() > 1) {
-                std::string newBuffer;
-                std::string word;
-                newBuffer += std::to_string(type);
-                while (ss1 >> word) newBuffer += word + " ";
-                while (ss >> word) {
-                    newBuffer += word + " ";
-                }
-                buffer = newBuffer;
-                inputted = false;
-                return;
-            }
+// void Trie_Scene::CheckBuffer() {
+//     int type;
+//     std::stringstream ss(buffer);
+//     bool inputted = false;
+//     std::string key;
+//     if (ani!=None) return;
+//     if (ani == None) {
+//         ss >> type;
+//         ss >> key;
+//         inputted = true;
+//     }
+//     std::stringstream ss1(key);
+//     switch (type) {
+//         case 0: {
+//             if (i.getState()) {
+//                 char x;
+//                 ss1 >> x;
+//                 ani = Inserting;
+//                 std::cout << "!";
+//                 std :: cout << x <<"\n";
+//                 Insert(x, 1.0f);
+//             }
+//             if (inputted && key.size() > 1) {
+//                 std::string newBuffer;
+//                 std::string word;
+//                 newBuffer += std::to_string(type);
+//                 while (ss1 >> word) newBuffer += word + " ";
+//                 while (ss >> word) {
+//                     newBuffer += word + " ";
+//                 }
+//                 buffer = newBuffer;
+//                 inputted = false;
+//                 return;
+//             }
 
-            else if (inputted && key.size() == 1) {
-                std::string newBuffer;
-                std::string word;
-                cur->isEndOfWord = true;
-                balancePointer = cur;
-                cur = proot;
-                while (ss >> word) {
-                    newBuffer += word + " ";
-                }
-                buffer = newBuffer;
-                inputted = false;
-                return;
-            }
-        }
-        break;
+//             else if (inputted && key.size() == 1) {
+//                 std::string newBuffer;
+//                 std::string word;
+//                 cur->isEndOfWord = true;
+//                 balancePointer = cur;
+//                 cur = proot;
+//                 while (ss >> word) {
+//                     newBuffer += word + " ";
+//                 }
+//                 buffer = newBuffer;
+//                 inputted = false;
+//                 return;
+//             }
+//         }
+//         break;
 
-        case 1: {
-            std::string x;
-            ss1 >> x;
-            ani = Removing;
-            bool removed=removeWord(proot, x,0);
-            if (removed){
-                d.setDuration(1.0f);
-                d.play();
-            }
-            else{
-                d.setDuration(1.0f);
-                d.play();
-            }
+//         case 1: {
+//             std::string x;
+//             ss1 >> x;
+//             ani = Removing;
+//             bool removed=removeWord(proot, x,0);
+//             if (removed){
+//                 d.setDuration(1.0f);
+//                 d.play();
+//             }
+//             else{
+//                 d.setDuration(1.0f);
+//                 d.play();
+//             }
 
-        }
-        break;
+//         }
+//         break;
 
-        case 2: {
-
-
-        }
-        break;
-
-        case 3: {
-            std::string x;
-            ss1 >> x;
-            ani = Searching;
-            Search(x, 1.0f);
-        }
-        break;
-
-    }
-
-   if(inputted){
-       std::string newBuffer;
-        std::string word;
-        while (ss >> word) {
-            newBuffer += word + " ";
-        }
-        buffer = newBuffer;
-        inputted =false;
-    }
-
-}
-
-//main trie function
-#include <algorithm>
-void Trie_Scene::Insert(const char& word, float duration){
-   Vector2 curPos = cur->getPosition();
-    int level = curPos.y + 80;
-    int index;
-    Vector2 nextPos;
-    TrieNodePrimary* tmp = cur;
-
-    if (cur->children.find(word) == cur->children.end()) {
-        TrieNodePrimary* newNode = new TrieNodePrimary(Vector2({100, 100}), 30, word);
-        index = calculateIndex(level, word);
-        levelMap[level].insert(levelMap[level].begin()+index, newNode);
-        std::cout << newNode->key << "\n";
-        cur->children[word] = newNode;
-        nextPos = calculatePosition(level, index);
-        Trie_Scene::i.setDuration(duration);
-        Trie_Scene::i.updateTarget(nextPos, 30, newNode);
-        bool edgeExists = std::any_of(Trie_Scene::edges.begin(), Trie_Scene::edges.end(), [tmp, newNode](Edge* edge){
-            return (edge->getFrom() == tmp) && (edge->getTo() == newNode);
-            });
-        if (!edgeExists) {
-            Trie_Scene::edges.push_back(new Edge(cur, newNode));
-        }
-
-    }
-    else if (cur->children.find(word) != cur->children.end()){
-        ani = None;
-    }
-    cur = cur->children[word];
-     curPos = cur->getPosition();
-
-}
-
-bool Trie_Scene::Search(const string word, float duration) {
-    TrieNodePrimary* tmp = proot;
-    bool found = true;
-
-    for (char ch : word) {
-        if (tmp->children.find(ch) != tmp->children.end()) {
-            tmp = tmp->children[ch];
-            tmp->SetPrimaryHighLight();
-        } else {
-            found = false;
-            break;
-        }
-    }
-    s.setDuration(duration);
-    s.setKey(word);
-    s.play();
-    return found && tmp->isEndOfWord;
-}
-
-bool Trie_Scene::removeWord(TrieNodePrimary* node, const string& word, int depth) {
-    if (!node) return false;
+//         case 2: {
 
 
-    if (depth == word.size()) {
-        if (!node->isEndOfWord) return false;
-        node->isEndOfWord = false;
-        return node->children.empty();
-    }
+//         }
+//         break;
 
-    char ch = word[depth];
+//         case 3: {
+//             std::string x;
+//             ss1 >> x;
+//             ani = Searching;
+//             Search(x, 1.0f);
+//         }
+//         break;
 
-    // Kiểm tra ch có tồn tại không trước khi truy cập
-    if (node->children.find(ch) == node->children.end()) return false;
+//     }
 
-    if (removeWord(node->children[ch], word, depth + 1)) {
-        TrieNodePrimary* tmp = node->children[ch];
-        if (tmp) {  // Kiểm tra tmp != nullptr trước khi thao tác
-            int level = tmp->getPosition().y; // Lưu level trước khi xóa
+//    if(inputted){
+//        std::string newBuffer;
+//         std::string word;
+//         while (ss >> word) {
+//             newBuffer += word + " ";
+//         }
+//         buffer = newBuffer;
+//         inputted =false;
+//     }
 
-            Trie_Scene::edges.erase(
-                std::remove_if(Trie_Scene::edges.begin(), Trie_Scene::edges.end(), [tmp](Edge* edge) {
-                    if (edge->getFrom() == tmp || edge->getTo() == tmp) {
-                        delete edge;
-                        return true;
-                    }
-                    return false;
-                }),
-                Trie_Scene::edges.end()
-            );
-            for (auto edge : Trie_Scene::edges) {
-               if (edge->getFrom() == tmp || edge->getTo() == tmp) {
-                    std::cout << "error!" << "\n";
-                }
-            }
+// }
 
-            if (levelMap.find(level) != levelMap.end()) {
-                auto& vec = levelMap[level];
+// //main trie function
+// #include <algorithm>
+// void Trie_Scene::Insert(const char& word, float duration){
+//    Vector2 curPos = cur->getPosition();
+//     int level = curPos.y + 80;
+//     int index;
+//     Vector2 nextPos;
+//     TrieNodePrimary* tmp = cur;
 
-                vec.erase(
-                    std::remove(vec.begin(), vec.end(), tmp),
-                    vec.end()
-                );
+//     if (cur->children.find(word) == cur->children.end()) {
+//         TrieNodePrimary* newNode = new TrieNodePrimary(Vector2({100, 100}), 30, word);
+//         index = calculateIndex(level, word);
+//         levelMap[level].insert(levelMap[level].begin()+index, newNode);
+//         std::cout << newNode->key << "\n";
+//         cur->children[word] = newNode;
+//         nextPos = calculatePosition(level, index);
+//         Trie_Scene::i.setDuration(duration);
+//         Trie_Scene::i.updateTarget(nextPos, 30, newNode);
+//         bool edgeExists = std::any_of(Trie_Scene::edges.begin(), Trie_Scene::edges.end(), [tmp, newNode](Edge* edge){
+//             return (edge->getFrom() == tmp) && (edge->getTo() == newNode);
+//             });
+//         if (!edgeExists) {
+//             Trie_Scene::edges.push_back(new Edge(cur, newNode));
+//         }
 
-                if (vec.empty()) {
-                    levelMap.erase(level);
-                }
-            }
-            bool stillExists = isTmpPresent(tmp);
-            std::cout << "tmp still in levelMap: " << (stillExists ? "YES" : "NO") << "\n";
+//     }
+//     else if (cur->children.find(word) != cur->children.end()){
+//         ani = None;
+//     }
+//     cur = cur->children[word];
+//      curPos = cur->getPosition();
 
-        }
-        std::cout <<tmp->key<<"\n";
-        if (node->children[ch]) {
-            std::cout <<"before delete"<<"\n";
-            deleteQueue.push(node->children[ch]);
-            std::cout <<"deleted"<<"\n";
-            node->children.erase(ch);   // Xóa khỏi danh sách children
-        }
-        else std::cout << "Error!" << "\n";
+// }
 
-        if(!node->isEndOfWord && node->children.empty()) return true;
-        else {
-            return false;
-        }
-    }
-    return false;
-}
+// bool Trie_Scene::Search(const string word, float duration) {
+//     TrieNodePrimary* tmp = proot;
+//     bool found = true;
 
-void Trie_Scene::deleteNode(){
+//     for (char ch : word) {
+//         if (tmp->children.find(ch) != tmp->children.end()) {
+//             tmp = tmp->children[ch];
+//             tmp->SetPrimaryHighLight();
+//         } else {
+//             found = false;
+//             break;
+//         }
+//     }
+//     s.setDuration(duration);
+//     s.setKey(word);
+//     s.play();
+//     return found && tmp->isEndOfWord;
+// }
 
-    if(!deleteQueue.empty()){
-        TrieNodePrimary* tmp = deleteQueue.front();
-        for (auto edge : Trie_Scene::edges) {
-            if (edge->getFrom() == tmp|| edge->getTo() == tmp) {
-                std::cout << "Edge Error!\n";
-                return;
-            }
-        }
-        std::cout << "Edge None Error!\n";
-        deleteQueue.pop();
-        std::cout<<tmp->key<<" before delete (queue)"<<"\n";
-        delete tmp;
-        std::cout<<" after delete"<<"\n";
-    }
-
-}
-bool Trie_Scene::isTmpPresent(TrieNodePrimary* tmp) {
-    for (const auto& [key, vec] : levelMap) {
-        if (std::find(vec.begin(), vec.end(), tmp) != vec.end()) {
-            return true; // Tìm thấy tmp trong một vector nào đó
-        }
-    }
-    return false; // Không tìm thấy tmp ở bất kỳ đâu
-}
-
-// Function to balance nodes
-void Trie_Scene:: balance(int level){
-    int lev = level;
-    int print =0;
-    while (levelMap.find(lev) != levelMap.end() && !levelMap[lev].empty()){
-        for (TrieNodePrimary* parent : levelMap[lev]){
-            if (parent->children.empty()) continue;
-            Vector2 parentPosition = parent->getPosition();
-            int posX= parentPosition.x;
-           int sumofChildren = 0;
-            for(auto& pair:parent->children){
-                Vector2 childPosition = pair.second->getPosition();
-                sumofChildren+=childPosition.x;
-            }
-            int oldPosition = sumofChildren/parent->children.size();
-            int offset = posX - oldPosition;
-            for(auto& pair:parent->children){
-                Vector2 childPosition = pair.second->getPosition();
-                pair.second->SetPosition({childPosition.x + offset,childPosition.y});
-            }
-
-        }
-        lev += 80;
-    }
-    std::cout << "Done first half"<<"\n";
-    lev = level - 80;
-    while (levelMap.find(lev) != levelMap.end() && !levelMap[lev].empty()){
-        for (TrieNodePrimary* parent : levelMap[lev]){
-            if (parent->children.empty()) continue;
-            Vector2 parentPosition = parent->getPosition();
-           int posX= parentPosition.x;
-            int sumofChildren = 0;
-            for(auto& pair:parent->children){
-                Vector2 childPosition = pair.second->getPosition();
-                sumofChildren+=childPosition.x;
-            }
-            int oldPosition = sumofChildren/parent->children.size();
-            int offset = posX - oldPosition;
-            parent->SetPosition({parentPosition.x - offset, parentPosition.y});
-        }
-        lev -= 80;
-    }
-    std::cout << "Done balancing"<<"\n";
-    ani =  None;
-}
-
-Vector2 Trie_Scene::calculatePosition(int level, int index){
-    if (levelMap[level].empty()) return{0,0};
+// bool Trie_Scene::removeWord(TrieNodePrimary* node, const string& word, int depth) {
+//     if (!node) return false;
 
 
-   if ((levelMap[level].size()==1) || (cur->children.size()==1))  {
-        Vector2 parent = cur->getPosition();
-        Vector2 newPosition = {parent.x, parent.y+80};
-        std:: cout << "Right Level " <<level <<" "<< " new pos " << newPosition.x << " " << newPosition.y << "\n";
-        return newPosition;
-   }
-    else {
-       float distance = 80 / (levelMap[level].size()-1);
-        for (int i =0; i <levelMap[level].size(); i++ ){
-            TrieNodePrimary* tmp = levelMap[level][i];
-            if (i<index) {
-                Vector2 old = tmp->getPosition();
-                std:: cout << "Level " <<level <<" "<< tmp->key << " old pos " << old.x << " " << old.y << "\n";
-                Vector2 newPosition = {old.x-distance, old.y};
-                std:: cout << "Level " <<level <<" "<< tmp->key << " new pos " << newPosition.x << " " << newPosition.y<< "\n";
-                tmp->SetPosition(newPosition);
-            }
-            if (i> index){
-                Vector2 old = tmp->getPosition();
-                std:: cout << "Level " <<level <<" "<< tmp->key << "old pos " << old.x << " " << old.y << "\n";
-                Vector2 newPosition = {old.x+ distance, old.y};
-                std:: cout << "Level " <<level <<" "<< tmp->key << " new pos " << newPosition.x << " " << newPosition.y<< "\n";                
-                tmp->SetPosition(newPosition);
-            }
+//     if (depth == word.size()) {
+//         if (!node->isEndOfWord) return false;
+//         node->isEndOfWord = false;
+//         return node->children.empty();
+//     }
 
-        }
-        if (index > 0 && index < levelMap[level].size() - 1) {
-            Vector2 neighbor1 = levelMap[level][index-1]->getPosition();
-            Vector2 neighbor2 = levelMap[level][index+1]->getPosition();
-            Vector2 newPosition = {(neighbor1.x + neighbor2.x)/2, neighbor1.y};
-            return newPosition;
-        }
+//     char ch = word[depth];
 
-        else if (index > 0 && index == levelMap[level].size() - 1){
-            Vector2 neighbor1 = levelMap[level][index-1]->getPosition();
-            Vector2 newPosition = {(neighbor1.x + 80), neighbor1.y};
-            return newPosition;
-        }
+//     // Kiểm tra ch có tồn tại không trước khi truy cập
+//     if (node->children.find(ch) == node->children.end()) return false;
 
-        else if (index ==0 ){
-            Vector2 neighbor1 = levelMap[level][index+1]->getPosition();
-            Vector2 newPosition = {(neighbor1.x - 80), neighbor1.y};
-            return newPosition;
-        }
-    }
+//     if (removeWord(node->children[ch], word, depth + 1)) {
+//         TrieNodePrimary* tmp = node->children[ch];
+//         if (tmp) {  // Kiểm tra tmp != nullptr trước khi thao tác
+//             int level = tmp->getPosition().y; // Lưu level trước khi xóa
 
-}
+//             Trie_Scene::edges.erase(
+//                 std::remove_if(Trie_Scene::edges.begin(), Trie_Scene::edges.end(), [tmp](Edge* edge) {
+//                     if (edge->getFrom() == tmp || edge->getTo() == tmp) {
+//                         delete edge;
+//                         return true;
+//                     }
+//                     return false;
+//                 }),
+//                 Trie_Scene::edges.end()
+//             );
+//             for (auto edge : Trie_Scene::edges) {
+//                if (edge->getFrom() == tmp || edge->getTo() == tmp) {
+//                     std::cout << "error!" << "\n";
+//                 }
+//             }
 
-int Trie_Scene::calculateIndex(int level, const char word){
-    int index =0;
-    int parentLevel = level - 80;
-    if (level == 180) {
-        if(cur->children.empty()) return 0;
-        else{
-            index = std::distance(cur->children.begin(), cur->children.lower_bound(word));
-        }
-    }
+//             if (levelMap.find(level) != levelMap.end()) {
+//                 auto& vec = levelMap[level];
 
-    else {
+//                 vec.erase(
+//                     std::remove(vec.begin(), vec.end(), tmp),
+//                     vec.end()
+//                 );
 
-        if (levelMap[parentLevel].empty()) return 0;
-        for (TrieNodePrimary* parentNode : levelMap[parentLevel]) {
-            if (parentNode != cur) {
-                index += parentNode->children.size();
-            } else {
-                index += std::distance(cur->children.begin(), cur->children.lower_bound(word));
-                break;
-            }
-        }
-        std::cout << " Runned " << index << "\n";
-    }
-    return index;
-}
+//                 if (vec.empty()) {
+//                     levelMap.erase(level);
+//                 }
+//             }
+//             bool stillExists = isTmpPresent(tmp);
+//             std::cout << "tmp still in levelMap: " << (stillExists ? "YES" : "NO") << "\n";
+
+//         }
+//         std::cout <<tmp->key<<"\n";
+//         if (node->children[ch]) {
+//             std::cout <<"before delete"<<"\n";
+//             deleteQueue.push(node->children[ch]);
+//             std::cout <<"deleted"<<"\n";
+//             node->children.erase(ch);   // Xóa khỏi danh sách children
+//         }
+//         else std::cout << "Error!" << "\n";
+
+//         if(!node->isEndOfWord && node->children.empty()) return true;
+//         else {
+//             return false;
+//         }
+//     }
+//     return false;
+// }
+
+// void Trie_Scene::deleteNode(){
+
+//     if(!deleteQueue.empty()){
+//         TrieNodePrimary* tmp = deleteQueue.front();
+//         for (auto edge : Trie_Scene::edges) {
+//             if (edge->getFrom() == tmp|| edge->getTo() == tmp) {
+//                 std::cout << "Edge Error!\n";
+//                 return;
+//             }
+//         }
+//         std::cout << "Edge None Error!\n";
+//         deleteQueue.pop();
+//         std::cout<<tmp->key<<" before delete (queue)"<<"\n";
+//         delete tmp;
+//         std::cout<<" after delete"<<"\n";
+//     }
+
+// }
+// bool Trie_Scene::isTmpPresent(TrieNodePrimary* tmp) {
+//     for (const auto& [key, vec] : levelMap) {
+//         if (std::find(vec.begin(), vec.end(), tmp) != vec.end()) {
+//             return true; // Tìm thấy tmp trong một vector nào đó
+//         }
+//     }
+//     return false; // Không tìm thấy tmp ở bất kỳ đâu
+// }
+
+// // Function to balance nodes
+// void Trie_Scene:: balance(int level){
+//     int lev = level;
+//     int print =0;
+//     while (levelMap.find(lev) != levelMap.end() && !levelMap[lev].empty()){
+//         for (TrieNodePrimary* parent : levelMap[lev]){
+//             if (parent->children.empty()) continue;
+//             Vector2 parentPosition = parent->getPosition();
+//             int posX= parentPosition.x;
+//            int sumofChildren = 0;
+//             for(auto& pair:parent->children){
+//                 Vector2 childPosition = pair.second->getPosition();
+//                 sumofChildren+=childPosition.x;
+//             }
+//             int oldPosition = sumofChildren/parent->children.size();
+//             int offset = posX - oldPosition;
+//             for(auto& pair:parent->children){
+//                 Vector2 childPosition = pair.second->getPosition();
+//                 pair.second->SetPosition({childPosition.x + offset,childPosition.y});
+//             }
+
+//         }
+//         lev += 80;
+//     }
+//     std::cout << "Done first half"<<"\n";
+//     lev = level - 80;
+//     while (levelMap.find(lev) != levelMap.end() && !levelMap[lev].empty()){
+//         for (TrieNodePrimary* parent : levelMap[lev]){
+//             if (parent->children.empty()) continue;
+//             Vector2 parentPosition = parent->getPosition();
+//            int posX= parentPosition.x;
+//             int sumofChildren = 0;
+//             for(auto& pair:parent->children){
+//                 Vector2 childPosition = pair.second->getPosition();
+//                 sumofChildren+=childPosition.x;
+//             }
+//             int oldPosition = sumofChildren/parent->children.size();
+//             int offset = posX - oldPosition;
+//             parent->SetPosition({parentPosition.x - offset, parentPosition.y});
+//         }
+//         lev -= 80;
+//     }
+//     std::cout << "Done balancing"<<"\n";
+//     ani =  None;
+// }
+
+// Vector2 Trie_Scene::calculatePosition(int level, int index){
+//     if (levelMap[level].empty()) return{0,0};
+
+
+//    if ((levelMap[level].size()==1) || (cur->children.size()==1))  {
+//         Vector2 parent = cur->getPosition();
+//         Vector2 newPosition = {parent.x, parent.y+80};
+//         std:: cout << "Right Level " <<level <<" "<< " new pos " << newPosition.x << " " << newPosition.y << "\n";
+//         return newPosition;
+//    }
+//     else {
+//        float distance = 80 / (levelMap[level].size()-1);
+//         for (int i =0; i <levelMap[level].size(); i++ ){
+//             TrieNodePrimary* tmp = levelMap[level][i];
+//             if (i<index) {
+//                 Vector2 old = tmp->getPosition();
+//                 std:: cout << "Level " <<level <<" "<< tmp->key << " old pos " << old.x << " " << old.y << "\n";
+//                 Vector2 newPosition = {old.x-distance, old.y};
+//                 std:: cout << "Level " <<level <<" "<< tmp->key << " new pos " << newPosition.x << " " << newPosition.y<< "\n";
+//                 tmp->SetPosition(newPosition);
+//             }
+//             if (i> index){
+//                 Vector2 old = tmp->getPosition();
+//                 std:: cout << "Level " <<level <<" "<< tmp->key << "old pos " << old.x << " " << old.y << "\n";
+//                 Vector2 newPosition = {old.x+ distance, old.y};
+//                 std:: cout << "Level " <<level <<" "<< tmp->key << " new pos " << newPosition.x << " " << newPosition.y<< "\n";                
+//                 tmp->SetPosition(newPosition);
+//             }
+
+//         }
+//         if (index > 0 && index < levelMap[level].size() - 1) {
+//             Vector2 neighbor1 = levelMap[level][index-1]->getPosition();
+//             Vector2 neighbor2 = levelMap[level][index+1]->getPosition();
+//             Vector2 newPosition = {(neighbor1.x + neighbor2.x)/2, neighbor1.y};
+//             return newPosition;
+//         }
+
+//         else if (index > 0 && index == levelMap[level].size() - 1){
+//             Vector2 neighbor1 = levelMap[level][index-1]->getPosition();
+//             Vector2 newPosition = {(neighbor1.x + 80), neighbor1.y};
+//             return newPosition;
+//         }
+
+//         else if (index ==0 ){
+//             Vector2 neighbor1 = levelMap[level][index+1]->getPosition();
+//             Vector2 newPosition = {(neighbor1.x - 80), neighbor1.y};
+//             return newPosition;
+//         }
+//     }
+
+// }
+
+// int Trie_Scene::calculateIndex(int level, const char word){
+//     int index =0;
+//     int parentLevel = level - 80;
+//     if (level == 180) {
+//         if(cur->children.empty()) return 0;
+//         else{
+//             index = std::distance(cur->children.begin(), cur->children.lower_bound(word));
+//         }
+//     }
+
+//     else {
+
+//         if (levelMap[parentLevel].empty()) return 0;
+//         for (TrieNodePrimary* parentNode : levelMap[parentLevel]) {
+//             if (parentNode != cur) {
+//                 index += parentNode->children.size();
+//             } else {
+//                 index += std::distance(cur->children.begin(), cur->children.lower_bound(word));
+//                 break;
+//             }
+//         }
+//         std::cout << " Runned " << index << "\n";
+//     }
+//     return index;
+// }

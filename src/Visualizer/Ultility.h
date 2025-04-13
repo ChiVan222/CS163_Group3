@@ -11,5 +11,5 @@ enum animation
     None, Searching, Inserting, Updating, Removing, EdgeDrawing, Inserting_2, Straightening, DijkstraRunning
 };
 enum animation_state{ 
-    Backward  =-1,Pause, Forward,  
+    Backward = -1, Pause, Forward, Continue
 };  

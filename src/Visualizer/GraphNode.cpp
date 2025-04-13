@@ -69,7 +69,7 @@ void GraphNode::repulseNearbyNodes(float minDistance) {
 }
 
 void GraphNode::highlight(Color color) {
-    for (float r = radius; r <= radius + 5.0f; r += 1.0f) {
+    for (float r = radius; r <= radius + 5.0f; r += 0.1f) {
         DrawCircleLinesV(position, r, color);
     }
 }

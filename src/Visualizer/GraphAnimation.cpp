@@ -196,102 +196,131 @@ Ani_Dijkstra::~Ani_Dijkstra() {
 }
 
 void Ani_Dijkstra::updateAnimations(float deltaTime) {
-    if (isDone || !cur) return;
-    elapsed_time += deltaTime;
+    if (isDone || history.empty() || !isPrerunDone) return;
 
+    switch (Graph_Scene::ani_state) {
+        case animation_state::Pause:
+            break;
+
+        case animation_state::Backward:
+            if (currentStep > 0) currentStep--;
+            Graph_Scene::ani_state = animation_state::Pause;
+            break;
+
+        case animation_state::Forward:
+            if (currentStep + 1 < (int)history.size()) currentStep++;
+            Graph_Scene::ani_state = animation_state::Pause;
+            break;
+
+        case animation_state::Continue:
+            break;
+        default:
+            break;         
+    }
+
+    if (Graph_Scene::ani_state != animation_state::Pause) elapsed_time += deltaTime;
+
+    if (elapsed_time >= duration) {
+        std::cout << "Step " << currentStep << " is done!\n";
+        if (++currentStep >= history.size()) {
+            isDone = true;
+            Graph_Scene::ani = None;
+            std::cout << "Animation of Dijkstra is completed!\n";
+            return;
+        }
+        elapsed_time = 0;
+    }
+
+    const auto& snap = history[currentStep];
+    cur = snap.cur;
+    visited = snap.visited;
+    mp = snap.mp;
+    dist = snap.dist;
+    curEdge = snap.curEdge;
+
+    // Highlight nodes
     for (auto* node : Graph_Scene::graphNodes) {
         if (node) {
             std::string text = (dist[node->val] == INF) ? "INF" : std::to_string(dist[node->val]);
             DrawText(text.c_str(), node->getPosition().x - 10, node->getPosition().y - 50, 15, YELLOW);
-
             if (visited.find(node) != visited.end() && node != cur) {
                 node->highlight(GREEN); 
             } 
-            else if (cur && node == cur && elapsed_time < duration) {
-                node->highlight(ORANGE); 
+            else if (cur && node == cur) {
+                node->highlight(DARKPURPLE); 
             }
         }
     }
-    if (curEdge && elapsed_time < duration) {
+    // Highlight curEdge
+    if (curEdge) {
         curEdge->Draw(ORANGE, 1);
-        static_cast<GraphNode*>(curEdge->getTo())->highlight(ORANGE);
-    }
-    if (elapsed_time >= duration && cur) {
-        auto neighbors = cur->getAdj();
-        bool processedAllNeighbors = true;
-
-        for (auto* v : neighbors) {
-            if (mp[cur].find(v) != mp[cur].end()) continue;
-            curEdge = nullptr;
-            for (auto* edge : Graph_Scene::Edges) {
-                if ((edge->getFrom() == cur && edge->getTo() == v) ||
-                    (edge->getFrom() == v && edge->getTo() == cur)) {
-                    curEdge = edge;
-                    break;
-                }
-            }
-            if (!curEdge) std::cout << "Warning no edges from " << cur->val << "\n";
-            mp[cur].insert(v);
-            mp[v].insert(cur);
-
-            if (visited.find(v) == visited.end()) {
-                int weight = curEdge->weight;
-                if (dist[v->val] > dist[cur->val] + weight) {
-                    dist[v->val] = dist[cur->val] + weight;
-                    pq.push({dist[v->val], v});
-                    std::cout << "Updated dist[" << v->val << "] = " << dist[v->val] << "\n";
-                }
-            }
-
-            elapsed_time = 0;
-            processedAllNeighbors = false;
-            break;
-        }
-
-        if (processedAllNeighbors) {
-            visited.insert(cur);
-            mp.erase(cur);
-            cur = nullptr;
-            curEdge = nullptr;
-            while (!pq.empty()) {
-                auto [d, v] = pq.top();
-                pq.pop();
-                if (visited.find(v) == visited.end()) {
-                    cur = v;
-                    std::cout << "Processing node with value: " << cur->val << " and dist: " << d << "\n";
-                    break;
-                }
-            }
-        }
-
-        if (!cur) {
-            isDone = true;
-            Graph_Scene::ani = None;
-            std::cout << "Dijkstra is completed!\n";
-        }
-
+        if (curEdge->getTo() == cur) static_cast<GraphNode*>(curEdge->getFrom())->highlight(ORANGE);
+        else static_cast<GraphNode*>(curEdge->getTo())->highlight(ORANGE);
     }
 }
 
-void Ani_Dijkstra::play() {
-    std::cout << "Play Dijkstra for undirected graph\n";
-    isDone = false;
-}
+void Ani_Dijkstra::play() {}
 
 void Ani_Dijkstra::updateTarget(GraphNode* start) {
     if (isDone && Graph_Scene::ani == None) {
-        std::cout << "Update Target Dijkstra\n";
-        Graph_Scene::ani = DijkstraRunning;
-        cur = start;
-        curEdge = nullptr;
-        dist.resize(Graph_Scene::graphNodes.size(), INF);
-        dist[start->val] = 0;
-        visited.clear();
-        mp.clear();
-        while (!pq.empty()) pq.pop();
-        pq.push({0, start});
-        visited.insert(start);
-        std::cout << "Next to play\n";
-        play();
+        std::cout << "Starting prerun for Dijkstra\n";
+        prerun(start);
     }
+}
+
+void Ani_Dijkstra::prerun(GraphNode* start) {
+    history.clear();
+    dist.clear();
+    pq = {};
+    visited.clear();
+    mp.clear();
+    dist.resize(Graph_Scene::graphNodes.size(), INF);
+
+    dist[start->val] = 0;
+    pq.push({0, start});
+    GraphNode* cur_local = nullptr;
+    Edge* curEdge_local = nullptr;
+    std::unordered_set<GraphNode*> visited_local;
+    std::unordered_map<GraphNode*, std::unordered_set<GraphNode*>> mp_local;
+    std::vector<int> dist_local = dist;
+
+    while (!pq.empty()) {
+        auto [d, u] = pq.top(); pq.pop();
+        if (visited_local.count(u)) continue;
+        cur_local = u;
+        visited_local.insert(u);
+        history.push_back({u, visited_local, mp_local, dist_local, nullptr});
+        for (auto* v : u->getAdj()) {
+            if (mp_local[u].count(v)) continue;
+
+            Edge* e = nullptr;
+            for (auto* edge : Graph_Scene::Edges) {
+                if ((edge->getFrom() == u && edge->getTo() == v) || (edge->getFrom() == v && edge->getTo() == u)) {
+                    e = edge; break;
+                }
+            }
+
+            mp_local[u].insert(v);
+            mp_local[v].insert(u);
+
+            if (dist_local[v->val] > dist_local[u->val] + e->weight) {
+                dist_local[v->val] = dist_local[u->val] + e->weight;
+                pq.push({dist_local[v->val], v});
+            }
+
+            // Store snapshot after each edge relax
+            history.push_back({u, visited_local, mp_local, dist_local, e});
+        }
+    }
+    history.push_back({nullptr, visited_local, mp_local, dist_local, nullptr});
+
+    cur = nullptr;
+    curEdge = nullptr;
+    currentStep = 0;
+    isDone = false;
+    isPrerunDone = true;
+    Graph_Scene::ani = DijkstraRunning;
+    Graph_Scene::ani_state = animation_state::Continue;
+    std::cout << "Running Dijkstra\n";
+    std::cout << "Dijkstra is included " << history.size() - 1 << " steps!\n";
 }

@@ -57,7 +57,7 @@ public:
     void updateAnimations(float deltaTime) override;
     void play() override;
     void updateTarget(GraphNode* start);
-
+    void prerun(GraphNode* start);
 private:
     GraphNode* cur;
     Edge* curEdge;
@@ -65,4 +65,14 @@ private:
     std::unordered_map<GraphNode*, std::unordered_set<GraphNode*>> mp;
     std::vector<int> dist;
     std::priority_queue<std::pair<int, GraphNode*>, std::vector<std::pair<int, GraphNode*>>, std::greater<>> pq;
+    struct DijkstraSnapshot {
+        GraphNode* cur;
+        std::unordered_set<GraphNode*> visited;
+        std::unordered_map<GraphNode*, std::unordered_set<GraphNode*>> mp;
+        std::vector<int> dist;
+        Edge* curEdge;
+    };
+    std::vector<DijkstraSnapshot> history;
+    int currentStep = -1;
+    bool isPrerunDone = false;
 };

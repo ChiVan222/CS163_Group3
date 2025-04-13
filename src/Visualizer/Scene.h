@@ -137,6 +137,7 @@ class Graph_Scene: public NodeScene
                                std::vector<std::pair<int, std::function<void()>>>, 
                                FunctionComparator> animation_queue;
     static animation ani;
+    static animation_state ani_state;
 
   private:
     bool created;
@@ -156,35 +157,35 @@ class Graph_Scene: public NodeScene
 
 };
 
- class Trie_Scene:public NodeScene{
-     public :
-         static Ani_TrieInsert i;
-          Ani_TrieSearch s;
-          Ani_TrieDelete d;
-          Ani_TrieUpdate u;
-           static std::vector<Edge*> edges;
-         unordered_map <int, vector<TrieNodePrimary*>> levelMap;
-         static animation ani;
-         static int Node_radius;
-         TrieNodePrimary* cur;
-         TrieNodePrimary* balancePointer;
-           float deltaTime;
-          std::queue<TrieNodePrimary*> deleteQueue;
-          static TrieNodePrimary* proot;
+//  class Trie_Scene:public NodeScene{
+//      public :
+//          static Ani_TrieInsert i;
+//           Ani_TrieSearch s;
+//           Ani_TrieDelete d;
+//           Ani_TrieUpdate u;
+//            static std::vector<Edge*> edges;
+//          unordered_map <int, vector<TrieNodePrimary*>> levelMap;
+//          static animation ani;
+//          static int Node_radius;
+//          TrieNodePrimary* cur;
+//          TrieNodePrimary* balancePointer;
+//            float deltaTime;
+//           std::queue<TrieNodePrimary*> deleteQueue;
+//           static TrieNodePrimary* proot;
   
-           bool isInserting = false;
+//            bool isInserting = false;
   
-      public:
-          void CheckBuffer() override;
-          void run(Scenes& mscene);
-          Trie_Scene();
-        void Draw();
-          void Insert(const char& word, float duration);
-         bool Search(const string word,float duration);
-          bool removeWord(TrieNodePrimary* node, const string& word, int depth);
-          void deleteNode();
-          bool isTmpPresent(TrieNodePrimary* tmp);
-          void balance(int level);
-          Vector2 calculatePosition(int level, int index);
-           int calculateIndex(int level, const char word);
-};
+//       public:
+//           void CheckBuffer() override;
+//           void run(Scenes& mscene);
+//           Trie_Scene();
+//         void Draw();
+//           void Insert(const char& word, float duration);
+//          bool Search(const string word,float duration);
+//           bool removeWord(TrieNodePrimary* node, const string& word, int depth);
+//           void deleteNode();
+//           bool isTmpPresent(TrieNodePrimary* tmp);
+//           void balance(int level);
+//           Vector2 calculatePosition(int level, int index);
+//            int calculateIndex(int level, const char word);
+// };
