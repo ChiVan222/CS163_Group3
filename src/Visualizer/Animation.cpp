@@ -23,13 +23,35 @@ int Animations::getDuration()
 void Ani_DrawEdge::updateAnimations(float deltaTime){
     if(isDone ||!target) return;
     elapsed_time+= deltaTime;
-    Vector2 nposition= Vector2(
-     {std::min(target->getTo()->getPosition().x,target->getFrom()->getPosition().x+(elapsed_time/duration)*target->getTo()->getPosition().x) -Singly_Scene::Node_radius,
-     std::min(target->getTo()->getPosition().y,target->getFrom()->getPosition().y+(elapsed_time/duration)*target->getTo()->getPosition().y)});
-   
-   
-    Vector2 from = Vector2({target->getFrom()->getPosition().x + Singly_Scene::Node_radius,target->getFrom()->getPosition().y});
-    DrawLineBezier(from,nposition, target->getsize(),WHITE); 
+    
+    Vector2 npos= Vector2(
+     {std::min(dpos.x,cpos.x+(elapsed_time/duration)*(dpos.x-cpos.x)),
+     std::min(dpos.y,cpos.y+(elapsed_time/duration)*(dpos.y- cpos.y))});
+
+     int segments = 20;
+     for (int i = 0; i < segments; i++) {
+         float t1 = (float)i / segments;       
+         float t2 = (float)(i + 1) / segments; 
+         Vector2 p1 = Vector2({
+             cpos.x + t1 * (npos.x - cpos.x),
+             cpos.y + t1 * (npos.y - cpos.y)}
+         );
+         Vector2 p2 = Vector2({
+             cpos.x + t2 * (npos.x - cpos.x),
+             cpos.y + t2 * (npos.y - cpos.y)}
+         );
+          Color color = {
+             (unsigned char)(128 * (1 - t1)), 
+             0,                             
+             (unsigned char)(128 + (127 * t1)), 
+             255                             
+         };
+          DrawLineEx(p1, p2, target->getsize(), color);
+     }
+
+
+
+    // DrawLineEx(cpos,npos,target->getsize(),BLUE);
     if (elapsed_time >= duration) {
       isDone = true;
       elapsed_time = 0;
@@ -38,6 +60,7 @@ void Ani_DrawEdge::updateAnimations(float deltaTime){
      }
  }
  void Ani_DrawEdge::play(){
+    
      elapsed_time =0; 
      isDone =false;
  }
@@ -45,6 +68,17 @@ void Ani_DrawEdge::updateAnimations(float deltaTime){
  {  
      Singly_Scene::ani = EdgeDrawing;
      target = egde; 
+      PolyNode* from = egde->getFrom();
+       PolyNode* to = egde->getTo(); 
+        float theta = atan2(to->getPosition().y - from->getPosition().y, 
+                    to->getPosition().x - from->getPosition().x);
+
+        cpos = Vector2({Singly_Scene::Node_radius * cos(theta) + from->getPosition().x,
+                         Singly_Scene::Node_radius * sin(theta) + from->getPosition().y});
+
+        dpos = Vector2({to->getPosition().x - Singly_Scene::Node_radius * cos(theta),
+                         to->getPosition().y - Singly_Scene::Node_radius * sin(theta)});
+       
      play();  
  }
  Ani_DrawEdge::Ani_DrawEdge(): Animations(0) ,target(nullptr)

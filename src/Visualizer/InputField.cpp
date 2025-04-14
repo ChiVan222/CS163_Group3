@@ -111,9 +111,10 @@ std::string  formatInputAddEdge(const std::string& type, const std::string& inpu
 }
 bool InputField::Send(std::string& buffer)
 {
- 
+    
     if(IsKeyPressed(KEY_ENTER)||((button->IsHovered(UI::mousePos)&& IsMouseButtonPressed(MOUSE_BUTTON_LEFT))))
     {
+        Singly_Scene::ClearHistory();
         if(input!="")
        {  
         if(type == AddEdge) buffer += formatInputAddEdge(std::to_string(static_cast<int>(type)),' ' +input +" ");

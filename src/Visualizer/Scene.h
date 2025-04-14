@@ -13,6 +13,7 @@
 #include <queue>
 #include <functional>
 #include <algorithm>
+#include <stack>
 #pragma once
 class Scene
 { 
@@ -49,7 +50,6 @@ class NodeScene: public Scene{
      std::string buffer; 
      std::vector<InputField*> Inputs; 
      std::vector<Button*>  buttons;  
-     animation_state ani_state; 
     public :
     void DrawCommonUI(); 
     NodeScene(); 
@@ -74,8 +74,44 @@ class Menu_Scene: public Scene
 struct FunctionComparator {
   bool operator()(const std::pair<int, std::function<void()>>& a, 
                   const std::pair<int, std::function<void()>>& b) {
-      return a.first < b.first;  
+      return a.first > b.first;  
   }
+};
+struct Singly_Scene_Info{
+     std::vector<Edge*> Edges;
+     SinglyLinkedListNode Nodes; 
+     SinglyNode* cur;  
+     Singly_Scene_Info() = default;
+     Singly_Scene_Info(const Singly_Scene_Info & other) {
+      std::unordered_map<SinglyNode*, SinglyNode*> oldToNew;
+      SinglyNode* src = other.Nodes.get_root();
+      SinglyNode* prevNew = nullptr;
+      while (src) {
+          SinglyNode* newNode = new SinglyNode(*src);
+          oldToNew[src] = newNode;
+
+          if (!prevNew)
+              Nodes.set_root(newNode);
+          else
+              prevNew->SetNext(newNode);
+
+          prevNew = newNode;
+          src = src->next;
+      }
+      Nodes.size = other.Nodes.size;
+      cur  = other.cur? oldToNew[other.cur] : nullptr; 
+      for (Edge* edge : other.Edges) {
+          SinglyNode* origFrom = static_cast<SinglyNode*>(edge->getFrom());
+          SinglyNode* origTo   = static_cast<SinglyNode*>(edge->getTo());
+
+          if (oldToNew.count(origFrom) && oldToNew.count(origTo)) {
+              Edge* newEdge = new Edge(oldToNew[origFrom], oldToNew[origTo]);
+              newEdge->isDraw = 1;
+              Edges.push_back(newEdge);
+          }
+      }
+  }
+
 };
 class Singly_Scene:public NodeScene
 {
@@ -86,6 +122,7 @@ class Singly_Scene:public NodeScene
     static std::priority_queue<std::pair<int, std::function<void()>>, 
     std::vector<std::pair<int, std::function<void()>>>, 
    FunctionComparator> UI_animation_queue;
+   static std::pair<int, std::function<void()>> cur_animation;
       static int cur_priority;  
         Ani_LinkedListSearching a;
         bool isDragging;
@@ -102,6 +139,13 @@ class Singly_Scene:public NodeScene
         static SinglyLinkedListNode Nodes; 
         static animation ani; 
         static int Node_radius; 
+        static std::stack<std::pair<int, std::function<void()>>>  ani_his;
+        static std::stack<std::pair<int, std::function<void()>>>  ani_replay_his;
+        static std::queue<std::pair<int, std::function<void()>>>  pending_animation;
+        static animation_state ani_state;  
+        
+        std::stack<Singly_Scene_Info> scene_info_his;
+        std::stack<Singly_Scene_Info> scene_info_replay_his; 
     public: 
         void CheckBuffer() override; 
         void run(Scenes& mscene); 
@@ -113,7 +157,14 @@ class Singly_Scene:public NodeScene
         void executeFunctions(std::priority_queue<std::pair<int, std::function<void()>>, 
         std::vector<std::pair<int, std::function<void()>>>, 
        FunctionComparator>& q);
+       static void ClearHistory();
        void UI_executeFunctions();
+       void executeBackwardFunction(); 
+
+       Singly_Scene_Info getInfo();
+       void loadInfo(Singly_Scene_Info&& info); 
+       void loadInfo(const Singly_Scene_Info& info); 
+
 };
 
 class Graph_Scene: public NodeScene 
@@ -157,35 +208,35 @@ class Graph_Scene: public NodeScene
 
 };
 
-//  class Trie_Scene:public NodeScene{
-//      public :
-//          static Ani_TrieInsert i;
-//           Ani_TrieSearch s;
-//           Ani_TrieDelete d;
-//           Ani_TrieUpdate u;
-//            static std::vector<Edge*> edges;
-//          unordered_map <int, vector<TrieNodePrimary*>> levelMap;
-//          static animation ani;
-//          static int Node_radius;
-//          TrieNodePrimary* cur;
-//          TrieNodePrimary* balancePointer;
-//            float deltaTime;
-//           std::queue<TrieNodePrimary*> deleteQueue;
-//           static TrieNodePrimary* proot;
+ class Trie_Scene:public NodeScene{
+     public :
+         static Ani_TrieInsert i;
+          Ani_TrieSearch s;
+          Ani_TrieDelete d;
+          Ani_TrieUpdate u;
+           static std::vector<Edge*> edges;
+         unordered_map <int, vector<TrieNodePrimary*>> levelMap;
+         static animation ani;
+         static int Node_radius;
+         TrieNodePrimary* cur;
+         TrieNodePrimary* balancePointer;
+           float deltaTime;
+          std::queue<TrieNodePrimary*> deleteQueue;
+          static TrieNodePrimary* proot;
   
-//            bool isInserting = false;
+           bool isInserting = false;
   
-//       public:
-//           void CheckBuffer() override;
-//           void run(Scenes& mscene);
-//           Trie_Scene();
-//         void Draw();
-//           void Insert(const char& word, float duration);
-//          bool Search(const string word,float duration);
-//           bool removeWord(TrieNodePrimary* node, const string& word, int depth);
-//           void deleteNode();
-//           bool isTmpPresent(TrieNodePrimary* tmp);
-//           void balance(int level);
-//           Vector2 calculatePosition(int level, int index);
-//            int calculateIndex(int level, const char word);
-// };
+      public:
+          void CheckBuffer() override;
+          void run(Scenes& mscene);
+          Trie_Scene();
+        void Draw();
+          void Insert(const char& word, float duration);
+         bool Search(const string word,float duration);
+          bool removeWord(TrieNodePrimary* node, const string& word, int depth);
+          void deleteNode();
+          bool isTmpPresent(TrieNodePrimary* tmp);
+          void balance(int level);
+          Vector2 calculatePosition(int level, int index);
+           int calculateIndex(int level, const char word);
+};

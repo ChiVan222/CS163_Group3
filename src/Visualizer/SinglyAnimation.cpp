@@ -11,29 +11,50 @@ Ani_LinkedListSearching::Ani_LinkedListSearching(float duration, int target)
 
 Ani_LinkedListSearching::Ani_LinkedListSearching() : Animations(0){
     isDone =true;
-
 }
 
 void Ani_LinkedListSearching::updateAnimations(float deltaTime) {
-    if(isDone||!Singly_Scene::cur||Singly_Scene::ani != Searching) return; 
-    elapsed_time += deltaTime;
+    if(isDone||!Singly_Scene::cur) return; 
+    elapsed_time += fabs(deltaTime);
     Singly_Scene::cur->SetPrimaryHighLight();
     if (elapsed_time >= duration/Singly_Scene::Nodes.get_size()) {
-        if (Singly_Scene::cur && Singly_Scene::cur->value != target) {
-            Singly_Scene::cur->SetNullHighLight();
-            Singly_Scene::cur = Singly_Scene::cur->next;
-        } else if( Singly_Scene::cur && Singly_Scene::cur->value == target)
-        {
-            isDone = true;
-            Singly_Scene::ani=None;
-        }
-         if(Singly_Scene::cur == nullptr)
-        {
-            isDone = true;
-            Singly_Scene::ani=None;
-            Singly_Scene::cur =Singly_Scene::Nodes.get_root();
-        }
-        
+
+            if (Singly_Scene::cur && (Singly_Scene::cur->value != target || Singly_Scene::ani_state == Backward)) {
+                Singly_Scene::cur->SetNullHighLight();
+                std::cout<<Singly_Scene::cur->value<<"\n";
+                if(Singly_Scene::ani_state == Forward)Singly_Scene::cur = Singly_Scene::cur->next;
+                else if(Singly_Scene::ani_state == Backward)
+                {
+                    if(Singly_Scene::cur != Singly_Scene::Nodes.get_root())
+                    { 
+                        SinglyNode* tmp = Singly_Scene::Nodes.get_root();
+                        while(tmp&& tmp->next != Singly_Scene::cur)
+                        {
+                         tmp = tmp->next; 
+                        }
+                        Singly_Scene::cur = tmp;
+                    }
+                }
+            } else if( Singly_Scene::cur && Singly_Scene::cur->value == target && Singly_Scene::ani_state == Forward)
+            {
+                isDone = true;
+                Singly_Scene::ani=None;
+                Singly_Scene::ani_his.push(Singly_Scene::cur_animation);
+            }
+            else if( Singly_Scene::cur && Singly_Scene::cur== Singly_Scene::Nodes.get_root() && Singly_Scene::ani_state == Backward)
+            {
+                isDone = true;
+                Singly_Scene::ani=None;
+                Singly_Scene::ani_replay_his.push(Singly_Scene::cur_animation);
+            }
+             if(Singly_Scene::cur == nullptr)
+            {
+                isDone = true;
+                Singly_Scene::ani=None;
+                Singly_Scene::cur =Singly_Scene::Nodes.get_root();
+                if(Singly_Scene::ani_state == Forward) Singly_Scene::ani_his.push(Singly_Scene::cur_animation);
+                else if(Singly_Scene::ani_state == Backward )Singly_Scene::ani_replay_his.push(Singly_Scene::cur_animation);
+            }
         elapsed_time = 0;
     }
 }
@@ -48,7 +69,7 @@ void Ani_LinkedListSearching::updateTarget(int x)
     return; 
   }
   Singly_Scene::cur->SetNullHighLight();
-  Singly_Scene::cur = Singly_Scene::Nodes.get_root(); 
+  if(Singly_Scene::ani_state==Forward) Singly_Scene::cur = Singly_Scene::Nodes.get_root();
   play();
 }
 
@@ -61,10 +82,17 @@ Ani_LinkedListSearching& Ani_LinkedListSearching::operator=(Ani_LinkedListSearch
     if (this == &other) return *this;
     isDone= other.isDone;
     target = other.target; 
+    elapsed_time = other.elapsed_time; 
     return *this;
 }
 
-
+Ani_LinkedListSearching& Ani_LinkedListSearching::operator=(const Ani_LinkedListSearching& other) noexcept {
+    if (this == &other) return *this;
+    isDone= other.isDone;
+    target = other.target; 
+    elapsed_time = other.elapsed_time ;
+    return *this;
+}
 //Linked List Inserting 
 Ani_LinkedListInsert::Ani_LinkedListInsert() : Animations(0){
 
@@ -89,29 +117,68 @@ void Ani_LinkedListInsert::updateTarget(int x, int nradius, Vector2 nposition)
 void Ani_LinkedListInsert::play()
 { 
     node_insert = new SinglyNode(src_pos, radius,target);
-    if(Singly_Scene::cur) 
-    {
-      Singly_Scene::de.setDuration(0.5);
-      Singly_Scene::Edges.push_back(new Edge(Singly_Scene::cur,node_insert));
-      Singly_Scene::addFunction(Singly_Scene::animation_queue,2, std::bind(&Ani_DrawEdge::updateTarget, &Singly_Scene::de,Singly_Scene::Edges.back()));
-    }
-    Singly_Scene::Nodes.Insert(node_insert,duration/5);  
-    Singly_Scene::cur = node_insert; 
+   
+        if(Singly_Scene::cur) 
+        {
+            if(Singly_Scene::ani_state == Forward) 
+            {
+                Singly_Scene::Edges.push_back(new Edge(Singly_Scene::cur,node_insert));
+                Singly_Scene::addFunction(Singly_Scene::animation_queue,Singly_Scene::cur_animation.first-2, std::bind(&Ani_DrawEdge::updateTarget, &Singly_Scene::de,Singly_Scene::Edges.back()));
+
+            }
+        }
+        if(Singly_Scene::ani_state == Forward) 
+        {
+            Singly_Scene::Nodes.Insert(node_insert,duration/5);       
+             Singly_Scene::cur = node_insert; 
+        }
+
+        if(Singly_Scene::ani_state == Backward) 
+        {
+            SinglyNode* cur   = Singly_Scene::Nodes.get_root(); 
+            while(cur && cur->next && cur->next->getValue() != node_insert->getValue())
+            {
+                cur = cur->next;   
+            }
+            Singly_Scene::Nodes.DeleteNode(cur,duration/5); 
+            Singly_Scene::ani = None;
+            Singly_Scene::ani_replay_his.push(Singly_Scene::cur_animation);
+            return; 
+        }
     isDone =false;
 }
 void Ani_LinkedListInsert::updateAnimations(float deltaTime)
 { 
     
-    if(isDone||!node_insert||Singly_Scene::ani != Inserting) return;
+    if(isDone||!node_insert) return;
+    if(elapsed_time < 0 && deltaTime < 0 )return; 
     elapsed_time += deltaTime;
+    if(elapsed_time <=0)
+    { 
+        isDone = true;
+        elapsed_time = 0;
+        Singly_Scene::ani = None; 
+        Singly_Scene::ani_replay_his.push(Singly_Scene::cur_animation);
+    }
     node_insert->SetPosition(Vector2({std::min(position.x,(elapsed_time/duration)*position.x),std::min(position.y,(elapsed_time/duration)*position.y)}));
     if (elapsed_time >= duration) {
         isDone = true;
         elapsed_time = 0;
-        Singly_Scene::ani = None; 
+        Singly_Scene::ani = None;
+        Singly_Scene::ani_his.push(Singly_Scene::cur_animation);
     }
 }
-
+Ani_LinkedListInsert& Ani_LinkedListInsert::operator=(const Ani_LinkedListInsert& other) noexcept {
+    if (this == &other) return *this;
+    isDone= other.isDone;
+    target = other.target; 
+    elapsed_time = other.elapsed_time ;
+    radius  = other.radius;
+    position = other.position;
+    node_insert = other.node_insert; 
+    src_pos = other.src_pos;
+    return *this;
+}
 //Linked List Move
 void Ani_MoveList::updateTarget(Vector2 newoffset, SinglyNode* node)
 {
@@ -135,25 +202,41 @@ void Ani_MoveList::updateAnimations(float deltaTime)
 {
     if(isDone)return; 
     SinglyNode* cur = root; 
-    elapsed_time += deltaTime; 
+
+    if(elapsed_time < 0 && deltaTime < 0 )return; 
+    elapsed_time += deltaTime;
+    if(elapsed_time <=0)
+    { 
+        isDone = true;
+        elapsed_time = 0;
+        Singly_Scene::ani = None; 
+        Singly_Scene::ani_replay_his.push(Singly_Scene::cur_animation);
+    }
+
     if(elapsed_time<= duration ||!isDone)
    {
-     while(cur)
-        {
+
          Vector2 newpos  =  Vector2({cur->getPosition().x + offset.x*deltaTime/duration,cur->getPosition().y + offset.y*deltaTime/duration});
          cur->SetPosition(newpos); 
-         cur = cur->next;
-        }
+        cur->BackwardDistanceConstraints(2*Singly_Scene::Node_radius +50);
         if(elapsed_time> duration)
         {
             isDone =true; 
             root= nullptr; 
             elapsed_time =0; 
+            Singly_Scene::ani_his.push(Singly_Scene::cur_animation);
         }
    }
 }
 
-
+Ani_MoveList& Ani_MoveList::operator=(const Ani_MoveList& other) noexcept {
+    if (this == &other) return *this;
+    isDone= other.isDone;
+    root = other.root; 
+    offset =    other.offset;
+    elapsed_time = other.elapsed_time ;
+    return *this;
+}
 
 Ani_LinkedListDelete::Ani_LinkedListDelete(float duration, int target):Animations(duration), target(target)
 {
@@ -204,7 +287,7 @@ void Ani_LinkedListDelete::play() {
 }
 void Ani_LinkedListDelete::updateAnimations(float deltaTime)
 {
-    if(isDone||Singly_Scene::ani != Removing) return;
+    if(isDone) return;
     elapsed_time += deltaTime;
     if(Singly_Scene::cur)Singly_Scene::cur->SetPrimaryHighLight();
     if (elapsed_time >= duration/Singly_Scene::Nodes.get_size()) {
@@ -220,79 +303,129 @@ void Ani_LinkedListDelete::updateAnimations(float deltaTime)
         elapsed_time = 0;
     }
 }
+Ani_LinkedListDelete& Ani_LinkedListDelete::operator=(const Ani_LinkedListDelete& other) noexcept {
+    if (this == &other) return *this;
+    isDone= other.isDone;
 
+    elapsed_time = other.elapsed_time ;
+    return *this;
+}
 Ani_InsertRandomList::Ani_InsertRandomList(float duration): Animations(duration) ,target(nullptr)
+{
+    isDone = true; 
+}
+Ani_InsertRandomList::Ani_InsertRandomList(): Animations(0) ,target(nullptr)
 {
     isDone = true; 
 }
 void Ani_InsertRandomList::play()
 { 
     isDone = false;
+  if( Singly_Scene::ani_state == Forward)
+  {
     elapsed_time=0;  
+  }else if (Singly_Scene::ani_state == Backward){
+    // elapsed_time = (1- target->getRadius()/(Vector2Length(target->getPosition()-startpos)) - 0.1)*duration; 
+    elapsed_time = duration;
+  }
     Singly_Scene::cur = Singly_Scene::Nodes.get_root();
 }
 
-void Ani_InsertRandomList::updateTarget(SinglyNode* node){
+void Ani_InsertRandomList::updateTarget(Vector2 position, int value){
     if(!Singly_Scene::Nodes.get_root())
     { 
-         Singly_Scene::Nodes.set_root(node); 
-         Singly_Scene::cur = node; 
-         UI::camera.target  =  node->getPosition();
+         target = new SinglyNode(position, Singly_Scene::Node_radius, value); 
+         Singly_Scene::Nodes.set_root(target); 
+         Singly_Scene::cur = target; 
+         UI::camera.target  =  target->getPosition();
          return; 
     }
     Singly_Scene::ani = Inserting_2; 
     startpos = Singly_Scene::Nodes.get_root()->getPosition();
-    target = node;
+    target = new SinglyNode(position, Singly_Scene::Node_radius, value); 
     play(); 
 }
 void Ani_InsertRandomList::updateAnimations(float deltaTime)
 { 
-    if(isDone||!target||Singly_Scene::ani != Inserting_2) return;
-    
+    if(isDone||!target) return;
     target->Draw(); 
+    if(elapsed_time < 0 && deltaTime<0 ) return; 
     elapsed_time += deltaTime;
+    if(elapsed_time <= 0 && Singly_Scene::ani_state == Backward)
+    { 
+        Singly_Scene::Nodes.DeleteAtEnd(); 
+        delete target;    
+        target =nullptr; 
+        isDone = true;  
+        Singly_Scene::ani = None;
+        Singly_Scene::ani_replay_his.push(Singly_Scene::cur_animation); 
+        return; 
+    } 
     float t = elapsed_time / duration;
     Vector2 position = target->getPosition(); 
     Vector2 newPos = { startpos.x + t * (position.x - startpos.x),
                        startpos.y + t * (position.y - startpos.y) };
     Singly_Scene::Nodes.get_root()->SetPosition(newPos);
-    Singly_Scene::addFunction(Singly_Scene::UI_animation_queue,2, [newPos]() {
-        UI::ChangeCameraTarget(newPos); 
-    });
+    UI::ChangeCameraTarget(newPos);
     float newzoom = 1; 
-    Singly_Scene::addFunction(Singly_Scene::UI_animation_queue,2,[newzoom]() {
-        UI::ChangeCameraZoom(newzoom); 
-    });
+    UI::ChangeCameraZoom(newzoom);
     Singly_Scene::Nodes.get_root()->ForwardDistanceConstraints(2*Singly_Scene::Node_radius +50);
     // Singly_Scene::Nodes.get_root()->ForwardAngleConstraints(2*PI/3);
-    if(CheckCollisionCircles(Singly_Scene::Nodes.get_root()->getPosition(),Singly_Scene::Node_radius,target->getPosition(),Singly_Scene::Node_radius))
+    if(Singly_Scene::ani_state == Forward && CheckCollisionCircles(Singly_Scene::Nodes.get_root()->getPosition(),Singly_Scene::Node_radius,target->getPosition(),Singly_Scene::Node_radius))
     {
         Singly_Scene::Nodes.InsertAtEnd(target,2*Singly_Scene::Node_radius +50);
         isDone = true;
         elapsed_time = 0;
+        Singly_Scene::ani_his.push(Singly_Scene::cur_animation); 
         Singly_Scene::Nodes.get_root()->ForwardDistanceConstraints(2*Singly_Scene::Node_radius +50);
         // Singly_Scene::Nodes.get_root()->ForwardAngleConstraints(2*PI/3);
-
-        Singly_Scene::ani = None; 
+        Singly_Scene::ani = None;   
     }
     if (elapsed_time >= duration) {
+        Singly_Scene::cur_animation.first++; 
+        Singly_Scene::ani_his.push(Singly_Scene::cur_animation); 
         isDone = true;
         elapsed_time = 0;
         Singly_Scene::ani = None; 
     }
 }
+
+
+Ani_InsertRandomList& Ani_InsertRandomList::operator=(const Ani_InsertRandomList& other) noexcept {
+    if (this == &other) return *this;
+    isDone= other.isDone;
+    root = other.root; 
+    endpos = other.endpos; 
+    startpos = other.startpos;
+    elapsed_time = other.elapsed_time ;
+    return *this;
+}
+
 Ani_MoveNode::Ani_MoveNode(float duration):Animations(duration)
+{
+    isDone = true; 
+}
+Ani_MoveNode::Ani_MoveNode():Animations(0)
 {
     isDone = true; 
 }
 void Ani_MoveNode::play()
 { 
     isDone = false;
-    elapsed_time=0;  
+    if( Singly_Scene::ani_state == Forward)
+    {
+      elapsed_time=0;  
+    }else if (Singly_Scene::ani_state == Backward){
+      elapsed_time = duration;
+    }
     Singly_Scene::cur = target;
      
 }
 Ani_Straighten::Ani_Straighten(float duration): Animations(duration) 
+{
+    isDone = true; 
+}
+Ani_Straighten::Ani_Straighten(): Animations(0) 
 {
     isDone = true; 
 }
@@ -308,8 +441,16 @@ void Ani_MoveNode::updateTarget(SinglyNode* node,Vector2 Endpos){
 }
 void Ani_MoveNode::updateAnimations(float deltaTime)
 {
-    if(isDone||!target)return; 
+    if(isDone||!target)return;
+    if(elapsed_time < 0 && deltaTime < 0 )return; 
     elapsed_time += deltaTime; 
+    if(elapsed_time <= 0 && Singly_Scene::ani_state == Backward)
+    { 
+        isDone = true;  
+        Singly_Scene::ani = None;
+        Singly_Scene::ani_replay_his.push(Singly_Scene::cur_animation); 
+        return; 
+    }  
     if(elapsed_time<= duration ||!isDone)
    {
         float t = elapsed_time / duration;
@@ -328,14 +469,28 @@ void Ani_MoveNode::updateAnimations(float deltaTime)
         {
             isDone =true; 
             elapsed_time =0; 
+            Singly_Scene::ani_his.push(Singly_Scene::cur_animation);
         }
    }
 }
 
+Ani_MoveNode& Ani_MoveNode::operator=(const Ani_MoveNode& other) noexcept {
+    if (this == &other) return *this;
+    isDone= other.isDone;
+    endpos = other.endpos; 
+    startpos = other.startpos;
+    elapsed_time = other.elapsed_time ;
+    return *this;
+}
 void Ani_Straighten::play()
 { 
     isDone = false;
-    elapsed_time=0;  
+    if( Singly_Scene::ani_state == Forward)
+    {
+      elapsed_time=0;  
+    }else if (Singly_Scene::ani_state == Backward){
+      elapsed_time = duration;
+    }
     Singly_Scene::mn.setDuration(1); 
     Singly_Scene::mn.updateTarget(Singly_Scene::Nodes.get_root(), endpos);  
 }
@@ -348,8 +503,16 @@ void Ani_Straighten ::updateTarget(Vector2 Endpos)
 void Ani_Straighten::updateAnimations(float deltaTime)
 {
     if(isDone)return; 
+    if(elapsed_time < 0 && deltaTime < 0 )return; 
     elapsed_time += deltaTime; 
-    if(elapsed_time>= Singly_Scene::mn.getDuration()&& Singly_Scene::mn.getState())
+    if(elapsed_time <= 0 && Singly_Scene::ani_state == Backward)
+    { 
+        isDone = true;  
+        Singly_Scene::ani = None;
+        Singly_Scene::ani_replay_his.push(Singly_Scene::cur_animation); 
+        return; 
+    } 
+    if(Singly_Scene::ani_state == Forward && elapsed_time>= Singly_Scene::mn.getDuration()&& Singly_Scene::mn.getState())
    {
        if(Singly_Scene::cur->next)
        { 
@@ -362,6 +525,14 @@ void Ani_Straighten::updateAnimations(float deltaTime)
             isDone =true; 
             elapsed_time =0; 
             Singly_Scene::ani = None;
+            Singly_Scene::ani_his.push(Singly_Scene::cur_animation);
         }
    }
+}
+Ani_Straighten& Ani_Straighten::operator=(const Ani_Straighten& other) noexcept {
+    if (this == &other) return *this;
+    isDone= other.isDone;
+    endpos = other.endpos; 
+    elapsed_time = other.elapsed_time ;
+    return *this;
 }

@@ -26,6 +26,8 @@ class Ani_DrawEdge:public Animations
 {
   private: 
     Edge* target; 
+    Vector2 cpos;
+    Vector2 dpos;
   public : 
    Ani_DrawEdge(); 
    Ani_DrawEdge(float duration); 

@@ -3,10 +3,24 @@
 #include <string>
 #include "Scene.h"
 #include "UI.h"
+#include <sstream>
 #include <raymath.h>
-SinglyNode:: SinglyNode(Vector2 pos,float radius, int value):PolyNode(pos,radius),next(nullptr), value(value)
-{ }
-
+SinglyNode:: SinglyNode(Vector2 pos,float radius, int nvalue):PolyNode(pos,radius),next(nullptr), value(nvalue)
+{ 
+    value = nvalue;
+    input = std::to_string(value);
+}
+SinglyNode:: SinglyNode(SinglyNode* newnode):PolyNode(newnode->position,newnode->radius),next(nullptr)
+{
+    value = newnode->value;
+    input = std::to_string(value); 
+}; 
+SinglyNode::SinglyNode(const SinglyNode& other)
+: PolyNode(other.position,other.radius), next(nullptr)
+{
+       value = other.value;
+    input = std::to_string(value); 
+}
 bool SinglyNode::Draw()
 {  
     Color defaulta = GetColor(0x2E3192);
@@ -15,7 +29,7 @@ bool SinglyNode::Draw()
     DrawCircleGradient(position.x, position.y,radius, circle_primaryColor, defaule_sec);
     DrawCircleLines(position.x, position.y,radius, WHITE);
     int textSize = radius / 2;
-    const char* text = std::to_string(value).c_str();
+    const char* text = input.c_str();
     int textWidth = MeasureText(text, textSize);
     int textHeight = textSize;
     int textX = position.x - textWidth / 2;
@@ -79,9 +93,8 @@ void SinglyLinkedListNode::Insert(SinglyNode* node, float duration)
     if(cur2->next)
     { 
         SinglyNode* tmp = cur2->next; 
-        Singly_Scene::m.setDuration(duration);
-        Singly_Scene::m.updateTarget(Vector2({node->getRadius()*2 +50,0}),tmp); 
-
+        Singly_Scene::m.setDuration(0.5);
+        Singly_Scene::addFunction(Singly_Scene::animation_queue,Singly_Scene::cur_animation.first,std::bind(Ani_MoveList::updateTarget,&Singly_Scene::m,Vector2({node->getRadius()*2 +50,0}),tmp));
         Singly_Scene::Edges.erase(
             std::remove_if(Singly_Scene::Edges.begin(),Singly_Scene::Edges.end(),[cur2,tmp](Edge* edge){
                     if (edge->getFrom() == cur2&& edge->getTo() == tmp) {
@@ -94,7 +107,7 @@ void SinglyLinkedListNode::Insert(SinglyNode* node, float duration)
         cur2->next = node;
         node->next = tmp;
         Singly_Scene::Edges.push_back(new Edge(node,tmp)); 
-        Singly_Scene::addFunction(Singly_Scene::animation_queue,2, std::bind(&Ani_DrawEdge::updateTarget, &Singly_Scene::de,Singly_Scene::Edges.back())); 
+        Singly_Scene::addFunction(Singly_Scene::animation_queue,Singly_Scene::cur_animation.first-1, std::bind(&Ani_DrawEdge::updateTarget, &Singly_Scene::de,Singly_Scene::Edges.back())); 
 
     }else{
         cur2->next = node;
@@ -129,7 +142,7 @@ void SinglyLinkedListNode::InsertAtEnd(SinglyNode* node,float maxDistance)
         cur2->getPosition().y + direction.y * maxDistance }));
 
     Singly_Scene::Edges.push_back(new Edge(cur2,node)); 
-    Singly_Scene::addFunction(Singly_Scene::animation_queue,2, std::bind(&Ani_DrawEdge::updateTarget, &Singly_Scene::de,Singly_Scene::Edges.back())); 
+    Singly_Scene::addFunction(Singly_Scene::animation_queue,Singly_Scene::cur_animation.first-1, std::bind(&Ani_DrawEdge::updateTarget, &Singly_Scene::de,Singly_Scene::Edges.back())); 
 
 }
 void SinglyLinkedListNode::Traverse()
@@ -153,7 +166,7 @@ void SinglyLinkedListNode::TraverseCheck()
          {
             Singly_Scene::cur = cur;
          }
-         
+         cur->OnClicked(); 
          cur = cur->next; 
     }
 
@@ -162,7 +175,7 @@ int  SinglyLinkedListNode::get_size(){
     return size; 
 }
 
-SinglyNode* SinglyLinkedListNode::get_root()
+SinglyNode* SinglyLinkedListNode::get_root() const
 {
      return root;
 } 
@@ -186,33 +199,98 @@ void SinglyLinkedListNode::set_root(SinglyNode* nroot)
   root = nroot;
 
 }
+void SinglyLinkedListNode::DeleteAtEnd()
+{  
+    if(!root && !root->next) return; 
+  SinglyNode* cur = root; 
+ 
+  while(cur&& cur->next && cur->next->next)
+  {
+    cur = cur->next; 
+  }
+  SinglyNode* tmp = cur->next;
+  Singly_Scene::Edges.erase(
+    std::remove_if(Singly_Scene::Edges.begin(),Singly_Scene::Edges.end(),[tmp](Edge* edge){
+            if (edge->getTo() == tmp) {
+                delete edge; 
+                return true;
+            }
+            return false;
+        }),
+Singly_Scene::Edges.end());
+  cur->next = nullptr; 
+   
+}   
 bool SinglyNode::isClicked()
 { 
-    if(CheckCollisionPointCircle(UI::mousePos, position, radius)&&IsMouseButtonPressed(MOUSE_BUTTON_LEFT))  
-    { 
-         OnClicked(); 
-         return true; 
-    }return false; 
+   
+    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && CheckCollisionPointCircle(UI::mousePos, position,radius)) {
+       return true;
+    } else  {
+        return false; 
+    }
+    return false; 
+}
+bool safe_string_to_int(const std::string& str, int& out) {
+    std::istringstream iss(str);
+    int val;
+    if (iss >> val && iss.eof()) {
+        out = val;
+        return true;
+    }
+    return false;
 }
 void SinglyNode::OnClicked()
 {
-    // Singly_Scene::cur  = this; 
+    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && CheckCollisionPointCircle(UI::mousePos, position,radius)) {
+        isActive = true;
+    } else if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        input = std::to_string(value); 
+        isActive = false;
+    }
+    if(isActive)
+    {
+        int key =GetCharPressed();
+        while(key>0)
+        {       
+            if(key>=32 && key<= 125 && input.size()<max_input)
+            {
+                input +=  (char)key; 
+            }
+            key = GetCharPressed();
+        }
+        if(GetTime() - last_deletedtime >= wait_time)
+        { 
+            if(IsKeyDown(KEY_BACKSPACE)&& !input.empty())
+            {
+                input.pop_back(); 
+                last_deletedtime  = GetTime(); 
+            }
+        }
+        if(IsKeyPressed(KEY_ENTER))
+        {
+                safe_string_to_int(input,value); 
+        }
+       
+    }
 }
 void SinglyLinkedListNode::DeleteNode(SinglyNode* cur2, float duration)
-{ 
+{
     if(!cur2)
-    {
+    {   std::cout<<"AAAA"<<"\n";
         return ; 
     }
+    std::cout<<"BBBB"<<"\n";
   
     if(cur2->next)
     { 
+        std::cout<<"DELETED"<<"\n";
         SinglyNode* tmp = cur2->next; 
         if(tmp->next)
         {
             
             Singly_Scene::Edges.push_back(new Edge(cur2,tmp->next));
-            Singly_Scene::addFunction(Singly_Scene::animation_queue,2, std::bind(&Ani_DrawEdge::updateTarget, &Singly_Scene::de,Singly_Scene::Edges.back()));
+            Singly_Scene::addFunction(Singly_Scene::animation_queue,Singly_Scene::cur_animation.first-1, std::bind(&Ani_DrawEdge::updateTarget, &Singly_Scene::de,Singly_Scene::Edges.back()));
             Singly_Scene::m.setDuration(duration);
             Singly_Scene::m.updateTarget(Vector2({(float)(-Singly_Scene::Node_radius*2-50),0}),tmp->next); 
         }
@@ -325,3 +403,26 @@ void SinglyNode::BackwardAngleConstraints(float maxAngle)
     }
     next->BackwardAngleConstraints(maxAngle);
 }
+
+SinglyLinkedListNode::SinglyLinkedListNode(const SinglyLinkedListNode& other) {
+    size = other.size;
+    root = nullptr;
+
+    if (!other.root) return;
+
+    SinglyNode* currOther = other.root;
+    SinglyNode* prevNew = nullptr;
+
+    while (currOther) {
+        SinglyNode* newNode = new SinglyNode(*currOther); 
+        if (!root) {
+            root = newNode;
+        } else {
+            prevNew->SetNext(newNode);
+        }
+        prevNew = newNode;
+        currOther = currOther->next;
+    }
+}
+
+
