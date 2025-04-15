@@ -353,7 +353,6 @@ void Singly_Scene::loadInfo(const Singly_Scene_Info& info) {
     }
     Nodes.size = info.Nodes.size;
     cur  =    info.cur? infoToNew[info.cur] : info.Nodes.get_root(); 
-    std::cout<<cur<<"\n";
 
     for (Edge* edge : info.Edges) {
         SinglyNode* from = static_cast<SinglyNode*>(edge->getFrom());
@@ -480,7 +479,7 @@ SceneManager::SceneManager()
     scenes.push_back(new Menu_Scene()); 
     scenes.push_back(new Singly_Scene()); 
     scenes.push_back(new Graph_Scene());
-    // scenes.push_back(new Trie_Scene());
+    scenes.push_back(new Trie_Scene());
 
 }
 SceneManager::~SceneManager() {
