@@ -167,6 +167,12 @@ class Singly_Scene:public NodeScene
 
 };
 
+struct FunctionComparator2 {
+  bool operator()(const std::pair<int, std::function<void()>>& a, 
+                  const std::pair<int, std::function<void()>>& b) {
+      return a.first < b.first;  
+  }
+};
 class Graph_Scene: public NodeScene 
 {
   public:
@@ -186,7 +192,7 @@ class Graph_Scene: public NodeScene
     static std::vector<Edge*> Edges; 
     static std::priority_queue<std::pair<int, std::function<void()>>, 
                                std::vector<std::pair<int, std::function<void()>>>, 
-                               FunctionComparator> animation_queue;
+                               FunctionComparator2> animation_queue;
     static animation ani;
     static animation_state ani_state;
 
@@ -201,10 +207,10 @@ class Graph_Scene: public NodeScene
     Ani_Dijkstra ani_dijkstra;
     void addFunction(std::priority_queue<std::pair<int, std::function<void()>>, 
                      std::vector<std::pair<int, std::function<void()>>>,
-                     FunctionComparator>& q, int priority, std::function<void()> func); 
+                     FunctionComparator2>& q, int priority, std::function<void()> func); 
     void executeFunctions(std::priority_queue<std::pair<int, std::function<void()>>, 
                           std::vector<std::pair<int, std::function<void()>>>, 
-                          FunctionComparator>& q);
+                          FunctionComparator2>& q);
 
 };
 

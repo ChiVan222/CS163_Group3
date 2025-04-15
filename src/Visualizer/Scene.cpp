@@ -579,7 +579,7 @@ std::vector<GraphNode*> Graph_Scene::graphNodes;
 std::vector<Edge*> Graph_Scene::Edges; 
 std::priority_queue<std::pair<int, std::function<void()>>, 
                     std::vector<std::pair<int, std::function<void()>>>, 
-                    FunctionComparator> Graph_Scene::animation_queue;
+                    FunctionComparator2> Graph_Scene::animation_queue;
 animation Graph_Scene:: ani = None;
 animation_state Graph_Scene:: ani_state = animation_state::Forward;
 float MIN_DISTANCE = 100.0f;
@@ -902,14 +902,14 @@ void Graph_Scene::draggingNode() {
 
 void Graph_Scene::addFunction(std::priority_queue<std::pair<int, std::function<void()>>, 
                 std::vector<std::pair<int, std::function<void()>>>,
-                FunctionComparator>& q, int priority, std::function<void()> func) {
+                FunctionComparator2>& q, int priority, std::function<void()> func) {
     q.push({priority, func});
     std::cout << "Push function with priority " << priority << "\n";
 }
 
 void Graph_Scene::executeFunctions(std::priority_queue<std::pair<int, std::function<void()>>, 
                                 std::vector<std::pair<int, std::function<void()>>>, 
-                                FunctionComparator>& q) {
+                                FunctionComparator2>& q) {
     while (!q.empty() && ani == None) {
         auto topFunc = q.top();
         if ((!ani_insert.getState() && topFunc.first == 0) || (!ani_search.getState() && topFunc.first == 0)) break;
@@ -1326,7 +1326,7 @@ Vector2 Trie_Scene::calculatePosition(int level, int index){
             return newPosition;
         }
     }
-
+    return {0,0};
 }
 
 int Trie_Scene::calculateIndex(int level, const char word){

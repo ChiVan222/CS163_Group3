@@ -288,6 +288,7 @@ void Ani_Dijkstra::prerun(GraphNode* start) {
         auto [d, u] = pq.top(); pq.pop();
         if (visited_local.count(u)) continue;
         cur_local = u;
+        history.push_back({nullptr, visited_local, mp_local, dist_local, nullptr});
         visited_local.insert(u);
         history.push_back({u, visited_local, mp_local, dist_local, nullptr});
         for (auto* v : u->getAdj()) {
@@ -299,6 +300,7 @@ void Ani_Dijkstra::prerun(GraphNode* start) {
                     e = edge; break;
                 }
             }
+            history.push_back({u, visited_local, mp_local, dist_local, e});
 
             mp_local[u].insert(v);
             mp_local[v].insert(u);
