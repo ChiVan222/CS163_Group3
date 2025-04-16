@@ -164,7 +164,6 @@ class Singly_Scene:public NodeScene
        Singly_Scene_Info getInfo();
        void loadInfo(Singly_Scene_Info&& info); 
        void loadInfo(const Singly_Scene_Info& info); 
-
 };
 
 struct FunctionComparator2 {
@@ -173,6 +172,7 @@ struct FunctionComparator2 {
       return a.first < b.first;  
   }
 };
+
 class Graph_Scene: public NodeScene 
 {
   public:
@@ -180,13 +180,13 @@ class Graph_Scene: public NodeScene
     ~Graph_Scene();
     void run(Scenes& mscene);
     void Draw();
+    void DrawButtons();
     void CheckBuffer() override;
     GraphNode* findNodeByVal(int value);
     void AddNode(int value);
     void AddEdge(int from, int to, int weight);
     void randomize(int nodes);
     void clear();
-    void runDijkstra(int start);
 
     static std::vector<GraphNode*> graphNodes;
     static std::vector<Edge*> Edges; 

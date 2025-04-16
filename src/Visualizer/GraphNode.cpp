@@ -1,17 +1,21 @@
+#include <iostream>
 #include <cmath>
 #include <algorithm>
 #include "GraphNode.h"
 #include "Edge.h"
 #include "Scene.h"
+#include "UI.h"
 
-#include <iostream>
 const float GraphNode::LEFT = 500.0f;
 const float GraphNode::RIGHT = 1600.0f;
 const float GraphNode::TOP = 100.0f;
 const float GraphNode::BOTTOM = 900.0f;
 const float GraphNode::REPULSE_STRENGTH = 3.0f;
 
-GraphNode::GraphNode(Vector2 position, float radius, int value) : PolyNode(position, radius), val(value), velocity({0,0})   {}
+GraphNode::GraphNode(Vector2 position, float radius, int value) : PolyNode(position, radius), velocity({0,0}), updateVal(false)   {
+    val = value;
+    input = std::to_string(val);
+}
 
 bool GraphNode::Draw() {
     drawNodes();
@@ -21,7 +25,8 @@ bool GraphNode::Draw() {
 
 void GraphNode::drawNodes() const {
     DrawCircleV(position, radius, WHITE);
-    DrawText(TextFormat("%d", val), position.x - 10, position.y - 10, 20, BLUE);
+    Vector2 textPos = {position.x - 10, position.y - 10};
+    DrawText(input.c_str(), textPos.x, textPos.y, 20, BLUE);
 }
 
 void GraphNode::drawEdges() const {
@@ -71,5 +76,66 @@ void GraphNode::repulseNearbyNodes(float minDistance) {
 void GraphNode::highlight(Color color) {
     for (float r = radius; r <= radius + 5.0f; r += 0.1f) {
         DrawCircleLinesV(position, r, color);
+    }
+}
+
+bool isSafeSTOI(const std::string& str, int& newVal) {
+    std::istringstream iss(str);
+    int val;
+    if (iss >> val && iss.eof()) {
+        newVal = val;
+        return true;
+    }
+    return false;
+}
+
+bool isValidVal(int newVal) {
+    for (auto* node : Graph_Scene::graphNodes) {
+        if (node->val == newVal) return false;
+    }
+    return true;
+}
+
+void GraphNode::onClick() {
+    if (Graph_Scene::ani == None) {
+        Vector2 mousePos = UI::mousePos;
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && CheckCollisionPointCircle(mousePos, position, radius)) {
+            std::cout << "Updating new value" << val << "\n";
+            updateVal = true;
+        }
+        else if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            updateVal = false;
+            input = std::to_string(val);
+        }
+
+        if (updateVal) {
+            int key = GetCharPressed();
+            while (key > 0) {
+                if (key >= 32 && key <= 125 && input.size() < maxInputLength) {
+                    input += char(key);
+                }
+                std::cout << "Added " << char(key) << "\n";
+                key = GetCharPressed();
+            }
+
+            if (GetTime() - lastDeletedTime >= waitTime) {
+                if(IsKeyDown(KEY_BACKSPACE) && !input.empty()) {
+                    input.pop_back();
+                    lastDeletedTime = GetTime();
+                }
+            }
+
+            if (IsKeyDown(KEY_ENTER)) {
+                int newVal;
+                if (isSafeSTOI(input, newVal) && isValidVal(newVal)) {
+                    val = newVal;
+                    std::cout << "Node->val is updated to " << newVal << "\n";
+                }
+                else {
+                    std::cout << "Invalid or duplicate value\n";
+                }
+                updateVal = false;
+            }
+        }
     }
 }

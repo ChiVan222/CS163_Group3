@@ -2,6 +2,7 @@
 #include "Scene.h"
 #include <iostream>
 #include <math.h>
+#include <iterator>
 
 // Inserting animations
 Ani_GraphInsert::Ani_GraphInsert() : Animations(0) {}
@@ -15,7 +16,7 @@ Animations(duration), value(value), radius(radius), position(position)
 }
 
 void Ani_GraphInsert::updateAnimations(float deltaTime) {
-    if (isDone || !node_insert) return;
+    if (isDone || !node_insert || Graph_Scene::ani == None) return;
     elapsed_time += deltaTime;
 
     node_insert->setPosition(Vector2{
@@ -61,7 +62,7 @@ Ani_GraphSearch::Ani_GraphSearch(float duration, int value) : Animations(duratio
 }; 
 
 void Ani_GraphSearch::updateAnimations(float deltaTime) {
-    if (isDone || toVisit.empty() && !curNode) return;
+    if (isDone || toVisit.empty() && !curNode || Graph_Scene::ani == None) return;
     elapsed_time += deltaTime;
 
     if (!curNode || elapsed_time >= duration && curNode->val != value) {
@@ -135,7 +136,7 @@ Ani_GraphRemove::Ani_GraphRemove(float duration) : Animations(duration), targetN
 }
 
 void Ani_GraphRemove::updateAnimations(float deltaTime) {
-    if (isDone || !targetNode) return;
+    if (isDone || !targetNode || Graph_Scene::ani == None) return;
     elapsed_time += deltaTime;
 
     targetNode->highlight(RED);
@@ -185,7 +186,6 @@ Ani_Dijkstra::Ani_Dijkstra() : Animations(1.0), cur(nullptr), curEdge(nullptr) {
 }
 Ani_Dijkstra::Ani_Dijkstra(float duration, int nodes) : Animations(duration), cur(nullptr), curEdge(nullptr) {
     isDone = true;
-    dist.resize(nodes, INF);
     std::cout << "Construct Ani_Dijkstra\n";
 }
 Ani_Dijkstra::~Ani_Dijkstra() { 
@@ -196,7 +196,7 @@ Ani_Dijkstra::~Ani_Dijkstra() {
 }
 
 void Ani_Dijkstra::updateAnimations(float deltaTime) {
-    if (isDone || history.empty() || !isPrerunDone) return;
+    if (isDone || history.empty() || !isPrerunDone || Graph_Scene::ani == None) return;
 
     switch (Graph_Scene::ani_state) {
         case animation_state::Pause:
@@ -274,7 +274,9 @@ void Ani_Dijkstra::prerun(GraphNode* start) {
     pq = {};
     visited.clear();
     mp.clear();
-    dist.resize(Graph_Scene::graphNodes.size(), INF);
+    for (auto* node : Graph_Scene::graphNodes) {
+        dist[node->val] = INF;
+    }
 
     dist[start->val] = 0;
     pq.push({0, start});
@@ -282,7 +284,7 @@ void Ani_Dijkstra::prerun(GraphNode* start) {
     Edge* curEdge_local = nullptr;
     std::unordered_set<GraphNode*> visited_local;
     std::unordered_map<GraphNode*, std::unordered_set<GraphNode*>> mp_local;
-    std::vector<int> dist_local = dist;
+    std::unordered_map<int, int> dist_local = dist;
 
     while (!pq.empty()) {
         auto [d, u] = pq.top(); pq.pop();

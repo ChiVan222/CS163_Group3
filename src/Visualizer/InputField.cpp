@@ -37,6 +37,14 @@ InputField::InputField(float width, float height, Vector2 position, InputType ty
      {
         title  = "AddEdge";
      }break; 
+     case(InputType::Randomize):
+     {
+        title  = "Randomize";
+     }break; 
+     case(InputType::DijkstraRun):
+     {
+        title  = "Run Dijkstra";
+     }break; 
    }
    button = new Button("",Vector2({inputbox.x+inputbox.width, inputbox.y}),Vector2({100,inputbox.height}),title);
 }

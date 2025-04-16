@@ -13,6 +13,10 @@ bool Animations::getState()
 {
     return isDone;
 }
+void Animations::setState(bool state) 
+{
+    isDone = state;
+}
 //LinkedList Searching Function 
 int Animations::getDuration()
 {

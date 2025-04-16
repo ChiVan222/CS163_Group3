@@ -586,14 +586,13 @@ float MIN_DISTANCE = 100.0f;
 Graph_Scene::Graph_Scene() : NodeScene(), created(false), ani_insert(0.2, 0, 20, {0,0}), 
 ani_search(1.0, 0), ani_remove(1.0), ani_dijkstra(2.0, 0),isDragging(false), draggedNode(nullptr){
     Inputs.push_back(new InputField(100.0f,100.0f,Vector2({210,UI::wHeight-100}),InputType::AddEdge));
-    buttons.push_back(new Button("",Vector2({0,UI::wHeight-540}),Vector2({100,100}),"Clear"));
-    buttons.push_back(new Button("",Vector2({0,UI::wHeight-650}),Vector2({100,100}),"Dijkstra"));
+    Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-540}),InputType::Randomize));
+    Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-650}),InputType::DijkstraRun));
+    buttons[0] = new Button("",Vector2({0,UI::wHeight-430}),Vector2({100,100}),"Clear");
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
 
     buttons[0]->OnClick = [this]() {
-        int numNodes = 5;
-        std::cout << "Randomizing with " << numNodes << " nodes\n";
-        randomize(numNodes);
+        clear();
     };
     buttons[1]->OnClick = [this]() {
         this->ani_state = animation_state::Backward;
@@ -606,15 +605,6 @@ ani_search(1.0, 0), ani_remove(1.0), ani_dijkstra(2.0, 0),isDragging(false), dra
     };
     buttons[3]->OnClick = [this]() {
         this->ani_state = animation_state::Forward;
-    };
-    buttons[4]->OnClick = [this]() {
-        clear();
-    };
-    buttons[5]->OnClick = [this]() {
-        if (ani == None && ani_dijkstra.getState() && !graphNodes.empty()) {
-            ani_dijkstra = Ani_Dijkstra(2.0, graphNodes.size());
-            ani_dijkstra.updateTarget(graphNodes[0]);
-        }
     };
 }
 
@@ -638,18 +628,29 @@ void Graph_Scene::run(Scenes& mscene) {
         clear();
         return;
     }
-    Draw();
+    BeginMode2D(UI::camera);
+    UI::mousePos = GetScreenToWorld2D(GetMousePosition(), UI::camera);
     draggingNode();
+    Draw();
+    for (auto* node : graphNodes) {
+        node->onClick();
+    }
     ani_insert.updateAnimations(deltatime);
     ani_search.updateAnimations(deltatime);
     ani_remove.updateAnimations(deltatime);
     ani_dijkstra.updateAnimations(deltatime);
+    EndMode2D();
+    UI::mousePos = GetMousePosition();
+    DrawButtons();
     executeFunctions(animation_queue);
 }
 
 void Graph_Scene::Draw() {
-    DrawRectangleLines(GraphNode::LEFT, GraphNode::TOP, GraphNode::RIGHT - GraphNode::LEFT, GraphNode::BOTTOM - GraphNode::TOP, WHITE);
     for (const auto& node : graphNodes) node->Draw();
+}  
+
+void Graph_Scene::DrawButtons() {
+    DrawRectangleLines(GraphNode::LEFT, GraphNode::TOP, GraphNode::RIGHT - GraphNode::LEFT, GraphNode::BOTTOM - GraphNode::TOP, WHITE); 
     for(int i = 0; i < buttons.size(); i++) {
         buttons[i]->Draw();
         buttons[i]->DrawButtonText_center();
@@ -657,7 +658,7 @@ void Graph_Scene::Draw() {
             buttons[i]->OnClick();
         }
     }
-}  
+}
 
 void Graph_Scene::CheckBuffer() {
     int type;
@@ -724,6 +725,26 @@ void Graph_Scene::CheckBuffer() {
             int fromVal, toVal, weight;
             ss >> fromVal >> toVal >> weight;
             AddEdge(fromVal, toVal, weight);
+        } break;
+
+        case 5:
+        {
+            int nums;
+            if (ss >> nums) randomize(nums);
+        } break;
+
+        case 6:
+        {
+            int src;
+            if (ss >> src) {
+                for (auto& node : graphNodes) {
+                    if (node->val == src && ani_dijkstra.getState()) {
+                        ani_dijkstra = Ani_Dijkstra(2.0, graphNodes.size());
+                        ani_dijkstra.updateTarget(node);
+                        break;
+                    }
+                }
+            }
         } break;
     }
     if (inputted) {
@@ -829,7 +850,17 @@ void Graph_Scene::randomize(int nodes) {
         } while (tooClose && attempts < 100); // Limit attempts to avoid infinite loop
         positions.push_back(pos);
         
-        int value = i;
+        bool unValid = false;
+        int value;
+        do {
+            value = rand() % 99;
+            for (auto* node : tempGraph) {
+                if (node->val == value) {
+                    unValid = false;
+                    break;
+                }
+            }
+        } while (unValid);
         std::cout << "Adding node " << value << " at (" << pos.x << ", " << pos.y << ")\n";
         GraphNode* newNode = new GraphNode(pos, 20, value);
         tempGraph.push_back(newNode);
@@ -863,38 +894,39 @@ void Graph_Scene::clear() {
     for (auto* node : graphNodes) delete node;
     Edges.clear();
     graphNodes.clear();
-}
-
-void Graph_Scene::runDijkstra(int start) {
-
+    delete draggedNode;
+    ani = None;
+    ani_insert.setState(true);
+    ani_search.setState(true);
+    ani_remove.setState(true);
+    ani_dijkstra.setState(true);
 }
 
 void Graph_Scene::draggingNode() {
-    if (ani == None) {
-        if (!isDragging && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-            Vector2 mousePos = GetMousePosition();
+    if (!isDragging) {
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+            Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), UI::camera);
             for (auto* node : graphNodes) {
-                Vector2 nodePos = node->getPosition();
-                float dist = sqrt(pow(mousePos.x - nodePos.x, 2) + pow(mousePos.y - nodePos.y, 2));
-                if (dist < node->getRadius()) {
+                if (CheckCollisionPointCircle(mousePos, node->getPosition(), node->getRadius())) {
                     isDragging = true;
                     draggedNode = node;
                     break;
                 }
             }
         }
-        if (isDragging && draggedNode) {
-            Vector2 mousePos = GetMousePosition();
-            float newX = std::max(GraphNode::LEFT, std::min(GraphNode::RIGHT, mousePos.x));
-            float newY = std::max(GraphNode::TOP, std::min(GraphNode::BOTTOM, mousePos.y));
-            draggedNode->setPosition({newX, newY});
+        else {
+            UI::updateCamera();
+        }
+    }
+    if (isDragging && draggedNode) {
+        Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), UI::camera);
+        draggedNode->setPosition(mousePos);
 
-            draggedNode->repulseNearbyNodes(MIN_DISTANCE);
+        draggedNode->repulseNearbyNodes(MIN_DISTANCE);
 
-            if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
-                isDragging = false;
-                draggedNode = nullptr;
-            }
+        if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
+            isDragging = false;
+            draggedNode = nullptr;
         }
     }
 }

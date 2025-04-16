@@ -63,13 +63,13 @@ private:
     Edge* curEdge;
     std::unordered_set<GraphNode*> visited;
     std::unordered_map<GraphNode*, std::unordered_set<GraphNode*>> mp;
-    std::vector<int> dist;
+    std::unordered_map<int, int> dist;
     std::priority_queue<std::pair<int, GraphNode*>, std::vector<std::pair<int, GraphNode*>>, std::greater<>> pq;
     struct DijkstraSnapshot {
         GraphNode* cur;
         std::unordered_set<GraphNode*> visited;
         std::unordered_map<GraphNode*, std::unordered_set<GraphNode*>> mp;
-        std::vector<int> dist;
+        std::unordered_map<int, int> dist;
         Edge* curEdge;
     };
     std::vector<DijkstraSnapshot> history;

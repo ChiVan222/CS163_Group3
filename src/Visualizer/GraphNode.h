@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <sstream>
 
 #include "PolyNode.h"
 #include "..\DataStructures\Graph\Graph.h"
@@ -20,9 +21,16 @@ public:
     static const float REPULSE_STRENGTH;
     static const float LEFT, RIGHT, TOP, BOTTOM;
 
+    void onClick();
+
 private:
     Vector2 velocity;    
     std::vector<GraphNode*> adj;
     void drawNodes() const;
     void drawEdges() const;
+    bool updateVal;
+    std::string input;
+    float lastDeletedTime = 0.0f;
+    const float waitTime = 0.1f;
+    const int maxInputLength = 10;
 };
