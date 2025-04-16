@@ -86,38 +86,3 @@ void Ani_DrawEdge::updateAnimations(float deltaTime){
      isDone = true; 
  }
 
- Ani_Switch::Ani_Switch() : Animations(0) {
-    isDone = true;
- }
- void Ani_Switch::play(){
-    isDone = false;
-        elapsed_time =0;
- }
-
-void Ani_Switch::updateAnimations(float deltaTime){
-   if (isDone) return;
-    elapsed_time += deltaTime;
-    float ratio = elapsed_time / duration;
-    float t = ratio;
-    if (t > 1.0f) t = 1.0f;
-    if(Scene::isDarkMode) {
-        t = t;
-        std::cout << "On" <<"\n";
-    }
-
-    else {
-        t = 1.0f-t;
-        std::cout << "Off" <<"\n";
-    }
-    Vector2 newPos = Vector2({
-        startPos.x + t * (targetPos.x - startPos.x),
-        startPos.y + t * (targetPos.y - startPos.y)
-    });
-    std::cout << ratio <<"\n";
-    Scene::modeSwitch.setCircle(newPos);
-    if (ratio>=1.0f) {
-        elapsed_time=0;
-        isDone = true;
-    }
-}
-    

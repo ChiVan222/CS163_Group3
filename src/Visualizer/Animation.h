@@ -37,13 +37,3 @@ class Ani_DrawEdge:public Animations
    void updateTarget(Edge* egde);
 }; 
 
-class Ani_Switch:public Animations{
-  public:
-    Vector2 startPos = {1185,45};
-    Vector2 targetPos = {1235,45};
-  public:
-    Ani_Switch();
-    void updateAnimations(float deltaTime);
-    void play();
-};
-  

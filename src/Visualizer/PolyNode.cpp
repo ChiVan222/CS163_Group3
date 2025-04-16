@@ -1,8 +1,18 @@
 #include "PolyNode.h"
-PolyNode:: PolyNode(Vector2 pos,float radius): position(pos), radius(radius)
-{
-    highlight = Null;
-}   
+#include "Scene.h"
+ PolyNode:: PolyNode(Vector2 pos,float radius): position(pos), radius(radius)
+ {
+     highlight = Null;
+}
+Color PolyNode::colorNode={243,80,0,255};
+void PolyNode::DrawNode(){
+        float outline_thickness = 6.0f;
+        DrawCircle(position.x, position.y, radius + outline_thickness, HightLight);
+        DrawCircle(position.x, position.y, radius, colorNode);
+
+    }
+
+   
 void PolyNode::SetPrimaryHighLight()
 {
     highlight = Primary; 

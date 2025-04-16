@@ -46,15 +46,44 @@ class InputButton: public Button
   public : 
     
 };
-class Switch: public Button{
+class SettingButton: public Button{
   public:
-      Vector2 centerC;
-      float cradius;
-      bool isOn;
-    public:
-    Switch(Vector2 pos, Vector2 rect1);
-    void SwitchDraw();
-    bool mode(Vector2 mousePos);
-    void setCircle(Vector2 newPos);
-   };
-  
+    SettingButton(Vector2 pos, Vector2 rect1);
+    void SettingDraw();
+ };
+
+ class Slider:public Button{
+  public:
+    int type;
+    float spacing ;
+    static float red ;
+    static float green ;
+    static float blue ;
+
+  public:
+    Slider(Vector2 pos, Vector2 rect1, int t);
+    void SliderDraw();
+};
+
+class ControlButton: public Button{
+  public:
+    int inc;
+  public:
+    ControlButton(Vector2 pos, Vector2 rect1, int t);
+    void ButtonDraw();
+
+};
+
+class Spinner: public Button{
+  public:
+    display dis;
+    int choices = 2;
+    int current;
+  public:
+    Spinner(display d, Vector2 pos, Vector2 rect1,const char* title,  int crt);
+    void spinnerDraw();
+    void DrawTextSpinner(Font curentFont);
+    void ChangeTitle(const char* newtitle);
+
+
+};
