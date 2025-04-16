@@ -1,6 +1,6 @@
 #pragma once
 enum Scenes{  
-    Welcome = 0, Menu, Singly,Graph,Trie,Heap
+    Welcome = 0, Menu, Singly,Graph,Trie,Setting,Heap
 } ;
 enum InputType 
 {
@@ -12,4 +12,8 @@ enum animation
 };
 enum animation_state{ 
     Backward = -1, Pause, Forward, Continue, FirstState, FinalState
-};  
+};   
+
+enum display{
+    myfont =0, theme
+};

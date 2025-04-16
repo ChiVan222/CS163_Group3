@@ -18,16 +18,21 @@
 class Scene
 { 
   public:
-      static Switch modeSwitch;
+      static SettingButton setting;
+      static bool isDefault;
+      static Font currentFont;
       static bool isDarkMode;
       Color dark1{27,79,58,255};
       Color dark2{29,32,30,255};
-      Color light1{80,153,123,255};
-      Color light2{25,32,39,255};
-      Ani_Switch sw;
+      Color light1{126,130,56,255};
+      Color light2{62,153,116,255};
+      Color darkBar{46,46,46,255};
+      Color lightBar1{60,171,126,255};
+      Color lightBar2{29,32,30,255};
   
     public: 
       virtual void run(Scenes& mscene)= 0;  
+      void Drawbackground();
       
 }; 
 class SceneManager
@@ -69,6 +74,22 @@ class Menu_Scene: public Scene
      void run(Scenes& mscene); 
      Menu_Scene();
      ~Menu_Scene();
+};
+class Setting_Scene :public Scene{
+  public:
+    TrieNodePrimary* node;
+    std::vector<const char*> mytheme {"LIGHT", "DARK"};
+    std::vector<const char*> font {"DEFAULT", "NORWESTER"};
+    std::vector<Slider*> sliders;
+    std::vector<ControlButton> controls;
+    std::vector<Spinner> spinners;
+  public:
+    Setting_Scene();
+    void run(Scenes& mscene);
+    void TextDraw();
+    
+
+
 };
 
 struct FunctionComparator {

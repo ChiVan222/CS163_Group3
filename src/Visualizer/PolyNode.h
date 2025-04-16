@@ -9,16 +9,20 @@ class PolyNode
                 Secondary 
         } HighLight;
         HighLight highlight;
-        float radius;   
+        float radius;           //=25.0f 
         Vector2 position; 
-        Color lightNode{250,123,76,255};
-        Color darkNode{243,80,0,255};
+        Color darkSpecialHightLight{85,253,200,255};
+        Color lightSpecialHighLight{0,0,0,255};
+        Color HightLight{255,255,255,255};
+
    public : 
+   static Color colorNode;
     virtual bool Draw() =0 ; 
     explicit PolyNode(Vector2 pos,float radius);  
     void SetPrimaryHighLight();  
     void SetSecondaryHighLight();  
     void SetNullHighLight(); 
+    void DrawNode();
     Vector2 getPosition(); 
     void SetPosition(Vector2 newpos);
     float getRadius();

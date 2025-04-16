@@ -2,8 +2,11 @@
 #include "UI.h"
 #include <raymath.h>
 #include <iostream>
-Switch Scene::modeSwitch = Switch({1160, 20}, {100,50});
+#include "raygui.h"
 bool Scene::isDarkMode = false;
+bool Scene::isDefault =true;
+Font Scene::currentFont=GetFontDefault();
+SettingButton Scene::setting = SettingButton({1160, 20}, {80,80});
 Ani_MoveList Singly_Scene::m ;
 Ani_MoveNode Singly_Scene::mn(0.5);
 SinglyLinkedListNode Singly_Scene::Nodes = SinglyLinkedListNode();
@@ -39,7 +42,14 @@ void SceneManager::runScene()
 {
      scenes[mscene]->run(mscene); 
 }
-
+void Scene::Drawbackground(){
+    if (isDarkMode) {
+        DrawRectangleGradientV(0, 0, GetScreenWidth(), GetScreenHeight(), dark1, dark2);
+    }
+    else {
+        DrawRectangleGradientV(0, 0, GetScreenWidth(), GetScreenHeight(),light1, light2);
+    }
+}
 void Welcome_Scene::run(Scenes& mscene)
 {
 
@@ -84,16 +94,10 @@ void Menu_Scene::run(Scenes& mscene)
         DrawRectangleGradientV(0, 0, GetScreenWidth(), GetScreenHeight(),light1, light2);
     }
     DrawText("Menu", static_cast<int>(UI::wWidth/2), 100, 40, WHITE);
-    modeSwitch.SwitchDraw();
-    if(isDarkMode){
+    setting.SettingDraw();
+    if(setting.IsHovered(UI::mousePos) && IsMouseButtonDown(MOUSE_LEFT_BUTTON)){
+        mscene = Setting;
     }
-    if (modeSwitch.mode(UI::mousePos)){
-        isDarkMode=!modeSwitch.isOn;
-        modeSwitch.isOn = isDarkMode;
-        sw.setDuration(0.3f);
-        sw.play();
-    }
-
     for(int i = 0; i <sButtons.size();  i++)
     {
         sButtons[i]->Draw();
@@ -109,7 +113,7 @@ void Menu_Scene::run(Scenes& mscene)
     {
          mscene = Welcome;
     }
-    sw.updateAnimations(deltaTime);
+
 
 }
 #include <sstream>
@@ -480,8 +484,193 @@ SceneManager::SceneManager()
     scenes.push_back(new Singly_Scene()); 
     scenes.push_back(new Graph_Scene());
     scenes.push_back(new Trie_Scene());
+    scenes.push_back(new Setting_Scene());
 
 }
+Setting_Scene::Setting_Scene() {
+    GuiSetStyle(SLIDER,BASE_COLOR_PRESSED,ColorToInt({68,68,68,255}));
+    GuiSetStyle(SLIDER,TEXT_COLOR_FOCUSED,ColorToInt({68,68,68,255}));
+    GuiSetStyle(SLIDER,TEXT_COLOR_PRESSED,ColorToInt({68,68,68,255}));
+
+    float w= GetScreenWidth();
+    float h= GetScreenHeight();
+    float dis = h*2/9.0f + h*3/18.0f;
+    sliders.push_back(new Slider({120, dis}, {(6*w/20),(h/20)}, 1));
+    controls.push_back(ControlButton({120-(h/20), dis}, {h/20,h/20}, 0));
+    controls.push_back(ControlButton({120+ (6*w/20), dis}, {h/20,h/20}, 1));
+    
+    sliders.push_back(new Slider({120, dis+70.0f}, {(6*w/20),(h/20)}, 2));
+    controls.push_back(ControlButton({120-(h/20), dis+70.0f}, {h/20,h/20}, 0));
+    controls.push_back(ControlButton({120+ (6*w/20), dis+70.0f}, {h/20,h/20}, 1));
+
+    sliders.push_back(new Slider({120, dis+140.0f}, {(6*w/20),(h/20)}, 3));
+    controls.push_back(ControlButton({120-(h/20), dis+140.0f}, {h/20,h/20}, 0));
+    controls.push_back(ControlButton({120+ (6*w/20), dis+140.0f}, {h/20,h/20}, 1));
+
+    spinners.push_back(Spinner(myfont, {120, dis+210.0f}, {(6*w/20),(h/20)}, font[0], 0));
+    controls.push_back(ControlButton({120-(h/20), dis+210.0f}, {h/20,h/20}, 0));
+    controls.push_back(ControlButton({120+ (6*w/20), dis+210.0f}, {h/20,h/20}, 1));
+    
+    spinners.push_back(Spinner(theme, {120, dis+280.0f}, {(6*w/20),(h/20)}, mytheme[0], 0));
+    controls.push_back(ControlButton({120-(h/20), dis+280.0f}, {h/20,h/20}, 0));
+    controls.push_back(ControlButton({120+ (6*w/20), dis+280.0f}, {h/20,h/20}, 1));
+
+}
+
+void Setting_Scene::run(Scenes& mscene) {
+
+    ClearBackground({48,46,46,255});
+    TextDraw();
+    node->DrawNode();
+    for(int i = 0; i <sliders.size();  i++)
+    {   
+        sliders[i]->SliderDraw();
+        Vector2 textPos = sliders[i]->get_position();
+        Vector2 textSize = sliders[i]->get_rectangle();
+        if (i==0) {
+            controls[0].ButtonDraw();
+            controls[1].ButtonDraw();
+            Vector2 rightPos = controls[1].get_position();
+            Vector2 rightText= controls[1].get_rectangle();
+            DrawTextEx(currentFont, "RED", {15, textPos.y+0.25f*textSize.y}, (float)textSize.y*0.5f, 1.0f, WHITE);
+            if (controls[1].IsHovered(UI::mousePos) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT) ){
+                if(Slider::red<255.0f) Slider::red+=1.0f;
+            }
+            if (controls[0].IsHovered(UI::mousePos) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT) ){
+                if(Slider::red>0.0f) Slider::red-=1.0f;
+            }
+            node->colorNode.r = Slider::red;
+            int rounded = (int)round(Slider::red);
+            std::string str = std::to_string(rounded);
+            const char* cstr = str.c_str();
+            DrawTextEx(currentFont, cstr, {rightPos.x + rightText.x +15.0f, textPos.y+0.25f*textSize.y}, (float)textSize.y*0.5f, 1.0f, WHITE);
+        }
+        else if (i==1){
+            controls[2].ButtonDraw();
+            controls[3].ButtonDraw();
+            Vector2 rightPos = controls[3].get_position();
+            Vector2 rightText= controls[3].get_rectangle();
+            DrawTextEx(currentFont, "GREEN", {15, textPos.y+0.25f*textSize.y}, (float)textSize.y*0.5f, 1.0f, WHITE);
+            if (controls[3].IsHovered(UI::mousePos) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT) ){
+                if(Slider::green<255.0f) Slider::green+=1.0f;
+            }
+            if (controls[2].IsHovered(UI::mousePos) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT) ){
+                if(Slider::green>0.0f) Slider::green-=1.0f;
+            }
+            node->colorNode.g = Slider::green;
+            int rounded = (int)round(Slider::green);
+            std::string str = std::to_string(rounded);
+            const char* cstr = str.c_str();
+            DrawTextEx(currentFont, cstr, {rightPos.x + rightText.x +15.0f, textPos.y+0.25f*textSize.y}, (float)textSize.y*0.5f, 1.0f, WHITE);
+        }
+        else if (i==2){
+            controls[4].ButtonDraw();
+            controls[5].ButtonDraw();
+            Vector2 rightPos = controls[5].get_position();
+            Vector2 rightText= controls[5].get_rectangle();
+            DrawTextEx(currentFont, "BLUE", {15, textPos.y+0.25f*textSize.y}, (float)textSize.y*0.5f, 1.0f, WHITE);
+            if (controls[5].IsHovered(UI::mousePos) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT) ){
+                if(Slider::blue<255.0f) Slider::blue+=1.0f;
+            }
+            if (controls[4].IsHovered(UI::mousePos) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT) ){
+                if(Slider::blue>0.0f) Slider::blue-=1.0f;
+            }
+            node->colorNode.b = Slider::blue;
+            int rounded = (int)round(Slider::blue);
+            std::string str = std::to_string(rounded);
+            const char* cstr = str.c_str();
+            DrawTextEx(currentFont, cstr, {rightPos.x + rightText.x +15.0f, textPos.y+0.25f*textSize.y}, (float)textSize.y*0.5f, 1.0f, WHITE);
+        }
+    }
+
+    for (int i =0; i< spinners.size(); i++){
+        spinners[i].spinnerDraw();
+        Vector2 textPos = spinners[i].get_position();
+        Vector2 textSize = spinners[i].get_rectangle();
+        if (i==0){
+            controls[6].ButtonDraw();
+            controls[7].ButtonDraw();
+            DrawTextEx(currentFont, "FONT", {15, textPos.y+0.25f*textSize.y}, (float)textSize.y*0.5f, 1.0f, WHITE);
+            if ((controls[6].IsHovered(UI::mousePos) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT) )|| 
+            (controls[7].IsHovered(UI::mousePos) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT) )){
+                isDefault =!isDefault;
+            }
+            const char* newTitle= isDefault? font[0]:font[1];
+            if(!isDefault){
+                currentFont=LoadFont("../assets/Font/norwester.otf");
+            }
+            else currentFont= GetFontDefault();
+            spinners[i].ChangeTitle(newTitle);
+            spinners[i].DrawTextSpinner(currentFont);
+
+        }
+        else if(i==1){
+            controls[8].ButtonDraw();
+            controls[9].ButtonDraw();
+            DrawTextEx(currentFont, "THEME", {15, textPos.y+0.25f*textSize.y}, (float)textSize.y*0.5f, 1.0f, WHITE);
+            if ((controls[8].IsHovered(UI::mousePos) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT) )|| 
+            (controls[9].IsHovered(UI::mousePos) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT) )){
+                isDarkMode =!isDarkMode;
+
+            }
+            const char* newTitle= (!isDarkMode)? mytheme[0]:mytheme[1];
+            spinners[i].ChangeTitle(newTitle);
+            spinners[i].DrawTextSpinner(currentFont);
+        }
+    }
+    
+    if(IsKeyPressed(KEY_LEFT)){
+        mscene = Menu;
+    }
+}
+
+void Setting_Scene::TextDraw() {
+    int screenWidth = GetScreenWidth();
+    int screenHeight = GetScreenHeight();
+    float spacing = 1.0f;
+    if (Scene::currentFont.texture.id == 0) {
+        Scene::currentFont = GetFontDefault(); 
+    }
+    
+    // Title
+    int titleFontSize = screenHeight / 9;
+    const char* titleText = "SETTING";
+    Vector2 titleSize = MeasureTextEx(Scene::currentFont, titleText, (float)titleFontSize, spacing);
+    Vector2 titlePos = {
+        (screenWidth - titleSize.x) / 2.0f,
+        screenHeight / 20.0f
+    };
+    DrawTextEx(currentFont, titleText, titlePos, (float)titleFontSize, spacing, WHITE);
+    // Section headers
+    int sectionFontSize = titleFontSize / 2;
+    float sectionY = titlePos.y + titleFontSize + 40;
+
+    // DISPLAY
+    const char* displayText = "DISPLAY";
+    Vector2 displaySize = MeasureTextEx(currentFont, displayText, (float)sectionFontSize, spacing);
+    Vector2 displayPos = {
+        (screenWidth / 4.0f) - (displaySize.x / 2.0f),
+        sectionY
+    };
+    DrawTextEx(currentFont, displayText, displayPos, (float)sectionFontSize, spacing, WHITE);
+
+    // SOUND
+    const char* soundText = "SOUND";
+    Vector2 soundSize = MeasureTextEx(currentFont, soundText, (float)sectionFontSize, spacing);
+    Vector2 soundPos = {
+        (screenWidth * 3.0f / 4.0f) - (soundSize.x / 2.0f),
+        sectionY
+    };
+    DrawTextEx(currentFont, soundText, soundPos, (float)sectionFontSize, spacing, WHITE);
+
+    // Line giữa
+    Vector2 start = { (float)(screenWidth / 2), sectionY };
+    Vector2 end = { (float)(screenWidth / 2), (float)screenHeight };
+    DrawLineEx(start, end, 2.0f, RAYWHITE);
+
+    node = new TrieNodePrimary(Vector2{ screenWidth / 4.0f, sectionY + sectionFontSize + 40.0f },25.0f,'a');
+}
+
 SceneManager::~SceneManager() {
     for (Scene* scene : scenes) {
         delete scene;  
