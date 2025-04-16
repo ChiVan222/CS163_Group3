@@ -497,7 +497,7 @@ Setting_Scene::Setting_Scene() {
     float dis = h*2/9.0f + h*3/18.0f;
     sliders.push_back(new Slider({120, dis}, {(6*w/20),(h/20)}, 1));
     controls.push_back(ControlButton({120-(h/20), dis}, {h/20,h/20}, 0));
-    controls.push_back(ControlButton({100+ (6*w/20), dis}, {h/20,h/20}, 1));
+    controls.push_back(ControlButton({120+ (6*w/20), dis}, {h/20,h/20}, 1));
     
     sliders.push_back(new Slider({120, dis+70.0f}, {(6*w/20),(h/20)}, 2));
     controls.push_back(ControlButton({120-(h/20), dis+70.0f}, {h/20,h/20}, 0));
@@ -568,11 +568,11 @@ void Setting_Scene::run(Scenes& mscene) {
             controls[5].ButtonDraw();
             Vector2 rightPos = controls[5].get_position();
             Vector2 rightText= controls[5].get_rectangle();
-            DrawTextEx(currentFont, "GREEN", {15, textPos.y+0.25f*textSize.y}, (float)textSize.y*0.5f, 1.0f, WHITE);
-            if (controls[4].IsHovered(UI::mousePos) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT) ){
+            DrawTextEx(currentFont, "BLUE", {15, textPos.y+0.25f*textSize.y}, (float)textSize.y*0.5f, 1.0f, WHITE);
+            if (controls[5].IsHovered(UI::mousePos) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT) ){
                 if(Slider::blue<255.0f) Slider::blue+=1.0f;
             }
-            if (controls[5].IsHovered(UI::mousePos) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT) ){
+            if (controls[4].IsHovered(UI::mousePos) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT) ){
                 if(Slider::blue>0.0f) Slider::blue-=1.0f;
             }
             node->colorNode.b = Slider::blue;
@@ -632,7 +632,6 @@ void Setting_Scene::TextDraw() {
         Scene::currentFont = GetFontDefault(); 
     }
     
-    TraceLog(LOG_INFO, "Font texture ID: %d", Scene::currentFont.texture.id);
     // Title
     int titleFontSize = screenHeight / 9;
     const char* titleText = "SETTING";
@@ -642,7 +641,6 @@ void Setting_Scene::TextDraw() {
         screenHeight / 20.0f
     };
     DrawTextEx(currentFont, titleText, titlePos, (float)titleFontSize, spacing, WHITE);
-    std::cout<< titleSize.x << " "<< titlePos.y << "\n"; 
     // Section headers
     int sectionFontSize = titleFontSize / 2;
     float sectionY = titlePos.y + titleFontSize + 40;
