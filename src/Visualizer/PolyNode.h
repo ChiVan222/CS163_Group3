@@ -26,5 +26,5 @@ class PolyNode
     Vector2 getPosition(); 
     void SetPosition(Vector2 newpos);
     float getRadius();
-    Color getHightLightColor(); 
+    Color GetHighlightColor(Color color, float factor);
 }; 

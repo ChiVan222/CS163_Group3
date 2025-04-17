@@ -37,7 +37,7 @@ float PolyNode::getRadius()
 void PolyNode::SetPosition(Vector2 newpos){
     position = newpos;
 }
-Color GetHighlightColor(Color color, float factor) {
+Color PolyNode:: GetHighlightColor(Color color, float factor) {
     Color highlight;
     highlight.r = (unsigned char)Clamp(color.r + (255 - color.r) * factor, 0, 255);
     highlight.g = (unsigned char)Clamp(color.g + (255 - color.g) * factor, 0, 255);
