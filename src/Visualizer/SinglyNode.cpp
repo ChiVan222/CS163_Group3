@@ -156,7 +156,7 @@ void SinglyLinkedListNode::Traverse()
     }
 
 }
-void SinglyLinkedListNode::TraverseCheck()
+void SinglyLinkedListNode:: TraverseCheck()
 {
     if(!root) return; 
     SinglyNode* cur = root; 

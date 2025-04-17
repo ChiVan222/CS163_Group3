@@ -1,5 +1,6 @@
 #include "PolyNode.h"
 #include "Scene.h"
+#include <raymath.h>
  PolyNode:: PolyNode(Vector2 pos,float radius): position(pos), radius(radius)
  {
      highlight = Null;
@@ -35,4 +36,12 @@ float PolyNode::getRadius()
 }
 void PolyNode::SetPosition(Vector2 newpos){
     position = newpos;
+}
+Color GetHighlightColor(Color color, float factor) {
+    Color highlight;
+    highlight.r = (unsigned char)Clamp(color.r + (255 - color.r) * factor, 0, 255);
+    highlight.g = (unsigned char)Clamp(color.g + (255 - color.g) * factor, 0, 255);
+    highlight.b = (unsigned char)Clamp(color.b + (255 - color.b) * factor, 0, 255);
+    highlight.a = color.a;
+    return highlight;
 }
