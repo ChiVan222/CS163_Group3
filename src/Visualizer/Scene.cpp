@@ -778,6 +778,7 @@ ani_search(1.0, 0), ani_remove(1.0), ani_dijkstra(2.0, 0),isDragging(false), dra
     Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-540}),InputType::Randomize));
     Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-650}),InputType::DijkstraRun));
     buttons[0] = new Button("",Vector2({0,UI::wHeight-430}),Vector2({100,100}),"Clear");
+    buttons.push_back(new Button("",Vector2({100,UI::wHeight-430}),Vector2({100,100}),"Load File"));
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
 
     buttons[0]->OnClick = [this]() {
@@ -794,6 +795,9 @@ ani_search(1.0, 0), ani_remove(1.0), ani_dijkstra(2.0, 0),isDragging(false), dra
     };
     buttons[3]->OnClick = [this]() {
         this->ani_state = animation_state::Forward;
+    };
+    buttons[4]->OnClick = [this]() {
+        loadFromFile();
     };
 }
 
@@ -1089,6 +1093,50 @@ void Graph_Scene::clear() {
     ani_search.setState(true);
     ani_remove.setState(true);
     ani_dijkstra.setState(true);
+}
+
+void Graph_Scene::loadFromFile() {
+    const char* filter[] = {"*.txt"};
+    const char* filePath = tinyfd_openFileDialog(
+        "Select a text file", // Title
+        "", // Default path (empty = open from last used folder)
+        1, // Number of filter patterns
+        filter, // Filter patterns
+        "Text file (*.txt)", // Filter description
+        0 // Single file seclection mode
+    );
+    
+    if (filePath) {
+        std::cout << "Trying to open file " << filePath << "\n";
+        std::ifstream fin(filePath);
+        if (fin.is_open()) {
+            clear();
+            int nodeNums = 0; 
+            if (fin >> nodeNums) {
+                for (int i = 0; i < nodeNums; i++) {
+                    int value;
+                    if (fin >> value) {
+                        std::cout << value << "\n";
+                        AddNode(value);
+                    }
+                }
+            }
+            else std::cerr << "Error: Can not fin numnodes\n";
+            int edgeNums = 0; 
+            if (fin >> edgeNums) {
+                for (int i = 0; i < edgeNums; i++) {
+                    int u, v, w;
+                    if (fin >> u >> v >> w) {
+                        std:: cout << u << " " << v << " " << w << "\n";
+                        addFunction(animation_queue, 0, std::bind(&Graph_Scene::AddEdge, this, u, v, w));
+                    }
+                }
+            }
+            else std::cerr << "Error: Can not fin numedges\n";
+        }
+        else std::cerr << "Error: Can not open file\n";
+        fin.close();
+    }
 }
 
 void Graph_Scene::draggingNode() {

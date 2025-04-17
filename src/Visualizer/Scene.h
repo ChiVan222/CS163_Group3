@@ -10,6 +10,8 @@
 #include "GraphAnimation.h"
 #include "SinglyAnimation.h"
 #include "TrieAnimation.h"
+#include "tinyfiledialogs.h"
+#include <fstream>
 #include <queue>
 #include <functional>
 #include <algorithm>
@@ -208,6 +210,7 @@ class Graph_Scene: public NodeScene
     void AddEdge(int from, int to, int weight);
     void randomize(int nodes);
     void clear();
+    void loadFromFile();
 
     static std::vector<GraphNode*> graphNodes;
     static std::vector<Edge*> Edges; 
