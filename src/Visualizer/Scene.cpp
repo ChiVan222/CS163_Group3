@@ -19,7 +19,7 @@ std::queue<std::pair<int, std::function<void()>>>  Singly_Scene::pending_animati
 
 std::stack<std::pair<int, std::function<void()>>> Singly_Scene::ani_replay_his;
 animation Singly_Scene:: ani = None; 
-animation_state Singly_Scene::ani_state = Forward; 
+animation_state Singly_Scene::ani_state = Continue; 
 Ani_DrawEdge Singly_Scene::de;  
 std::pair<int, std::function<void()>> Singly_Scene::cur_animation;
 
@@ -145,7 +145,6 @@ FunctionComparator>& q)
         if(topFunction.first == cur_animation.first){ 
                 q.pop();
                 cur_animation = topFunction; 
-
                 topFunction.second();   
 
         }else 
@@ -251,7 +250,7 @@ void Singly_Scene::CheckBuffer()
 void Singly_Scene::Draw() {
     Nodes.Traverse(); 
     for (int i = 0; i <Edges.size();i++) {
-        if(Edges[i]->isDraw)Edges[i]->Draw(WHITE, 0);
+        if(Edges[i]->isDraw)Edges[i]->Draw(Edges[i]->getColor(), 0);
     }
 }
 void Singly_Scene::executeBackwardFunction()
@@ -381,7 +380,6 @@ void Singly_Scene::run(Scenes& mscene)
     DrawTexturePro(UI::background, src, dest, Vector2({0, 0}), 0.0f, WHITE);
 
     float deltaTime = IsWindowFocused() ? GetFrameTime() : 0;
-    deltaTime *= ani_state; 
     CheckBuffer();
     if (IsKeyPressed(KEY_LEFT)) {
         mscene = Menu;
@@ -402,9 +400,10 @@ void Singly_Scene::run(Scenes& mscene)
 
     }
     de.setDuration(0.4);
-
     BeginMode2D(UI::camera);
     UI::mousePos =  GetScreenToWorld2D(GetMousePosition(), UI::camera);
+    Draw();
+
     a.updateAnimations(deltaTime);
     insert.updateAnimations(deltaTime); 
     m.updateAnimations(deltaTime); 
@@ -413,6 +412,7 @@ void Singly_Scene::run(Scenes& mscene)
     mn.updateAnimations(deltaTime);
     st.updateAnimations(deltaTime);
     insert_2.updateAnimations(deltaTime); 
+
     if(ani == None)
     { 
         while(!pending_animation.empty())
@@ -421,24 +421,10 @@ void Singly_Scene::run(Scenes& mscene)
             pending_animation.pop();
         }
     }
-    if(deltaTime<0 )
-       {
-        executeBackwardFunction();
-       }
-    else if(deltaTime>0)
-    {
-        if(!ani_replay_his.empty() && ani == None)
-        { 
-            cur_animation = ani_replay_his.top();
-             ani_replay_his.top().second();
-             ani_replay_his.pop();
-        }
-        else{
-            executeFunctions(animation_queue);
-        }
-    }
+  
+    executeFunctions(animation_queue);
+    
     Nodes.UpdateHightLight();
-    Draw();
     Nodes.TraverseCheck();
 
     EndMode2D();
@@ -731,31 +717,40 @@ Singly_Scene::Singly_Scene(): NodeScene(),a(0.3,0), insert(0.5,0,20,Vector2({300
         addFunction(animation_queue,++cur_priority,std::bind(&Ani_Straighten::updateTarget, &st, Vector2{100,100}));
     };
     buttons[1]->OnClick=  [this]() {
-       
-       if(!scene_info_his.empty())
-       {
-        auto info = scene_info_his.top();
-        scene_info_replay_his.push(info); 
-        scene_info_his.pop();
-        loadInfo(info);
-       }
+        this->ani_state =  animation_state::Backward ; 
     };
     buttons[2]->OnClick=  [this]() {
-        this->ani_state =  animation_state::Pause ; 
+        if(this->ani_state ==  animation_state::Pause)
+        {
+            this->ani_state = Continue; 
+        }  else this->ani_state =  animation_state::Pause ; 
      };
-     buttons[3]->OnClick=  [this]() {
+     buttons.push_back(new Button("",Vector2({UI::wWidth -200,UI::wHeight-650}),Vector2({100,100}),"Redo")); 
+    buttons.push_back(new Button("",Vector2({UI::wWidth -200,UI::wHeight-540}),Vector2({100,100}),"Undo")); 
+
+     buttons[3]->OnClick = [this]() {
+        this->ani_state =  animation_state::Forward ; 
+     };
+     buttons[4]->OnClick=  [this]() {
         if(!scene_info_replay_his.empty())
         {
             auto info = scene_info_replay_his.top();
-            for(int i = 0 ; i < Edges.size();i++)
-            {
-                std::cout<<Edges[i]->isDraw<<" ";
-            }
             scene_info_his.push(info); 
             scene_info_replay_his.pop();
             loadInfo(info);    
         }
      };
+     buttons[5]->OnClick=  [this]() {
+       
+        if(!scene_info_his.empty())
+        {
+         auto info = scene_info_his.top();
+         scene_info_replay_his.push(info); 
+         scene_info_his.pop();
+         loadInfo(info);
+        }
+     };
+     a.setDuration(1);
 }
 
 #include <iostream>
@@ -844,8 +839,8 @@ void Graph_Scene::run(Scenes& mscene) {
     UI::mousePos = GetMousePosition();
     DrawButtons();
     executeFunctions(animation_queue);
+    EndMode2D();
 }
-
 void Graph_Scene::Draw() {
     for (const auto& node : graphNodes) node->Draw();
 }  

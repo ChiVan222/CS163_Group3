@@ -2,9 +2,10 @@
 #include "PolyNode.h"
 class Edge
 {  protected :
-     int size =2; 
+     int size =4; 
      PolyNode* from; 
      PolyNode* to; 
+     Color color ;  
    public :
      bool isDraw; 
      int weight;
@@ -14,7 +15,11 @@ class Edge
      bool TrieDraw();
      PolyNode* getFrom();
      PolyNode* getTo(); 
+     Color getColor();
+     void setColor(Color ncolor); 
+     void setSize(int size); 
      int getsize(); 
+
 }; 
 
 

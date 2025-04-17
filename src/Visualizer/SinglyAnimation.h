@@ -1,9 +1,17 @@
 #pragma once
 #include "Animation.h"
+
+
 class Ani_LinkedListSearching : public Animations {
     private:
         int target;  
         int index; 
+        int currentStep = -1 ; 
+        bool isPrerunDone = false; 
+        struct Searching_SnapShot{
+          SinglyNode* cur ;
+          Edge* edge;  
+      }; 
     public:
         Ani_LinkedListSearching();
         Ani_LinkedListSearching(const Ani_LinkedListSearching&) = default;
@@ -11,17 +19,22 @@ class Ani_LinkedListSearching : public Animations {
         void updateAnimations(float deltaTime) override;
         void updateTarget(int x);
         void play() override;
+        void prerun(); 
         // void Draw() override;
         Ani_LinkedListSearching& operator=(Ani_LinkedListSearching&& other) noexcept;
         Ani_LinkedListSearching& operator=(const Ani_LinkedListSearching& other) noexcept;
+        std::vector<Searching_SnapShot> history;  
 
-    };
+};
     class Ani_LinkedListInsert : public Animations{
       private: 
         float radius;
         Vector2 position;
         int target;
         Vector2 src_pos;
+        struct Insert_SnapShot{
+          SinglyNode* cur ;
+      }; 
       public :  
       SinglyNode* node_insert; 
 

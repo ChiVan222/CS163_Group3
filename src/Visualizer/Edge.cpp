@@ -5,6 +5,7 @@
 #include <math.h> 
 Edge::Edge(PolyNode* from , PolyNode* to) : from(from), to(to),isDraw(false)
 {
+    color = WHITE; 
 }
 bool Edge::Draw(Color color, int flat)
 {
@@ -62,4 +63,16 @@ PolyNode* Edge::getTo(){
 int Edge::getsize()
 {
     return size;
+}
+void Edge::setSize(int nsize)
+{
+    size= nsize; 
+}
+Color Edge::getColor()
+{
+     return color;
+}
+void Edge::setColor(Color ncolor)
+{
+    color = ncolor; 
 }
