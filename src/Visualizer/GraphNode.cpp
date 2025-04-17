@@ -24,9 +24,9 @@ bool GraphNode::Draw() {
 }
 
 void GraphNode::drawNodes() const {
-    DrawCircleV(position, radius, WHITE);
+    DrawCircleV(position, radius, colorNode);
     Vector2 textPos = {position.x - 10, position.y - 10};
-    DrawText(input.c_str(), textPos.x, textPos.y, 20, BLUE);
+    DrawText(input.c_str(), textPos.x, textPos.y, 20, DARKBROWN);
 }
 
 void GraphNode::drawEdges() const {
@@ -74,7 +74,7 @@ void GraphNode::repulseNearbyNodes(float minDistance) {
 }
 
 void GraphNode::highlight(Color color) {
-    for (float r = radius; r <= radius + 5.0f; r += 0.1f) {
+    for (float r = radius; r <= radius + 5.0f; r += 0.01f) {
         DrawCircleLinesV(position, r, color);
     }
 }
@@ -109,6 +109,7 @@ void GraphNode::onClick() {
         }
 
         if (updateVal) {
+            highlight(DARKBLUE);
             int key = GetCharPressed();
             while (key > 0) {
                 if (key >= 32 && key <= 125 && input.size() < maxInputLength) {

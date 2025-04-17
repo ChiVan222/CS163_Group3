@@ -1,5 +1,6 @@
 #include "GraphAnimation.h"
 #include "Scene.h"
+#include "UI.h"
 #include <iostream>
 #include <math.h>
 #include <iterator>
@@ -10,7 +11,7 @@ Ani_GraphInsert::Ani_GraphInsert() : Animations(0) {}
 Ani_GraphInsert::Ani_GraphInsert(float duration, int value, float radius, Vector2 position) : 
 Animations(duration), value(value), radius(radius), position(position)
 {
-    src_pos = Vector2({100, 100});
+    src_pos = GetScreenToWorld2D({100, 100}, UI::camera);
     node_insert = nullptr;
     isDone = true;
 }
@@ -19,10 +20,12 @@ void Ani_GraphInsert::updateAnimations(float deltaTime) {
     if (isDone || !node_insert || Graph_Scene::ani == None) return;
     elapsed_time += deltaTime;
 
+    
     node_insert->setPosition(Vector2{
-        std::min(position.x, (elapsed_time/duration)*position.x),
-        std::min(position.y, (elapsed_time/duration)*position.y)
+        (position.x > 0) ? std::min(position.x, (elapsed_time/duration)*position.x) : std::max(position.x, (elapsed_time/duration)*position.x),
+        (position.y > 0) ? std::min(position.y, (elapsed_time/duration)*position.y) : std::max(position.y, (elapsed_time/duration)*position.y)
     });
+    std::cout << node_insert->getPosition().x << " "<< node_insert->getPosition().y << "\n";
 
     if (elapsed_time >= duration) {
         isDone = true;
@@ -214,6 +217,15 @@ void Ani_Dijkstra::updateAnimations(float deltaTime) {
 
         case animation_state::Continue:
             break;
+
+        case animation_state::FirstState:
+            currentStep = 1;
+            Graph_Scene::ani_state = animation_state::Pause;
+            break;
+
+        case animation_state::FinalState:
+            currentStep = history.size() - 1;
+            Graph_Scene::ani_state = animation_state::Pause;
         default:
             break;         
     }

@@ -66,10 +66,10 @@ void Welcome_Scene::run(Scenes& mscene)
 }
 Menu_Scene::Menu_Scene()
 {
-    sButtons.push_back(new SceneButton("../assets/Images/SinglyLinkedList.png", Vector2({UI::wWidth / 5 * 1, 300}),Vector2({200,200}), "Singly Linked List",Singly));
-    sButtons.push_back(new SceneButton("../assets/Images/holder.png", Vector2({UI::wWidth / 5 * 2, 300}),Vector2({200,200}), "Trie",Trie));
-    sButtons.push_back(new SceneButton("../assets/Images/holder.png", Vector2({UI::wWidth / 5 * 3, 300}),Vector2({200,200}), "Heap",Heap));
-    sButtons.push_back(new SceneButton("../assets/Images/holder.png", Vector2({UI::wWidth / 5 * 4, 300}),Vector2({200,200}),"Graph",Graph));
+    sButtons.push_back(new SceneButton("../assets/Images/Sinly.png", Vector2({(UI::wWidth - 400*4)/5, 300}),Vector2({400, 400}), "Singly Linked List",Singly));
+    sButtons.push_back(new SceneButton("../assets/Images/holder.png", Vector2({(UI::wWidth - 400*4)/5*2 + 400, 300}),Vector2({400,400}), "Trie",Trie));
+    sButtons.push_back(new SceneButton("../assets/Images/holder.png", Vector2({(UI::wWidth - 400*4)/5*3 + 400*2, 300}),Vector2({400,400}), "Heap",Heap));
+    sButtons.push_back(new SceneButton("../assets/Images/holder.png", Vector2({(UI::wWidth - 400*4)/5*4 + 400*3, 300}),Vector2({400,400}),"Graph",Graph));
 }
 Menu_Scene::~Menu_Scene() {
     for (Button* button : Buttons) {
@@ -769,16 +769,18 @@ std::priority_queue<std::pair<int, std::function<void()>>,
                     std::vector<std::pair<int, std::function<void()>>>, 
                     FunctionComparator2> Graph_Scene::animation_queue;
 animation Graph_Scene:: ani = None;
-animation_state Graph_Scene:: ani_state = animation_state::Forward;
+animation_state Graph_Scene:: ani_state = animation_state::Continue;
 float MIN_DISTANCE = 100.0f;
 
-Graph_Scene::Graph_Scene() : NodeScene(), created(false), ani_insert(0.2, 0, 20, {0,0}), 
+Graph_Scene::Graph_Scene() : NodeScene(), created(false), ani_insert(0.01, 0, 20, {0,0}), 
 ani_search(1.0, 0), ani_remove(1.0), ani_dijkstra(2.0, 0),isDragging(false), draggedNode(nullptr){
     Inputs.push_back(new InputField(100.0f,100.0f,Vector2({210,UI::wHeight-100}),InputType::AddEdge));
     Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-540}),InputType::Randomize));
     Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-650}),InputType::DijkstraRun));
     buttons[0] = new Button("",Vector2({0,UI::wHeight-430}),Vector2({100,100}),"Clear");
     buttons.push_back(new Button("",Vector2({100,UI::wHeight-430}),Vector2({100,100}),"Load File"));
+    buttons.push_back(new Button("",Vector2({UI::wWidth -200,UI::wHeight-540}),Vector2({100,100}),"First Step")); 
+    buttons.push_back(new Button("",Vector2({UI::wWidth -200,UI::wHeight-100}),Vector2({100,100}),"Final Step")); 
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
 
     buttons[0]->OnClick = [this]() {
@@ -798,6 +800,12 @@ ani_search(1.0, 0), ani_remove(1.0), ani_dijkstra(2.0, 0),isDragging(false), dra
     };
     buttons[4]->OnClick = [this]() {
         loadFromFile();
+    };
+    buttons[5]->OnClick = [this]() {
+        this->ani_state = animation_state::FirstState;
+    };
+    buttons[6]->OnClick = [this]() {
+        this->ani_state = animation_state::FinalState;
     };
 }
 
@@ -843,7 +851,6 @@ void Graph_Scene::Draw() {
 }  
 
 void Graph_Scene::DrawButtons() {
-    DrawRectangleLines(GraphNode::LEFT, GraphNode::TOP, GraphNode::RIGHT - GraphNode::LEFT, GraphNode::BOTTOM - GraphNode::TOP, WHITE); 
     for(int i = 0; i < buttons.size(); i++) {
         buttons[i]->Draw();
         buttons[i]->DrawButtonText_center();
@@ -986,7 +993,7 @@ void Graph_Scene::AddNode(int value) {
     }
 
     std::cout << "Adding node " << value << " at (" << pos.x << ", " << pos.y << ")\n";
-    GraphNode* newNode = new GraphNode(pos, 20, value);
+    GraphNode* newNode = new GraphNode(GetScreenToWorld2D(pos, UI::camera), 20, value);
     addFunction(animation_queue, 1, std::bind(&Ani_GraphInsert::updateTarget, &ani_insert, newNode));
     created = true;
 }
@@ -1055,7 +1062,7 @@ void Graph_Scene::randomize(int nodes) {
             }
         } while (unValid);
         std::cout << "Adding node " << value << " at (" << pos.x << ", " << pos.y << ")\n";
-        GraphNode* newNode = new GraphNode(pos, 20, value);
+        GraphNode* newNode = new GraphNode(GetScreenToWorld2D(pos, UI::camera), 20, value);
         tempGraph.push_back(newNode);
         addFunction(animation_queue, 1, std::bind(&Ani_GraphInsert::updateTarget, &ani_insert, newNode));
     }
