@@ -176,7 +176,6 @@ void Ani_LinkedListSearching::prerun()
     {
         history.push_back({Singly_Scene::Nodes.get_root(),nullptr}); 
     }
-    std::cout<<"PRERUN"<<"\n"; 
     currentStep =0;
     this->setDuration(0.5*history.size()); 
     isPrerunDone =true; 
@@ -239,37 +238,196 @@ void Ani_LinkedListInsert::updateTarget(int x, int nradius, Vector2 nposition)
 }
 void Ani_LinkedListInsert::play()
 { 
+    
     node_insert = new SinglyNode(src_pos, radius,target);
-   
-        if(Singly_Scene::cur) 
-        {
-                Singly_Scene::Edges.push_back(new Edge(Singly_Scene::cur,node_insert));
-                Singly_Scene::addFunction(Singly_Scene::animation_queue,Singly_Scene::cur_animation.first-2, std::bind(&Ani_DrawEdge::updateTarget, &Singly_Scene::de,Singly_Scene::Edges.back()));
-        }
-        Singly_Scene::Nodes.Insert(node_insert,duration/5);       
-        Singly_Scene::cur = node_insert; 
     isDone =false;
+    prerun(); 
 }
 void Ani_LinkedListInsert::updateAnimations(float deltaTime)
 { 
     
-    if(isDone||!node_insert) return;
-    if(elapsed_time < 0 && deltaTime < 0 )return; 
-    elapsed_time += deltaTime;
-    if(elapsed_time <=0)
-    { 
-        isDone = true;
-        elapsed_time = 0;
-        Singly_Scene::ani = None; 
-        Singly_Scene::ani_replay_his.push(Singly_Scene::cur_animation);
+    if (isDone || history.empty() || !isPrerunDone||!node_insert ) return;
+    switch (Singly_Scene::ani_state) {
+        case animation_state::Pause:
+            break;
+
+        case animation_state::Backward:
+
+            if (currentStep > 0) {
+                currentStep--;
+                loaded = false; 
+            }
+           Singly_Scene::ani_state = animation_state::Pause;
+            break;
+
+        case animation_state::Forward:
+            if (currentStep + 1 < history.size()) 
+            {
+                currentStep++;
+                loaded =false;  
+            }
+            Singly_Scene::ani_state = animation_state::Pause;
+            break;
+
+        case animation_state::Continue:
+            break;
+        default:
+            break;         
     }
-    node_insert->SetPosition(Vector2({std::min(position.x,(elapsed_time/duration)*position.x),std::min(position.y,(elapsed_time/duration)*position.y)}));
-    if (elapsed_time >= duration) {
-        isDone = true;
-        elapsed_time = 0;
-        Singly_Scene::ani = None;
-        Singly_Scene::ani_his.push(Singly_Scene::cur_animation);
+ 
+    if (Singly_Scene::ani_state != animation_state::Pause) elapsed_time += deltaTime;
+    if(!loaded)
+    {
+        const auto& snapshot = history[currentStep];
+        Singly_Scene::loadInfo(snapshot.info); 
+        index = snapshot.index; 
+        loaded = true; 
     }
+
+    SinglyNode* ncur = Singly_Scene::Nodes.get_root(); 
+    for(int i =0 ; i < index;i++)
+    {
+        ncur = ncur->next; 
+    }
+    if(Singly_Scene::cur == nullptr) ncur = nullptr; 
+    if(ncur)ncur->SetPrimaryHighLight(); 
+    if(ncur == Singly_Scene::cur && currentStep != history.size()-1 )
+    {
+        if(Singly_Scene::ani_state != Pause)
+        {
+            if(insertnode) insertnode->Draw();
+            if(!inserted)
+            {
+                insertnode  = new SinglyNode(node_insert);
+
+                if(ncur) 
+                {
+                    Singly_Scene::Edges.push_back(new Edge(Singly_Scene::cur,insertnode));
+                    Singly_Scene::addFunction(Singly_Scene::animation_queue,Singly_Scene::cur_animation.first-2, std::bind(&Ani_DrawEdge::updateTarget, &Singly_Scene::de,Singly_Scene::Edges.back()));
+                }
+                Singly_Scene::Nodes.Insert(insertnode,(duration/history.size())/5);  
+                // Singly_Scene::Nodes.InsertAfter(ncur,node_insert);
+                inserted = true; 
+            }
+            insertnode->SetPosition(Vector2({std::min(position.x,(elapsed_time/(duration/history.size()))*position.x),std::min(position.y,(elapsed_time/(duration/history.size()))*position.y)}));
+            if (elapsed_time >= duration/history.size()) {
+                isDone  = true; 
+                index= 0 ; 
+                inserted=0 ; 
+                Singly_Scene::ani = None; 
+                loaded = 0; 
+                isPrerunDone = 0 ;
+                Singly_Scene::cur = insertnode; 
+               elapsed_time =0 ;
+                return; 
+            }
+        }
+    }else if(currentStep == history.size()-1)
+    {
+        if (elapsed_time >= duration/history.size()) {
+            isDone  = true; 
+            index= 0 ; 
+            inserted=0 ; 
+            Singly_Scene::ani = None; 
+            
+            loaded = 0; 
+            isPrerunDone = 0 ;
+            elapsed_time =0 ;
+            return;    
+        }
+    }else
+    {
+        Edge* edge; 
+        auto it = std::find_if(Singly_Scene::Edges.begin(), Singly_Scene::Edges.end(),
+        [ncur](Edge* edge) {
+            return edge->getFrom() == ncur;
+          });
+        if(it != Singly_Scene::Edges.end())
+        {
+         edge = *it; 
+        }else{
+            edge =nullptr; 
+        }
+        if(edge)
+        {   
+            // edge->setColor(MultiplyTransparency(PURPLE,0.2 + elapsed_time/duration));
+            PolyNode* from = edge->getFrom();
+            PolyNode* to = edge->getTo(); 
+             float theta = atan2(to->getPosition().y - from->getPosition().y, 
+                         to->getPosition().x - from->getPosition().x);
+     
+             Vector2 cpos = Vector2({Singly_Scene::Node_radius * cos(theta) + from->getPosition().x,
+                              Singly_Scene::Node_radius * sin(theta) + from->getPosition().y});
+     
+             Vector2 dpos = Vector2({to->getPosition().x - Singly_Scene::Node_radius * cos(theta),
+                              to->getPosition().y - Singly_Scene::Node_radius * sin(theta)});
+            Vector2 npos= Vector2(
+                {std::min(dpos.x,cpos.x+(elapsed_time/(duration/history.size()))*(dpos.x-cpos.x)),
+                std::min(dpos.y,cpos.y+(elapsed_time/(duration/history.size()))*(dpos.y- cpos.y))});
+           
+                int segments = 20;
+                for (int i = 0; i < segments; i++) {
+                    float t1 = (float)i / segments;       
+                    float t2 = (float)(i + 1) / segments; 
+                    Vector2 p1 = Vector2({
+                        cpos.x + t1 * (npos.x - cpos.x),
+                        cpos.y + t1 * (npos.y - cpos.y)}
+                    );
+                    Vector2 p2 = Vector2({
+                        cpos.x + t2 * (npos.x - cpos.x),
+                        cpos.y + t2 * (npos.y - cpos.y)}
+                    );
+                     Color color = {
+                        (unsigned char)(128 * (1 - t1)), 
+                        0,                             
+                        (unsigned char)(128 + (127 * t1)), 
+                        255                             
+                    };
+                     DrawLineEx(p1, p2, edge->getsize(), color);
+                } 
+        }    
+        if (elapsed_time >= duration/history.size()) {
+               ncur->SetNullHighLight();
+               ncur =ncur->next;
+               if(edge)edge->setColor(WHITE);
+               if (++currentStep >= history.size()) {
+                    isDone = true;
+                    Singly_Scene::ani = None;
+                    return;
+                }
+                loaded = false; 
+                elapsed_time = 0;
+            } 
+    }
+}
+void Ani_LinkedListInsert::prerun()
+{
+    history.clear();
+    SinglyNode* ncur = Singly_Scene::Nodes.get_root();
+    Edge* edge= nullptr; 
+    int nindex= -1 ; 
+    while(ncur&& ncur != Singly_Scene::cur)
+    {
+       
+        history.push_back({++nindex,Singly_Scene::getInfo()});
+        ncur = ncur->next; 
+    }
+    history.push_back({++nindex,Singly_Scene::getInfo()});
+    SinglyNode* insert_n = new SinglyNode(node_insert); 
+    insert_n->SetPosition(position); 
+    if(ncur) 
+    {
+        Singly_Scene::Edges.push_back(new Edge(ncur,insert_n));
+    }
+    Singly_Scene::cur =insert_n;
+
+    Singly_Scene::Nodes.InsertAfter(ncur,insert_n);
+    history.push_back({++nindex,Singly_Scene::getInfo()});
+    isPrerunDone = true;  
+    currentStep = 0 ; 
+    Singly_Scene::loadInfo(history[0].info);
+    Singly_Scene::ani_state = Pause; 
+    duration = 0.5*history.size(); 
 }
 Ani_LinkedListInsert& Ani_LinkedListInsert::operator=(const Ani_LinkedListInsert& other) noexcept {
     if (this == &other) return *this;
@@ -351,6 +509,11 @@ Ani_LinkedListDelete::Ani_LinkedListDelete():Animations(0), target(0)
 }
 void Ani_LinkedListDelete::updateTarget(int x)
 {
+    if(!Singly_Scene::Nodes.get_root())
+    {
+        std::cout<<"AHA"<<"\n";
+        return ;
+    } 
     if(isDone)
     {
         Singly_Scene::ani = Removing; 
@@ -361,8 +524,125 @@ void Ani_LinkedListDelete::updateTarget(int x)
 }
 #include <algorithm>
 void Ani_LinkedListDelete::play() {
+   
+    elapsed_time = 0;
+    isDone = false; 
+    prerun(); 
+}
+void Ani_LinkedListDelete::updateAnimations(float deltaTime)
+{
+    if (isDone || history.empty() || !isPrerunDone ) return;
+    switch (Singly_Scene::ani_state) {
+        case animation_state::Pause:
+            break;
+        case animation_state::Backward:
+
+            if (currentStep > 0) {
+                currentStep--;
+                loaded = false; 
+            }
+           Singly_Scene::ani_state = animation_state::Pause;
+            break;
+
+        case animation_state::Forward:
+            if (currentStep + 1 < history.size()) 
+            {
+                currentStep++;
+                loaded =false;  
+            }
+            Singly_Scene::ani_state = animation_state::Pause;
+            break;
+
+        case animation_state::Continue:
+            break;
+        default:
+            break;         
+    }
+ 
+
+    if (Singly_Scene::ani_state != animation_state::Pause) elapsed_time += deltaTime;
+
+    if(!loaded)
+    {
+        const auto& snapshot = history[currentStep];
+        Singly_Scene::loadInfo(snapshot.info); 
+        index = snapshot.index; 
+        loaded = true; 
+    }
+    SinglyNode* ncur = Singly_Scene::Nodes.get_root(); 
+    for(int i =0 ; i < index;i++)
+    {
+        ncur = ncur->next; 
+    }
+    if(ncur)ncur->SetPrimaryHighLight();
+    if(currentStep != history.size()-1)
+    {
+        
+        if (elapsed_time >= duration/history.size()) {
+
+
+            if(ncur->value == target)
+            {
+                SinglyNode* tmp =ncur; 
+                Singly_Scene::Nodes.set_root(Singly_Scene::Nodes.get_root()->next); 
+                Singly_Scene::cur = Singly_Scene::Nodes.get_root(); 
+                Singly_Scene::Edges.erase(
+                    std::remove_if(Singly_Scene::Edges.begin(),Singly_Scene::Edges.end(),[tmp](Edge* edge){
+                            if (edge->getFrom() == tmp || edge->getTo() == tmp) {
+                                delete edge; 
+                                return true;
+                            }
+                            return false;
+                        }),
+                Singly_Scene::Edges.end());
+                if(tmp->next)
+                {
+                    Singly_Scene::m.setDuration(duration);
+                    Singly_Scene::m.updateTarget(Vector2({(float)(-Singly_Scene::Node_radius*2-50),0}),tmp->next);
+                }
+                Singly_Scene::Nodes.size--; 
+                Singly_Scene::ani =None;
+                elapsed_time = 0;
+                isPrerunDone = 0; 
+                isDone =true ; 
+                loaded = false; 
+                delete tmp;
+                elapsed_time = 0 ; 
+                return; 
+            }
+            if (ncur && ncur->next&& ncur->next->value != target) {
+                ncur->SetNullHighLight();
+                ncur = ncur->next;
+                currentStep++;
+                loaded =false; 
+            } else
+            { 
+                    Singly_Scene::Nodes.DeleteNode(ncur,duration); 
+                isDone = true;
+                Singly_Scene::ani=None;
+                isPrerunDone = 0; 
+                loaded = 0 ; 
+            }
+            elapsed_time = 0;
+        }
+    }else{
+        if (elapsed_time >= duration/history.size()) {
+            isDone = true;
+            Singly_Scene::ani=None;
+            isPrerunDone = 0; 
+            elapsed_time = 0;
+        }
+    }
+   
+}
+
+void Ani_LinkedListDelete::prerun()
+{
+    history.clear();
     if(Singly_Scene::Nodes.get_root()->value == target) 
     {
+        std::cout<<"DELETE AT ROOT"<<"\n"; 
+        history.push_back({0, Singly_Scene::getInfo()}); 
         SinglyNode* tmp =Singly_Scene::Nodes.get_root(); 
         Singly_Scene::Nodes.set_root(Singly_Scene::Nodes.get_root()->next); 
         Singly_Scene::cur = Singly_Scene::Nodes.get_root(); 
@@ -377,34 +657,83 @@ void Ani_LinkedListDelete::play() {
         Singly_Scene::Edges.end());
         if(tmp->next)
         {
-            Singly_Scene::m.setDuration(duration);
-            Singly_Scene::m.updateTarget(Vector2({(float)(-Singly_Scene::Node_radius*2-50),0}),tmp->next);
+            SinglyNode* newcur = tmp->next; 
+            while(newcur)
+            {
+                Vector2 position = newcur->getPosition(); 
+                newcur->SetPosition(Vector2{-Singly_Scene::Node_radius*2 -50 + position.x, position.y});
+                newcur =newcur->next; 
+            }
         }
-        Singly_Scene::Nodes.size--; 
-        Singly_Scene::ani =None;
+        Singly_Scene::Nodes.size--;
+
         delete tmp;
+        history.push_back({0, Singly_Scene::getInfo()});  
+        isPrerunDone = true;  
+        currentStep = 0 ; 
+        elapsed_time = 0;  
+        Singly_Scene::loadInfo(history[0].info);
+        Singly_Scene::ani_state = Pause; 
         return; 
     }
-    elapsed_time = 0;
-    isDone = false; 
-}
-void Ani_LinkedListDelete::updateAnimations(float deltaTime)
-{
-    if(isDone) return;
-    elapsed_time += deltaTime;
-    if(Singly_Scene::cur)Singly_Scene::cur->SetPrimaryHighLight();
-    if (elapsed_time >= duration/Singly_Scene::Nodes.get_size()) {
-        if (Singly_Scene::cur && Singly_Scene::cur->next&& Singly_Scene::cur->next->value != target) {
-            Singly_Scene::cur->SetNullHighLight();
-            Singly_Scene::cur = Singly_Scene::cur->next;
-        } else
-        {
-            Singly_Scene::Nodes.DeleteNode(Singly_Scene::cur,duration); 
-            isDone = true;
-            Singly_Scene::ani=None;
-        }
-        elapsed_time = 0;
+    SinglyNode* ncur = Singly_Scene::Nodes.get_root();
+    Edge* edge= nullptr; 
+    int nindex= -1; 
+
+    while(ncur&& ncur->next && ncur->next->value != target)
+    {
+       
+        history.push_back({++nindex,Singly_Scene::getInfo()});
+        ncur = ncur->next; 
     }
+    history.push_back({++nindex,Singly_Scene::getInfo()});
+    SinglyNode* tmp = ncur->next; 
+    if(tmp&&tmp->next)
+    {
+        
+        SinglyNode* newcur = tmp->next; 
+        Singly_Scene::Edges.push_back(new Edge(ncur,tmp->next));
+        while(newcur)
+        {
+            Vector2 position = newcur->getPosition(); 
+            newcur->SetPosition(Vector2{-Singly_Scene::Node_radius*2 -50 + position.x, position.y});
+            newcur =newcur->next; 
+        }
+        Singly_Scene::Edges.erase(
+            std::remove_if(Singly_Scene::Edges.begin(),Singly_Scene::Edges.end(),[tmp](Edge* edge){
+                    if (edge->getFrom() == tmp || edge->getTo() == tmp) {
+                        delete edge; 
+                        return true;
+                    }
+                    return false;
+                }),
+        Singly_Scene::Edges.end());
+        ncur->next = tmp->next;
+        Singly_Scene::Nodes.size--;  
+        delete tmp;
+        history.push_back({++nindex,Singly_Scene::getInfo()});
+    }else if(tmp){
+        Singly_Scene::Edges.erase(
+            std::remove_if(Singly_Scene::Edges.begin(),Singly_Scene::Edges.end(),[ncur,tmp](Edge* edge){
+                    if (edge->getFrom() == ncur && edge->getTo() == tmp) {
+                        delete edge; 
+                        return true;
+                    }
+                    return false;
+                }),
+        Singly_Scene::Edges.end());
+        Singly_Scene::Nodes.size--; 
+        ncur->next = tmp->next;
+        delete tmp;
+        history.push_back({++nindex,Singly_Scene::getInfo()});
+    }
+
+
+    isPrerunDone = true;  
+    currentStep = 0 ; 
+    loaded = false; 
+    Singly_Scene::loadInfo(history[0].info);
+    Singly_Scene::ani_state = Pause; 
 }
 Ani_LinkedListDelete& Ani_LinkedListDelete::operator=(const Ani_LinkedListDelete& other) noexcept {
     if (this == &other) return *this;

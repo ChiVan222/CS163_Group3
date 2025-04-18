@@ -23,7 +23,7 @@ class SinglyNode: public PolyNode
         int getValue();
         SinglyNode& operator=(SinglyNode&& other) noexcept;
         bool isClicked();
-        void OnClicked(); 
+        bool OnClicked(); 
         void ForwardDistanceConstraints(float maxDistance);
         void BackwardDistanceConstraints(float maxDistance);
         void ForwardAngleConstraints(float maxAngle);
@@ -48,7 +48,7 @@ class SinglyNode: public PolyNode
         void InsertAtEnd(SinglyNode* node,float maxDistance);
         SinglyNode* get_root() const; 
         void set_root(SinglyNode* nroot); 
-
+        void InsertAfter(SinglyNode* prevnode, SinglyNode* node); 
         void DeleteNode(SinglyNode* cur2, float duration); 
         void Traverse();
         void TraverseCheck();

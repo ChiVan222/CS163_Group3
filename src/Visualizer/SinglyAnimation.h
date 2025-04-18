@@ -1,7 +1,7 @@
 #pragma once
 #include "Animation.h"
 
-
+#include "Info.h"
 class Ani_LinkedListSearching : public Animations {
     private:
         int target;  
@@ -32,32 +32,52 @@ class Ani_LinkedListSearching : public Animations {
         Vector2 position;
         int target;
         Vector2 src_pos;
+        int currentStep = -1;  
+        SinglyNode* cur; 
+        bool inserted =false; 
+        int index= 0 ; 
+        bool loaded = false; 
+        bool isPrerunDone = false;  
         struct Insert_SnapShot{
-          SinglyNode* cur ;
+          int index;  
+          Singly_Scene_Info info;   
       }; 
       public :  
       SinglyNode* node_insert; 
-
+      SinglyNode* insertnode = nullptr; 
         void updateAnimations(float deltaTime) override;
         void play() override;
         // void Draw() override;
         Ani_LinkedListInsert(float duration, int target, int radius, Vector2 position);
         Ani_LinkedListInsert();
-        
+        void prerun(); 
         Ani_LinkedListInsert& operator=(const Ani_LinkedListInsert& other) noexcept;
         void updateTarget(int x, int radius, Vector2 position);
+        std::vector<Insert_SnapShot> history;  
     };
     class Ani_LinkedListDelete: public Animations 
     { 
       private: 
         int target;
+        SinglyNode* cur; 
+        bool inserted =false; 
+        bool loaded = false; 
+        bool isPrerunDone = false;  
+        int currentStep = -1;  
+        int index= -1; 
+        struct Insert_SnapShot{
+          int index ; 
+          Singly_Scene_Info info;   
+      }; 
       public :  
         void updateAnimations(float deltaTime) override;
         void play() override;
+        void prerun() ; 
         // void Draw() override;
         Ani_LinkedListDelete(float duration, int target);
         Ani_LinkedListDelete();
         Ani_LinkedListDelete& operator=(const Ani_LinkedListDelete& other) noexcept;
+        std::vector<Insert_SnapShot> history;  
 
         void updateTarget(int x);
     } ; 

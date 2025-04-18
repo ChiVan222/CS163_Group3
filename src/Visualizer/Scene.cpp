@@ -404,8 +404,9 @@ void Singly_Scene::run(Scenes& mscene)
     UI::mousePos =  GetScreenToWorld2D(GetMousePosition(), UI::camera);
     Draw();
 
-    a.updateAnimations(deltaTime);
+    // a.updateAnimations(deltaTime);
     insert.updateAnimations(deltaTime); 
+
     m.updateAnimations(deltaTime); 
     d.updateAnimations(deltaTime);
     de.updateAnimations(deltaTime);
@@ -423,10 +424,11 @@ void Singly_Scene::run(Scenes& mscene)
     }
   
     executeFunctions(animation_queue);
-    
-    Nodes.UpdateHightLight();
-    Nodes.TraverseCheck();
-
+    if(ani == None)
+    {
+        Nodes.UpdateHightLight();
+        Nodes.TraverseCheck();
+    }
     EndMode2D();
     UI_executeFunctions();
 

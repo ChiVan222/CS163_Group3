@@ -113,6 +113,50 @@ void SinglyLinkedListNode::Insert(SinglyNode* node, float duration)
         cur2->next = node;
     }
 }
+void SinglyLinkedListNode::InsertAfter(SinglyNode* prevnode, SinglyNode* node)
+{
+    if(!root) 
+    {
+        root = node; 
+        size++;
+        return ; 
+    }
+    SinglyNode* cur2 = root; 
+    size++;  
+    while(cur2 && cur2 != prevnode)
+    {
+        cur2 = cur2->next; 
+    }
+    if (!cur2) {
+        return;
+    }
+    SinglyNode* tmp = cur2->next; 
+    if(tmp)
+    { 
+        SinglyNode* newcur = tmp ;
+        while(newcur)
+        {
+            Vector2 position = newcur->getPosition(); 
+            newcur->SetPosition(Vector2{node->getRadius()*2 +50 + position.x, position.y});
+            newcur =newcur->next; 
+        }
+        Singly_Scene::Edges.erase(
+            std::remove_if(Singly_Scene::Edges.begin(),Singly_Scene::Edges.end(),[cur2,tmp](Edge* edge){
+                    if (edge->getFrom() == cur2&& edge->getTo() == tmp) {
+                        delete edge; 
+                        return true;
+                    }
+                    return false;
+                }),
+        Singly_Scene::Edges.end());
+        cur2->next = node;
+        node->next = tmp;
+        Singly_Scene::Edges.push_back(new Edge(node,tmp)); 
+        Singly_Scene::Edges.back()->isDraw = 1 ; 
+    }else{
+        cur2->next = node;
+    }
+}
 #include <math.h>
 float getDistance(Vector2 a, Vector2 b)
 { 
@@ -166,10 +210,9 @@ void SinglyLinkedListNode:: TraverseCheck()
          {
             Singly_Scene::cur = cur;
          }
-         cur->OnClicked(); 
+          cur->OnClicked(); 
          cur = cur->next; 
     }
-
 }
 int  SinglyLinkedListNode::get_size(){
     return size; 
@@ -240,13 +283,14 @@ bool safe_string_to_int(const std::string& str, int& out) {
     }
     return false;
 }
-void SinglyNode::OnClicked()
+bool SinglyNode::OnClicked()
 {
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && CheckCollisionPointCircle(UI::mousePos, position,radius)) {
         isActive = true;
     } else if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         input = std::to_string(value); 
         isActive = false;
+        return false; 
     }
     if(isActive)
     {
@@ -273,18 +317,15 @@ void SinglyNode::OnClicked()
         }
        
     }
+    return true; 
 }
 void SinglyLinkedListNode::DeleteNode(SinglyNode* cur2, float duration)
 {
-    if(!cur2)
-    {   std::cout<<"AAAA"<<"\n";
+    if(!cur2){
         return ; 
     }
-    std::cout<<"BBBB"<<"\n";
-  
     if(cur2->next)
     { 
-        std::cout<<"DELETED"<<"\n";
         SinglyNode* tmp = cur2->next; 
         if(tmp->next)
         {
