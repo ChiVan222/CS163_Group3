@@ -4,7 +4,7 @@
 #include "InputField.h"
 #include <vector> 
 #include <map>
-#include "Ultility.h"
+#include "Utility.h"
 #include "Button.h" 
 #include "Animation.h"
 #include "GraphAnimation.h"
@@ -139,6 +139,7 @@ class Singly_Scene:public NodeScene
         void CheckBuffer() override; 
         void run(Scenes& mscene); 
         Singly_Scene();
+        void Clear(); 
         void Draw();
         static void addFunction(std::priority_queue<std::pair<int, std::function<void()>>, 
         std::vector<std::pair<int, std::function<void()>>>, 

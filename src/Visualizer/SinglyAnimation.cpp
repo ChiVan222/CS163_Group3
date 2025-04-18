@@ -236,6 +236,16 @@ void Ani_LinkedListInsert::updateTarget(int x, int nradius, Vector2 nposition)
         play(); 
     }
 }
+void Ani_LinkedListInsert::reset()
+{
+    cur = nullptr; 
+    target= 0 ; 
+    loaded = false; 
+    isPrerunDone = false; 
+    isDone  =true;  
+    elapsed_time = 0 ; 
+    history.clear(); 
+}
 void Ani_LinkedListInsert::play()
 { 
     
@@ -350,7 +360,6 @@ void Ani_LinkedListInsert::updateAnimations(float deltaTime)
         }
         if(edge)
         {   
-            // edge->setColor(MultiplyTransparency(PURPLE,0.2 + elapsed_time/duration));
             PolyNode* from = edge->getFrom();
             PolyNode* to = edge->getTo(); 
              float theta = atan2(to->getPosition().y - from->getPosition().y, 
@@ -511,7 +520,6 @@ void Ani_LinkedListDelete::updateTarget(int x)
 {
     if(!Singly_Scene::Nodes.get_root())
     {
-        std::cout<<"AHA"<<"\n";
         return ;
     } 
     if(isDone)
@@ -574,56 +582,113 @@ void Ani_LinkedListDelete::updateAnimations(float deltaTime)
     {
         ncur = ncur->next; 
     }
-    if(ncur)ncur->SetPrimaryHighLight();
+    if(ncur)ncur->SetSecondaryHighLight();
     if(currentStep != history.size()-1)
     {
         
-        if (elapsed_time >= duration/history.size()) {
-
-
-            if(ncur->value == target)
+        if(ncur->value != target)
+        {
+            Edge* edge; 
+            auto it = std::find_if(Singly_Scene::Edges.begin(), Singly_Scene::Edges.end(),
+            [ncur](Edge* edge) {
+                return edge->getFrom() == ncur;
+              });
+            if(it != Singly_Scene::Edges.end())
             {
-                SinglyNode* tmp =ncur; 
-                Singly_Scene::Nodes.set_root(Singly_Scene::Nodes.get_root()->next); 
-                Singly_Scene::cur = Singly_Scene::Nodes.get_root(); 
-                Singly_Scene::Edges.erase(
-                    std::remove_if(Singly_Scene::Edges.begin(),Singly_Scene::Edges.end(),[tmp](Edge* edge){
-                            if (edge->getFrom() == tmp || edge->getTo() == tmp) {
-                                delete edge; 
-                                return true;
-                            }
-                            return false;
-                        }),
-                Singly_Scene::Edges.end());
-                if(tmp->next)
-                {
-                    Singly_Scene::m.setDuration(duration);
-                    Singly_Scene::m.updateTarget(Vector2({(float)(-Singly_Scene::Node_radius*2-50),0}),tmp->next);
-                }
-                Singly_Scene::Nodes.size--; 
-                Singly_Scene::ani =None;
-                elapsed_time = 0;
-                isPrerunDone = 0; 
-                isDone =true ; 
-                loaded = false; 
-                delete tmp;
-                elapsed_time = 0 ; 
-                return; 
+             edge = *it; 
+            }else{
+                edge =nullptr; 
             }
-            if (ncur && ncur->next&& ncur->next->value != target) {
-                ncur->SetNullHighLight();
-                ncur = ncur->next;
-                currentStep++;
-                loaded =false; 
-            } else
-            { 
-                    Singly_Scene::Nodes.DeleteNode(ncur,duration); 
-                isDone = true;
-                Singly_Scene::ani=None;
-                isPrerunDone = 0; 
-                loaded = 0 ; 
+            if(edge)
+            {   
+                PolyNode* from = edge->getFrom();
+                PolyNode* to = edge->getTo(); 
+                 float theta = atan2(to->getPosition().y - from->getPosition().y, 
+                             to->getPosition().x - from->getPosition().x);
+         
+                 Vector2 cpos = Vector2({Singly_Scene::Node_radius * cos(theta) + from->getPosition().x,
+                                  Singly_Scene::Node_radius * sin(theta) + from->getPosition().y});
+         
+                 Vector2 dpos = Vector2({to->getPosition().x - Singly_Scene::Node_radius * cos(theta),
+                                  to->getPosition().y - Singly_Scene::Node_radius * sin(theta)});
+                Vector2 npos= Vector2(
+                    {std::min(dpos.x,cpos.x+(elapsed_time/(duration/history.size()))*(dpos.x-cpos.x)),
+                    std::min(dpos.y,cpos.y+(elapsed_time/(duration/history.size()))*(dpos.y- cpos.y))});
+               
+                    int segments = 20;
+                    for (int i = 0; i < segments; i++) {
+                        float t1 = (float)i / segments;       
+                        float t2 = (float)(i + 1) / segments; 
+                        Vector2 p1 = Vector2({
+                            cpos.x + t1 * (npos.x - cpos.x),
+                            cpos.y + t1 * (npos.y - cpos.y)}
+                        );
+                        Vector2 p2 = Vector2({
+                            cpos.x + t2 * (npos.x - cpos.x),
+                            cpos.y + t2 * (npos.y - cpos.y)}
+                        );
+                         Color color = {
+                            (unsigned char)(128 * (1 - t1)), 
+                            0,                             
+                            (unsigned char)(128 + (127 * t1)), 
+                            255                             
+                        };
+                         DrawLineEx(p1, p2, edge->getsize(), color);
+                    } 
+            }    
+        }
+        if(ncur == Singly_Scene::Nodes.get_root() && ncur->value == target)
+        {
+            SinglyNode* tmp =ncur; 
+            ncur->SetPrimaryHighLight();
+            if (elapsed_time >= duration/history.size()) {
+            Singly_Scene::Nodes.set_root(Singly_Scene::Nodes.get_root()->next); 
+            Singly_Scene::cur = Singly_Scene::Nodes.get_root(); 
+            Singly_Scene::Edges.erase(
+                std::remove_if(Singly_Scene::Edges.begin(),Singly_Scene::Edges.end(),[tmp](Edge* edge){
+                        if (edge->getFrom() == tmp || edge->getTo() == tmp) {
+                            delete edge; 
+                            return true;
+                        }
+                        return false;
+                    }),
+            Singly_Scene::Edges.end());
+            if(tmp->next)
+            {
+                Singly_Scene::m.setDuration(duration/history.size());
+                Singly_Scene::m.updateTarget(Vector2({(float)(-Singly_Scene::Node_radius*2-50),0}),tmp->next);
             }
+            Singly_Scene::Nodes.size--; 
+            Singly_Scene::ani =None;
             elapsed_time = 0;
+            isPrerunDone = 0; 
+            isDone =true ; 
+            loaded = false; 
+            delete tmp;
+            elapsed_time = 0 ; 
+            return; 
+          }
+        }
+       
+        if (ncur && ncur->next&& ncur->next->value != target) {
+                if (elapsed_time >= duration/history.size()) {
+                    ncur->SetSecondaryHighLight(); 
+                    ncur = ncur->next;
+                    currentStep++;
+                    index++; 
+                    elapsed_time = 0;
+                }
+        } else
+        { 
+            ncur->next->SetPrimaryHighLight(); 
+            if (elapsed_time >= duration/history.size()) {
+                    Singly_Scene::Nodes.DeleteNode(ncur,duration/history.size()); 
+                    isDone = true;
+                    Singly_Scene::ani=None;
+                    isPrerunDone = 0; 
+                    loaded = 0 ; 
+                    elapsed_time = 0; 
+            }
         }
     }else{
         if (elapsed_time >= duration/history.size()) {
@@ -641,7 +706,6 @@ void Ani_LinkedListDelete::prerun()
     history.clear();
     if(Singly_Scene::Nodes.get_root()->value == target) 
     {
-        std::cout<<"DELETE AT ROOT"<<"\n"; 
         history.push_back({0, Singly_Scene::getInfo()}); 
         SinglyNode* tmp =Singly_Scene::Nodes.get_root(); 
         Singly_Scene::Nodes.set_root(Singly_Scene::Nodes.get_root()->next); 
@@ -733,6 +797,7 @@ void Ani_LinkedListDelete::prerun()
     currentStep = 0 ; 
     loaded = false; 
     Singly_Scene::loadInfo(history[0].info);
+    duration = 0.5*history.size(); 
     Singly_Scene::ani_state = Pause; 
 }
 Ani_LinkedListDelete& Ani_LinkedListDelete::operator=(const Ani_LinkedListDelete& other) noexcept {
@@ -777,22 +842,19 @@ void Ani_InsertRandomList::updateTarget(Vector2 position, int value){
     target = new SinglyNode(position, Singly_Scene::Node_radius, value); 
     play(); 
 }
+void Ani_InsertRandomList::reset()
+{
+    elapsed_time = 0;  
+    root = nullptr; 
+    target = nullptr; 
+    isDone  = true; 
+
+}
 void Ani_InsertRandomList::updateAnimations(float deltaTime)
 { 
     if(isDone||!target) return;
     target->Draw(); 
-    if(elapsed_time < 0 && deltaTime<0 ) return; 
-    elapsed_time += deltaTime;
-    if(elapsed_time <= 0 && Singly_Scene::ani_state == Backward)
-    { 
-        Singly_Scene::Nodes.DeleteAtEnd(); 
-        delete target;    
-        target =nullptr; 
-        isDone = true;  
-        Singly_Scene::ani = None;
-        Singly_Scene::ani_replay_his.push(Singly_Scene::cur_animation); 
-        return; 
-    } 
+   if(Singly_Scene::ani_state != Pause) elapsed_time += deltaTime;
     float t = elapsed_time / duration;
     Vector2 position = target->getPosition(); 
     Vector2 newPos = { startpos.x + t * (position.x - startpos.x),
@@ -803,7 +865,7 @@ void Ani_InsertRandomList::updateAnimations(float deltaTime)
     UI::ChangeCameraZoom(newzoom);
     Singly_Scene::Nodes.get_root()->ForwardDistanceConstraints(2*Singly_Scene::Node_radius +50);
     // Singly_Scene::Nodes.get_root()->ForwardAngleConstraints(2*PI/3);
-    if(Singly_Scene::ani_state == Forward && CheckCollisionCircles(Singly_Scene::Nodes.get_root()->getPosition(),Singly_Scene::Node_radius,target->getPosition(),Singly_Scene::Node_radius))
+    if( CheckCollisionCircles(Singly_Scene::Nodes.get_root()->getPosition(),Singly_Scene::Node_radius,target->getPosition(),Singly_Scene::Node_radius))
     {
         Singly_Scene::Nodes.InsertAtEnd(target,2*Singly_Scene::Node_radius +50);
         isDone = true;
@@ -871,18 +933,16 @@ void Ani_MoveNode::updateTarget(SinglyNode* node,Vector2 Endpos){
     target = node;
     play(); 
 }
+void  Ani_MoveNode::reset(){
+    isDone =true;
+    elapsed_time =0 ;
+    target = nullptr;  
+} 
+
 void Ani_MoveNode::updateAnimations(float deltaTime)
 {
     if(isDone||!target)return;
-    if(elapsed_time < 0 && deltaTime < 0 )return; 
-    elapsed_time += deltaTime; 
-    if(elapsed_time <= 0 && Singly_Scene::ani_state == Backward)
-    { 
-        isDone = true;  
-        Singly_Scene::ani = None;
-        Singly_Scene::ani_replay_his.push(Singly_Scene::cur_animation); 
-        return; 
-    }  
+    if(Singly_Scene::ani_state != Pause)  elapsed_time += deltaTime; 
     if(elapsed_time<= duration ||!isDone)
    {
         float t = elapsed_time / duration;
@@ -896,7 +956,6 @@ void Ani_MoveNode::updateAnimations(float deltaTime)
         }
         target->ForwardDistanceConstraints(2*Singly_Scene::Node_radius+50);
         // target->ForwardAngleConstraints(2*PI/3);
-
         if(elapsed_time> duration)
         {
             isDone =true; 
@@ -917,12 +976,7 @@ Ani_MoveNode& Ani_MoveNode::operator=(const Ani_MoveNode& other) noexcept {
 void Ani_Straighten::play()
 { 
     isDone = false;
-    if( Singly_Scene::ani_state == Forward)
-    {
-      elapsed_time=0;  
-    }else if (Singly_Scene::ani_state == Backward){
-      elapsed_time = duration;
-    }
+    elapsed_time=0;  
     Singly_Scene::mn.setDuration(1); 
     Singly_Scene::mn.updateTarget(Singly_Scene::Nodes.get_root(), endpos);  
 }
@@ -932,19 +986,16 @@ void Ani_Straighten ::updateTarget(Vector2 Endpos)
     Singly_Scene:: ani = Straightening; 
     play(); 
 }
+void Ani_Straighten ::reset()
+{ 
+  elapsed_time= 0 ;
+  isDone = true; 
+} 
 void Ani_Straighten::updateAnimations(float deltaTime)
 {
     if(isDone)return; 
-    if(elapsed_time < 0 && deltaTime < 0 )return; 
-    elapsed_time += deltaTime; 
-    if(elapsed_time <= 0 && Singly_Scene::ani_state == Backward)
-    { 
-        isDone = true;  
-        Singly_Scene::ani = None;
-        Singly_Scene::ani_replay_his.push(Singly_Scene::cur_animation); 
-        return; 
-    } 
-    if(Singly_Scene::ani_state == Forward && elapsed_time>= Singly_Scene::mn.getDuration()&& Singly_Scene::mn.getState())
+    if(Singly_Scene::ani_state != Pause)  elapsed_time += deltaTime; 
+    if(elapsed_time>= Singly_Scene::mn.getDuration()&& Singly_Scene::mn.getState())
    {
        if(Singly_Scene::cur->next)
        { 

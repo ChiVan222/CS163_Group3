@@ -371,6 +371,52 @@ void Singly_Scene::loadInfo(const Singly_Scene_Info& info) {
 
 
 #include "iostream"
+void Singly_Scene::Clear()
+{
+   
+    while(!ani_his.empty())
+    {
+        ani_his.pop();
+    }
+    while(!animation_queue.empty())
+    {
+        animation_queue.pop(); 
+    }
+    while(!pending_animation.empty())
+    {
+        pending_animation.pop();
+    }
+    while(!ani_replay_his.empty())
+    {
+        ani_replay_his.pop(); 
+    }
+    buffer = "";
+     Edges.clear();
+     UI::resetCamera(); 
+     ani = None;
+     cur =nullptr; 
+     insert.reset();  
+     st.reset(); 
+     mn.reset();
+     insert_2.reset();
+
+     while(!scene_info_his.empty())
+     {
+        scene_info_his.pop();
+     }
+     while(!scene_info_replay_his.empty())
+     {
+        scene_info_replay_his.pop(); 
+     }
+     Nodes.DeleteList(); 
+     for(int i =0; i<Edges.size();i++)
+         {
+              Edge* tmp = Edges[i];
+              Edges[i] = nullptr;
+              delete tmp;
+         }
+} 
+
 void Singly_Scene::run(Scenes& mscene)
 {
    
@@ -384,18 +430,7 @@ void Singly_Scene::run(Scenes& mscene)
     if (IsKeyPressed(KEY_LEFT)) {
         mscene = Menu;
         created = false;
-        a = Ani_LinkedListSearching(0.3,0);
-        Nodes.DeleteList();
-        for(int i =0; i<Edges.size();i++)
-        {
-             Edge* tmp = Edges[i];
-             Edges[i] = nullptr;
-             delete tmp;
-        }
-        Edges.clear();
-        UI::resetCamera(); 
-        ani = None;
-        cur = nullptr; 
+        Clear(); 
         return; 
 
     }
@@ -752,7 +787,16 @@ Singly_Scene::Singly_Scene(): NodeScene(),a(0.3,0), insert(0.5,0,20,Vector2({300
          loadInfo(info);
         }
      };
-     a.setDuration(1);
+     buttons.push_back(new Button("",Vector2({0,UI::wHeight-540}),Vector2({100,100}),"Clear List"));
+     buttons[6] ->OnClick = [this]()
+     {
+        if(ani ==None)
+        {
+            std::cout<<"A"<<"\n";
+            Clear();
+        }
+     } ;
+
 }
 
 #include <iostream>

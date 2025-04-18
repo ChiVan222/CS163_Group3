@@ -24,9 +24,13 @@ SinglyNode::SinglyNode(const SinglyNode& other)
 bool SinglyNode::Draw()
 {  
     Color defaulta = GetColor(0x2E3192);
-    Color defaule_sec = GetColor(0x1BFFFF);
-    Color circle_primaryColor = (highlight == Null? defaulta :((highlight == Primary)? RED:ORANGE)); 
+    Color defaule_sec = PolyNode::colorNode;
+    std::pair<Color,Color> p =  PolyNode::GetHighlightColors3(PolyNode::colorNode); 
+    Color primary_color  = p.first;
+    Color secondar_color = p.second;
+    Color circle_primaryColor = (highlight == Null? PolyNode::colorNode :((highlight == Primary)? primary_color:secondar_color)); 
     DrawCircleGradient(position.x, position.y,radius, circle_primaryColor, defaule_sec);
+    // DrawCircle(position.x, position.y,radius, circle_primaryColor); 
     DrawCircleLines(position.x, position.y,radius, WHITE);
     int textSize = radius / 2;
     const char* text = input.c_str();

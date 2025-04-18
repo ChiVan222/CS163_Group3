@@ -45,3 +45,35 @@ Color PolyNode:: GetHighlightColor(Color color, float factor) {
     highlight.a = color.a;
     return highlight;
 }
+Color PolyNode::GetHighlightColor2(Color color, float hueShiftDegrees) {
+    Vector3 hsv = ColorToHSV(color);  
+    hsv.x += hueShiftDegrees;
+
+    if (hsv.x > 360.0f) hsv.x -= 360.0f;
+    if (hsv.x < 0.0f) hsv.x += 360.0f;
+
+    Color result = ColorFromHSV(hsv.x,hsv.y,hsv.z);
+    result.a = color.a; 
+    return result;
+}
+
+std::pair<Color, Color> PolyNode::GetHighlightColors3(Color original) {
+    Vector3 hsv = ColorToHSV(original);
+
+    float accentHue = fmodf(hsv.x + 90.0f, 360.0f);
+    float midHue    = fmodf((hsv.x + accentHue) / 2.0f, 360.0f); 
+
+    float accentSat = Clamp(hsv.y * 0.9f, 0.0f, 1.0f);  
+    float accentVal = Clamp(hsv.z * 1.1f, 0.0f, 1.0f);  
+
+    float midSat = Clamp(hsv.y * 0.95f, 0.0f, 1.0f);
+    float midVal = Clamp(hsv.z * 1.05f, 0.0f, 1.0f);
+
+    Color primary   = ColorFromHSV( accentHue, accentSat, accentVal );
+    Color secondary = ColorFromHSV( midHue, midSat, midVal );
+
+    primary.a   = original.a;
+    secondary.a = original.a;
+
+    return { primary, secondary };
+}

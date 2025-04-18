@@ -51,6 +51,7 @@ class Ani_LinkedListSearching : public Animations {
         Ani_LinkedListInsert(float duration, int target, int radius, Vector2 position);
         Ani_LinkedListInsert();
         void prerun(); 
+        void reset(); 
         Ani_LinkedListInsert& operator=(const Ani_LinkedListInsert& other) noexcept;
         void updateTarget(int x, int radius, Vector2 position);
         std::vector<Insert_SnapShot> history;  
@@ -105,7 +106,7 @@ class Ani_InsertRandomList : public Animations{
         void play() override;
         Ani_InsertRandomList(float duration); 
         Ani_InsertRandomList();
-
+        void reset(); 
         Ani_InsertRandomList& operator=(const Ani_InsertRandomList& other) noexcept;
 
         void updateTarget(Vector2 position, int value);  
@@ -122,6 +123,7 @@ class Ani_MoveNode : public Animations{
   void play() override;
   Ani_MoveNode(float duration); 
   Ani_MoveNode(); 
+  void reset(); 
   void updateTarget(SinglyNode* node,Vector2 endpos);  
 
   Ani_MoveNode& operator=(const Ani_MoveNode& other) noexcept;
@@ -135,6 +137,6 @@ class Ani_Straighten: public Animations{
      Ani_Straighten(float duration); 
      Ani_Straighten(); 
      Ani_Straighten& operator=(const Ani_Straighten& other) noexcept;
-
+     void reset(); 
      void updateTarget(Vector2 endpos); 
 };
