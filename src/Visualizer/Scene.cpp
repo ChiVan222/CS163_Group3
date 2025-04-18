@@ -66,10 +66,10 @@ void Welcome_Scene::run(Scenes& mscene)
 }
 Menu_Scene::Menu_Scene()
 {
-    sButtons.push_back(new SceneButton("../assets/Images/Sinly.png", Vector2({(UI::wWidth - 400*4)/5, 300}),Vector2({400, 400}), "Singly Linked List",Singly));
-    sButtons.push_back(new SceneButton("../assets/Images/holder.png", Vector2({(UI::wWidth - 400*4)/5*2 + 400, 300}),Vector2({400,400}), "Trie",Trie));
-    sButtons.push_back(new SceneButton("../assets/Images/holder.png", Vector2({(UI::wWidth - 400*4)/5*3 + 400*2, 300}),Vector2({400,400}), "Heap",Heap));
-    sButtons.push_back(new SceneButton("../assets/Images/holder.png", Vector2({(UI::wWidth - 400*4)/5*4 + 400*3, 300}),Vector2({400,400}),"Graph",Graph));
+    sButtons.push_back(new SceneButton("../assets/Images/SinglyLinkedList.png", Vector2({UI::wWidth / 5 * 1, 300}),Vector2({200,200}), "Singly Linked List",Singly));
+    sButtons.push_back(new SceneButton("../assets/Images/holder.png", Vector2({UI::wWidth / 5 * 2, 300}),Vector2({200,200}), "Trie",Trie));
+    sButtons.push_back(new SceneButton("../assets/Images/holder.png", Vector2({UI::wWidth / 5 * 3, 300}),Vector2({200,200}), "Heap",Heap));
+    sButtons.push_back(new SceneButton("../assets/Images/holder.png", Vector2({UI::wWidth / 5 * 4, 300}),Vector2({200,200}),"Graph",Graph));
 }
 Menu_Scene::~Menu_Scene() {
     for (Button* button : Buttons) {
