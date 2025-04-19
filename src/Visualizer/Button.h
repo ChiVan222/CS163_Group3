@@ -1,6 +1,6 @@
 #pragma once 
 #include <raylib.h> 
-#include "Ultility.h"
+#include "Utility.h"
 #include <functional>
 class Button 
 {

@@ -1,5 +1,6 @@
 #pragma once
 #include <raylib.h>
+#include <utility>
 class PolyNode
 { 
     protected :  
@@ -27,4 +28,6 @@ class PolyNode
     void SetPosition(Vector2 newpos);
     float getRadius();
     Color GetHighlightColor(Color color, float factor);
+    Color GetHighlightColor2(Color color, float hueShiftDegrees);
+    std::pair<Color,Color> GetHighlightColors3(Color original); 
 }; 
