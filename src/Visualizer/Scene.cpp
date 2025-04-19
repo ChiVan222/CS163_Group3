@@ -67,9 +67,9 @@ void Welcome_Scene::run(Scenes& mscene)
 Menu_Scene::Menu_Scene()
 {
     sButtons.push_back(new SceneButton("../assets/Images/SinglyLinkedList.png", Vector2({UI::wWidth / 5 * 1, 300}),Vector2({200,200}), "Singly Linked List",Singly));
-    sButtons.push_back(new SceneButton("../assets/Images/holder.png", Vector2({UI::wWidth / 5 * 2, 300}),Vector2({200,200}), "Trie",Trie));
-    sButtons.push_back(new SceneButton("../assets/Images/holder.png", Vector2({UI::wWidth / 5 * 3, 300}),Vector2({200,200}), "Heap",Heap));
-    sButtons.push_back(new SceneButton("../assets/Images/holder.png", Vector2({UI::wWidth / 5 * 4, 300}),Vector2({200,200}),"Graph",Graph));
+    sButtons.push_back(new SceneButton("../assets/Images/Trie.png", Vector2({UI::wWidth / 5 * 2, 300}),Vector2({200,200}), "Trie",Trie));
+    sButtons.push_back(new SceneButton("../assets/Images/Heap.png", Vector2({UI::wWidth / 5 * 3, 300}),Vector2({200,200}), "Heap",Heap));
+    sButtons.push_back(new SceneButton("../assets/Images/Graph.png", Vector2({UI::wWidth / 5 * 4, 300}),Vector2({200,200}),"Graph",Graph));
 }
 Menu_Scene::~Menu_Scene() {
     for (Button* button : Buttons) {
@@ -880,21 +880,25 @@ void Graph_Scene::CheckBuffer() {
         case 1: 
         {
             int value;
+            bool searched = false;
             if (ss >> value && ani_search.getState()) {
                 ani_search = Ani_GraphSearch(1.0, value);
                 GraphNode* startNode = graphNodes.empty() ? nullptr : graphNodes[0];
                 if (startNode) {
+                    searched = true;
                     addFunction(animation_queue, 1, std::bind(&Ani_GraphSearch::updateTarget, &ani_search, startNode));
                 }   
                 else {
-                    std::cout << "Graph is empty, cannot search\n";
+                    std::cout << "Graph is empty, cannot remove\n";
                 }
             }
-            GraphNode* removeNode = findNodeByVal(value);
-            std::cout << removeNode->val << "\n";
-            if (removeNode && ani_remove.getState()) {
-                ani_remove = Ani_GraphRemove(1.0);
-                addFunction(animation_queue, 0, std::bind(&Ani_GraphRemove::updateTarget, &ani_remove, removeNode));
+            if (searched) {
+                GraphNode* removeNode = findNodeByVal(value);
+                std::cout << removeNode->val << "\n";
+                if (removeNode && ani_remove.getState()) {
+                    ani_remove = Ani_GraphRemove(1.0);
+                    addFunction(animation_queue, 0, std::bind(&Ani_GraphRemove::updateTarget, &ani_remove, removeNode));
+                }
             }
         } break;
 
