@@ -95,6 +95,8 @@ class Setting_Scene :public Scene{
     std::vector<Slider*> sliders;
     std::vector<ControlButton> controls;
     std::vector<Spinner> spinners;
+    //Test code Block
+    CodeBlock block;
   public:
     Setting_Scene();
     void run(Scenes& mscene);
