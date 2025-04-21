@@ -537,6 +537,7 @@ Setting_Scene::Setting_Scene() {
     spinners.push_back(Spinner(theme, {120, dis+280.0f}, {(6*w/20),(h/20)}, mytheme[0], 0));
     controls.push_back(ControlButton({120-(h/20), dis+280.0f}, {h/20,h/20}, 0));
     controls.push_back(ControlButton({120+ (6*w/20), dis+280.0f}, {h/20,h/20}, 1));
+    block = CodeBlock({UI::wWidth/2 + 100.0f, dis}, {300, 400});
 
 }
 
@@ -545,6 +546,17 @@ void Setting_Scene::run(Scenes& mscene) {
     ClearBackground({48,46,46,255});
     TextDraw();
     node->DrawNode();
+    block.SetLines({
+        "#include <iostream>",
+        "using namespace std;",
+        "int main() {",
+        "    cout << \"This is a very long line that shouble be cut if the wrapline work well\" << endl;",
+        "    return 0;",
+        "}"
+    });
+    if (IsKeyDown(KEY_DOWN)) block.Scroll(5);
+    if (IsKeyDown(KEY_UP)) block.Scroll(-5);
+    block.Draw();
     for(int i = 0; i <sliders.size();  i++)
     {   
         sliders[i]->SliderDraw();

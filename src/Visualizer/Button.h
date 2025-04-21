@@ -2,6 +2,7 @@
 #include <raylib.h> 
 #include "Utility.h"
 #include <functional>
+#include <string>
 class Button 
 {
   public : 
@@ -85,5 +86,26 @@ class Spinner: public Button{
     void DrawTextSpinner(Font curentFont);
     void ChangeTitle(const char* newtitle);
 
+
+};
+
+class CodeBlock:public Button{
+  public:
+    std::vector<std::string> lines;
+    Font font;
+    float fontSize;
+    float spacing;
+    float scrollY;
+    float lineSpacing;
+    Color lightBlock{49,191,93,255};
+    Color darkBlock{3,48,34,255};
+  public:
+    CodeBlock();
+    CodeBlock(Vector2 pos, Vector2 rect1);
+    void Draw();
+    void DrawTitle();
+    void Scroll(float amount);
+    void SetLines(const std::vector<std::string>& newLines) ;
+    void WrapAndAddLine(const std::string& rawLine);
 
 };

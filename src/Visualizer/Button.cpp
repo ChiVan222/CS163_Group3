@@ -189,4 +189,95 @@ void Spinner::DrawTextSpinner(Font currentFont) {
         
     DrawTextEx(currentFont, title, textPos, (float)fontSize, spacing, WHITE);
 }
+CodeBlock::CodeBlock():Button(){};
+CodeBlock::CodeBlock(Vector2 pos, Vector2 rect1){
+    position =pos;
+    rect = rect1;
+    font = LoadFont("../assets/Font/AnkaCoder.ttf");
+    spacing = 1.0f;
+    scrollY = 0.0f;
+    fontSize = rect.y/20.0f;
+    lineSpacing = fontSize + 5.0f;
+}
 
+void CodeBlock::Draw() {
+    DrawRectangleRec({position.x, position.y, rect.x, rect.y}, LIGHTGRAY);
+    float x = position.x + 10;
+    float y = position.y + UI::wHeight/20.0f + 10 - scrollY;
+
+    DrawTitle();
+    for (auto& line : lines) {
+        if (y + lineSpacing > position.y && y < position.y + rect.y) {
+            DrawTextEx(font, line.c_str(), {x, y}, fontSize, spacing, WHITE);
+        }
+        y += lineSpacing;
+    }
+
+}
+void CodeBlock::DrawTitle(){
+    Color color,textColor, lineColor;
+    if (Scene::isDarkMode) {
+        color = darkBlock;
+        lineColor = WHITE;
+        textColor = BLACK;
+    }
+    else{
+        color = lightBlock;
+        lineColor = BLACK;
+        textColor = WHITE;
+    }
+    float lineThick = 4.0f;
+    float titleHeight = UI::wHeight / 20.0f ;
+    Rectangle innerRect = {
+        position.x ,
+        position.y + lineThick / 2,
+        rect.x - lineThick/2,
+        titleHeight - lineThick/2
+    };
+    
+    DrawRectangleRec(innerRect, color);
+    
+    DrawRectangleLinesEx({position.x, position.y, rect.x, titleHeight}, lineThick, lineColor);
+    float textFontSize= titleHeight*0.5f;
+    const char* titleText = "CODE BLOCK";
+    Vector2 titleSize = MeasureTextEx(Scene::currentFont, titleText, textFontSize, spacing);
+    Vector2 titlePos = {position.x+(rect.x-titleSize.x)/2.0f, position.y + (UI::wHeight/20.0f-titleSize.y)/2.0f};
+    DrawTextEx(Scene::currentFont, titleText, titlePos, fontSize, spacing, textColor);
+}
+void CodeBlock::Scroll(float amount) {
+    scrollY += amount;
+    if (scrollY < 0) scrollY = 0;
+}
+
+void CodeBlock::SetLines(const std::vector<std::string>& newLines) {
+    lines.clear();
+    for (const std::string& rawLine : newLines) {
+        WrapAndAddLine(rawLine);
+    }
+}
+
+void CodeBlock::WrapAndAddLine(const std::string& rawLine) {
+    size_t indentPos = rawLine.find_first_not_of(" \t");
+    std::string indent = (indentPos != std::string::npos) ? rawLine.substr(0, indentPos) : "";
+    if (font.texture.id == 0) {
+        font = GetFontDefault();
+    }
+    std::istringstream stream(rawLine);
+    std::string word;
+    std::string currentLine = indent;
+    float maxWidth = rect.x - 20; 
+
+    while (stream >> word) {
+        std::string testLine = currentLine.empty() ? word : currentLine + " " + word;
+        Vector2 size = MeasureTextEx(font, testLine.c_str(), fontSize, spacing);
+
+        if (size.x > maxWidth) {
+            if (!currentLine.empty()) lines.push_back(currentLine);
+            currentLine = indent + word;  
+        } else {
+            currentLine = testLine;
+        }
+    }
+
+    if (!currentLine.empty()) lines.push_back(currentLine);
+}
