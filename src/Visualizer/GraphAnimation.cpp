@@ -145,7 +145,7 @@ void Ani_GraphRemove::updateAnimations(float deltaTime) {
     targetNode->highlight(RED);
     for (auto* edge : Graph_Scene::Edges) {
         if (edge->getFrom() == targetNode || edge->getTo() == targetNode) {
-            edge->Draw(RED, 1);
+            edge->Draw(edge->getFrom()->GetHighlightColor2(RED, 30.0), 1);
         }
     }
 
@@ -250,24 +250,24 @@ void Ani_Dijkstra::updateAnimations(float deltaTime) {
     dist = snap.dist;
     curEdge = snap.curEdge;
 
+    // Highlight curEdge
+    if (curEdge) {
+        curEdge->Draw(cur->GetHighlightColor2(cur->colorNode, 30.0), 1);
+        if (curEdge->getTo() == cur) static_cast<GraphNode*>(curEdge->getFrom())->highlight(cur->colorNode);
+        else static_cast<GraphNode*>(curEdge->getTo())->highlight(cur->colorNode);
+    }
     // Highlight nodes
     for (auto* node : Graph_Scene::graphNodes) {
         if (node) {
             std::string text = (dist[node->val] == INF) ? "INF" : std::to_string(dist[node->val]);
-            DrawText(text.c_str(), node->getPosition().x - 10, node->getPosition().y - 50, 15, YELLOW);
+            DrawText(text.c_str(), node->getPosition().x - 10, node->getPosition().y - 50, 15, node->colorNode);
             if (visited.find(node) != visited.end() && node != cur) {
                 node->highlight(GREEN); 
             } 
             else if (cur && node == cur) {
-                node->highlight(DARKPURPLE); 
+                node->highlight(cur->colorNode); 
             }
         }
-    }
-    // Highlight curEdge
-    if (curEdge) {
-        curEdge->Draw(ORANGE, 1);
-        if (curEdge->getTo() == cur) static_cast<GraphNode*>(curEdge->getFrom())->highlight(ORANGE);
-        else static_cast<GraphNode*>(curEdge->getTo())->highlight(ORANGE);
     }
 }
 

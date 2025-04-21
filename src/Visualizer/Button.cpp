@@ -45,24 +45,23 @@ void Button::Draw()
     DrawTexturePro(texture, src, dest, Vector2({0, 0}), 0.0f, imageColor);
     DrawRectangleLinesEx(Rectangle({position.x, position.y, (float)rect.x, (float)rect.y}),3,borderColor);
 }
-void Button::DrawButtonText(Vector2 textpos)
+void Button::DrawButtonText(Vector2 textpos, int fontSize)
 {
-    DrawText(title, textpos.x, textpos.y, 20, WHITE);
+    DrawText(title, textpos.x, textpos.y, fontSize, WHITE);
 }
-void Button::DrawButtonText_below()
+void Button::DrawButtonText_below(int fontSize)
 {
-    DrawButtonText(Vector2({position.x,position.y + 10 + rect.y}));
+    DrawButtonText(Vector2({position.x,position.y + 10 + rect.y}), fontSize);
 }
 void Button::DrawButtonText_center()
 { 
-
     int textWidth = MeasureText(title, UI::fontsize);
     int textHeight = UI::fontsize;
 
     float textX = position.x + (rect.x - textWidth) / 2;
     float textY = position.y + (rect.y - textHeight) / 2;
 
-    DrawButtonText(Vector2({textX,textY}));
+    DrawButtonText(Vector2({textX,textY}), 30);
 }
 bool Button :: IsHovered(Vector2 mousePos)
 {
@@ -107,6 +106,15 @@ SettingButton::SettingButton(Vector2 pos, Vector2 rect1):Button() {
     rect = rect1;
 
 }
+void Button::setPositionRect(Vector2 newPos, Vector2 newRect)
+{
+    position = newPos;
+    rect = newRect;
+}
+void Button::setPositionText(Vector2 newPos, Texture2D newText) {
+    position = newPos;
+    texture = newText;
+}
 
 
 void SettingButton::SettingDraw(){
@@ -116,7 +124,6 @@ void SettingButton::SettingDraw(){
     UnloadImage(img);
     Rectangle btnBounds = {position.x, position.y, (float)texture.width, (float)texture.height};
     DrawTexture(texture, btnBounds.x, btnBounds.y, WHITE);
-
 }
 
 Slider::Slider(Vector2 pos, Vector2 rect1, int t){

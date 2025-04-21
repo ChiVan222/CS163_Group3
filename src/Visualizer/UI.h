@@ -5,12 +5,12 @@ class UI
 {   public :
      static float time; 
      static Texture2D background;
-     static constexpr int wWidth = 1280; 
-     static constexpr int wHeight = 720; 
+     static float wWidth; 
+     static float wHeight; 
      static constexpr int mFPS = 60; 
-     static  Vector2 mousePos;
+     static Vector2 mousePos;
      static float fontsize; 
-     static  Camera2D camera;
+     static Camera2D camera;
 
     private: 
       SceneManager* scene_manager; 

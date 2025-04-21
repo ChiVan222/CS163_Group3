@@ -23,10 +23,14 @@ bool GraphNode::Draw() {
     return true;
 }
 
-void GraphNode::drawNodes() const {
+void GraphNode::drawNodes() const { 
     DrawCircleV(position, radius, colorNode);
-    Vector2 textPos = {position.x - 10, position.y - 10};
-    DrawText(input.c_str(), textPos.x, textPos.y, 20, DARKBROWN);
+    int textWidth = MeasureText(input.c_str(), radius);
+    int textHeight = radius;
+    Vector2 textPos = {position.x - textWidth/2, position.y - textHeight/2};
+    float luminance = 0.299f * colorNode.r + 0.587f * colorNode.g + 0.114f * colorNode.b;
+    Color textColor = (luminance < 128.0f) ? WHITE : BLACK;
+    DrawText(input.c_str(), textPos.x, textPos.y, radius, textColor);
 }
 
 void GraphNode::drawEdges() const {
@@ -74,8 +78,8 @@ void GraphNode::repulseNearbyNodes(float minDistance) {
 }
 
 void GraphNode::highlight(Color color) {
-    for (float r = radius; r <= radius + 5.0f; r += 0.01f) {
-        DrawCircleLinesV(position, r, color);
+    for (float r = radius; r <= radius + 7.0f; r += 0.01f) {
+        DrawCircleLinesV(position, r, GetHighlightColor2(color, 30.0));
     }
 }
 
@@ -109,7 +113,7 @@ void GraphNode::onClick() {
         }
 
         if (updateVal) {
-            highlight(DARKBLUE);
+            highlight(colorNode);
             int key = GetCharPressed();
             while (key > 0) {
                 if (key >= 32 && key <= 125 && input.size() < maxInputLength) {
