@@ -10,14 +10,16 @@ class Button
     Button(); 
     std::function<void()> OnClick;
     void Draw();     
-    void DrawButtonText(Vector2 textpos); 
+    void DrawButtonText(Vector2 textpos, int fontSize); 
     void DrawButtonText_center();
-    void DrawButtonText_below(); 
+    void DrawButtonText_below(int fontSize); 
     bool IsHovered(Vector2 mousePos);
     const char* get_title() ; 
     Texture2D get_texture(); 
     Vector2 get_position();
     Vector2 get_rectangle();
+    void setPositionRect(Vector2 newPos, Vector2 newRect);
+    void setPositionText(Vector2 newPos, Texture2D newText);
   protected : 
     typedef enum HighLight{
       None, 

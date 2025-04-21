@@ -6,7 +6,7 @@
 bool Scene::isDarkMode = false;
 bool Scene::isDefault =true;
 Font Scene::currentFont=GetFontDefault();
-SettingButton Scene::setting = SettingButton({1160, 20}, {80,80});
+SettingButton Scene::setting = SettingButton({1800, 20}, {80,80});
 Ani_MoveList Singly_Scene::m ;
 Ani_MoveNode Singly_Scene::mn(0.5);
 SinglyLinkedListNode Singly_Scene::Nodes = SinglyLinkedListNode();
@@ -50,26 +50,46 @@ void Scene::Drawbackground(){
         DrawRectangleGradientV(0, 0, GetScreenWidth(), GetScreenHeight(),light1, light2);
     }
 }
+Welcome_Scene::Welcome_Scene() {
+    fontSize = 30;
+    text1Pos = {200, 200};
+    text2Pos = {200, static_cast<float>(GetScreenHeight()) - 200};
+    sceneHeight = GetScreenHeight();
+    sceneWidth = GetScreenWidth();
+}
 void Welcome_Scene::run(Scenes& mscene)
 {
-
+    float scaleX = GetScreenWidth() / sceneWidth;
+    float scaleY = GetScreenHeight() / sceneHeight;
     ClearBackground(DARKBLUE);
     Rectangle src = { 0, 0, (float)UI::background.width, (float)UI::background.height};
     Rectangle dest = { 0, 0, (float)GetScreenWidth(), (float)GetScreenHeight()};
     DrawTexturePro(UI::background, src, dest, Vector2({0, 0}), 0.0f, WHITE);
-    DrawText("DATA STRUCTURE VISUALIZATION", 200, 200, 40, WHITE);
-    UI::DrawFadingText(UI::time,200,UI::wHeight-200,30, "Press any keys to continue");
+    DrawText("DATA STRUCTURE VISUALIZATION", text1Pos.x*scaleX, text1Pos.y*scaleY, fontSize*scaleY*4/3, WHITE);
+    UI::DrawFadingText(UI::time, text2Pos.x*scaleX, text2Pos.y*scaleY, fontSize*scaleY, "Press any keys to continue");
     if(GetKeyPressed()!=0)
     {
-       mscene = Menu; 
+        text1Pos = {text1Pos.x*scaleX, text1Pos.y*scaleY};
+        text2Pos = {text2Pos.x*scaleX, text2Pos.y*scaleY};
+        fontSize = fontSize*scaleY;
+        sceneWidth = GetScreenWidth();
+        sceneHeight = GetScreenHeight();
+        mscene = Menu; 
     }
 }
 Menu_Scene::Menu_Scene()
-{
-    sButtons.push_back(new SceneButton("../assets/Images/SinglyLinkedList.png", Vector2({UI::wWidth / 5 * 1, 300}),Vector2({200,200}), "Singly Linked List",Singly));
-    sButtons.push_back(new SceneButton("../assets/Images/Trie.png", Vector2({UI::wWidth / 5 * 2, 300}),Vector2({200,200}), "Trie",Trie));
-    sButtons.push_back(new SceneButton("../assets/Images/Heap.png", Vector2({UI::wWidth / 5 * 3, 300}),Vector2({200,200}), "Heap",Heap));
-    sButtons.push_back(new SceneButton("../assets/Images/Graph.png", Vector2({UI::wWidth / 5 * 4, 300}),Vector2({200,200}),"Graph",Graph));
+{   
+    menuFont = 60;
+    menuPos = {static_cast<float>(GetScreenWidth()) / 2 - menuFont / 2, 100};
+    buttonPos = {static_cast<float>(GetScreenWidth()) / 5,  300};
+    float space = buttonPos.x / 5;
+    sButtons.push_back(new SceneButton("../assets/Images/SinglyLinkedList.png", Vector2({space, buttonPos.y}), Vector2({buttonPos.x, buttonPos.x}), "Singly Linked List", Singly));
+    sButtons.push_back(new SceneButton("../assets/Images/Trie.png", Vector2({space * 2 + buttonPos.x, buttonPos.y}), Vector2({buttonPos.x, buttonPos.x}), "Trie", Trie));
+    sButtons.push_back(new SceneButton("../assets/Images/Heap.png", Vector2({space * 3 + buttonPos.x * 2, buttonPos.y}), Vector2({buttonPos.x, buttonPos.x}), "Heap", Heap));
+    sButtons.push_back(new SceneButton("../assets/Images/Graph.png", Vector2({space * 4 + buttonPos.x * 3, buttonPos.y}), Vector2({buttonPos.x, buttonPos.x}), "Graph", Graph));
+    sceneHeight = GetScreenHeight();
+    sceneWidth = GetScreenWidth();
+    firstEntry = true;
 }
 Menu_Scene::~Menu_Scene() {
     for (Button* button : Buttons) {
@@ -85,6 +105,8 @@ Menu_Scene::~Menu_Scene() {
 }
 void Menu_Scene::run(Scenes& mscene)
 {
+    float scaleX = GetScreenWidth() / sceneWidth;
+    float scaleY = GetScreenHeight() / sceneHeight;
     float deltaTime = IsWindowFocused() ? GetFrameTime() : 0;
     ClearBackground(DARKBLUE);
     if (isDarkMode) {
@@ -93,28 +115,57 @@ void Menu_Scene::run(Scenes& mscene)
     else {
         DrawRectangleGradientV(0, 0, GetScreenWidth(), GetScreenHeight(),light1, light2);
     }
-    DrawText("Menu", static_cast<int>(UI::wWidth/2), 100, 40, WHITE);
+    int textWidth = MeasureText("Menu", menuFont*scaleY);
+    DrawText("Menu", GetScreenWidth() / 2 - textWidth / 2, menuPos.y*scaleY, menuFont*scaleY, WHITE);
+    if (firstEntry) {
+        setting.setPositionText({setting.get_position().x*scaleX, setting.get_position().y*scaleY}, {static_cast<unsigned int>(setting.get_texture().width*scaleX), static_cast<int>(setting.get_texture().height*scaleY)});
+        setting.setPositionRect({setting.get_position().x, setting.get_position().y}, {setting.get_rectangle().x*scaleX, setting.get_rectangle().y*scaleY});
+    }
+    else {
+        setting.setPositionText({setting.get_position().x*GetScreenWidth()/UI::wWidth, setting.get_position().y*GetScreenHeight()/UI::wHeight}, {static_cast<unsigned int>(setting.get_texture().width*GetScreenWidth()/UI::wWidth), static_cast<int>(setting.get_texture().height*GetScreenHeight()/UI::wHeight)});
+        setting.setPositionRect({setting.get_position().x, setting.get_position().y}, {setting.get_rectangle().x*GetScreenWidth()/UI::wWidth, setting.get_rectangle().y*GetScreenHeight()/UI::wHeight});
+    }
     setting.SettingDraw();
     if(setting.IsHovered(UI::mousePos) && IsMouseButtonDown(MOUSE_LEFT_BUTTON)){
         mscene = Setting;
     }
-    for(int i = 0; i <sButtons.size();  i++)
+    for(int i = 0; i < sButtons.size();  i++)
     {
+        Vector2 pos = sButtons[i]->get_position();
+        Vector2 rect = sButtons[i]->get_rectangle();
+        if (firstEntry) {
+            sButtons[i]->setPositionRect({pos.x*scaleX, pos.y*scaleY}, {rect.x*scaleX, rect.y*scaleY});
+        }
+        else {
+            sButtons[i]->setPositionRect({pos.x*GetScreenWidth()/UI::wWidth, pos.y*GetScreenHeight()/UI::wHeight}, {rect.x*GetScreenWidth()/UI::wWidth, rect.y*GetScreenHeight()/UI::wHeight});
+        }
         sButtons[i]->Draw();
-        sButtons[i]->DrawButtonText_below();
+        sButtons[i]->DrawButtonText_below(menuFont*scaleY/2);
 
         if(sButtons[i]->IsHovered(UI::mousePos))
         {
-            if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+            if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+                menuPos.y *= scaleY;
+                menuFont *= scaleY;
+                sceneWidth = GetScreenWidth();
+                sceneHeight = GetScreenHeight();  
+                firstEntry = true;
                 mscene = sButtons[i]->getButtonScenes(); 
+            }
         }
     }
     if(IsKeyPressed(KEY_LEFT))
     {
-         mscene = Welcome;
+        menuPos.y *= scaleY;
+        menuFont *= scaleY;
+        sceneWidth = GetScreenWidth();
+        sceneHeight = GetScreenHeight();
+        firstEntry = true;
+        mscene = Welcome;
     }
-
-
+    UI::wWidth = GetScreenWidth();
+    UI::wHeight = GetScreenHeight();
+    firstEntry = false;
 }
 #include <sstream>
 void Singly_Scene::addFunction(std::priority_queue<std::pair<int, std::function<void()>>, 
@@ -214,7 +265,7 @@ void Singly_Scene::CheckBuffer()
                 addFunction(animation_queue,++cur_priority, std::bind(&Ani_LinkedListInsert::updateTarget, &insert, x, 20, insert_pos));          
            }
         }
-        break;
+        break;  
       case 1: 
         {
             int x ;
@@ -508,7 +559,6 @@ SceneManager::SceneManager()
     scenes.push_back(new Graph_Scene());
     scenes.push_back(new Trie_Scene());
     scenes.push_back(new Setting_Scene());
-
 }
 Setting_Scene::Setting_Scene() {
     GuiSetStyle(SLIDER,BASE_COLOR_PRESSED,ColorToInt({68,68,68,255}));
@@ -715,13 +765,13 @@ void NodeScene::DrawCommonUI()
 }
 NodeScene::NodeScene()
 {
-    Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-100}),InputType::Insert));
-    Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-210}),InputType::Remove));
-    Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-320}),InputType::Search));
-    buttons.push_back(new Button("",Vector2({0,UI::wHeight-430}),Vector2({100,100}),"Randomize"));
-    buttons.push_back(new Button("",Vector2({UI::wWidth -200,UI::wHeight-430}),Vector2({100,100}),"Backward")); 
-    buttons.push_back(new Button("",Vector2({UI::wWidth -200,UI::wHeight-320}),Vector2({100,100}),"Pause")); 
-    buttons.push_back(new Button("",Vector2({UI::wWidth -200,UI::wHeight-210}),Vector2({100,100}),"Forward")); 
+    Inputs.push_back(new InputField(100*GetScreenWidth()/UI::wWidth,100*GetScreenHeight()/UI::wHeight,Vector2({0,(UI::wHeight-100)*GetScreenHeight()/UI::wHeight}),InputType::Insert));
+    Inputs.push_back(new InputField(100*GetScreenWidth()/UI::wWidth,100*GetScreenHeight()/UI::wHeight,Vector2({0,(UI::wHeight-210)*GetScreenHeight()/UI::wHeight}),InputType::Remove));
+    Inputs.push_back(new InputField(100*GetScreenWidth()/UI::wWidth,100*GetScreenHeight()/UI::wHeight,Vector2({0,(UI::wHeight-320)*GetScreenHeight()/UI::wHeight}),InputType::Search));
+    buttons.push_back(new Button("",Vector2({0,(UI::wHeight-430)*GetScreenHeight()/UI::wHeight}),Vector2({100*GetScreenWidth()/UI::wWidth,100*GetScreenHeight()/UI::wHeight}),"Randomize"));
+    buttons.push_back(new Button("",Vector2({(UI::wWidth -200)*GetScreenWidth()/UI::wWidth,(UI::wHeight-430)*GetScreenHeight()/UI::wHeight}),Vector2({100*GetScreenWidth()/UI::wWidth,100*GetScreenHeight()/UI::wHeight}),"Backward")); 
+    buttons.push_back(new Button("",Vector2({(UI::wWidth -200)*GetScreenWidth()/UI::wWidth,(UI::wHeight-320)*GetScreenHeight()/UI::wHeight}),Vector2({100*GetScreenWidth()/UI::wWidth,100*GetScreenHeight()/UI::wHeight}),"Pause")); 
+    buttons.push_back(new Button("",Vector2({(UI::wWidth -200)*GetScreenWidth()/UI::wWidth,(UI::wHeight-210)*GetScreenHeight()/UI::wHeight}),Vector2({100*GetScreenWidth()/UI::wWidth,100*GetScreenHeight()/UI::wHeight}),"Forward")); 
 }
 void Singly_Scene::ClearHistory()
 {
@@ -859,6 +909,10 @@ Graph_Scene::~Graph_Scene() {
 }    
 
 void Graph_Scene::run(Scenes& mscene) {
+    UI::wWidth = UI::wWidth;
+    UI::wHeight = UI::wHeight;
+    UI::wWidth = static_cast<float>(GetScreenWidth());
+    UI::wHeight = static_cast<float>(GetScreenHeight());
     float deltatime = IsWindowFocused() ? GetFrameTime() : 0;
     ClearBackground(BLACK);
     DrawCommonUI();
@@ -885,7 +939,6 @@ void Graph_Scene::run(Scenes& mscene) {
     UI::mousePos = GetMousePosition();
     DrawButtons();
     executeFunctions(animation_queue);
-    EndMode2D();
 }
 void Graph_Scene::Draw() {
     for (const auto& node : graphNodes) node->Draw();
@@ -893,6 +946,9 @@ void Graph_Scene::Draw() {
 
 void Graph_Scene::DrawButtons() {
     for(int i = 0; i < buttons.size(); i++) {
+        Vector2 pos = buttons[i]->get_position();
+        Vector2 rect = buttons[i]->get_rectangle();
+        buttons[i]->setPositionRect({pos.x*UI::wWidth/UI::wWidth, pos.y*UI::wHeight/UI::wHeight}, {rect.x*UI::wWidth/UI::wWidth, rect.y*UI::wHeight/UI::wHeight});
         buttons[i]->Draw();
         buttons[i]->DrawButtonText_center();
         if(buttons[i]->IsHovered(UI::mousePos) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
@@ -1010,18 +1066,16 @@ GraphNode* Graph_Scene::findNodeByVal(int value) {
     return nullptr;
 }
 
-void Graph_Scene::AddNode(int value) {
-    Vector2 pos;
+void generatePos(Vector2& pos, vector<GraphNode*>& graph) {
     bool tooClose;
     int attempts = 0;
     do {
         tooClose = false;
-        // Place node within the rectangular boundaries
-        pos = {GraphNode::LEFT + static_cast<float>(std::rand()) / RAND_MAX * (GraphNode::RIGHT - GraphNode::LEFT),
-                GraphNode::TOP + static_cast<float>(std::rand()) / RAND_MAX * (GraphNode::BOTTOM - GraphNode::TOP)};
-        
+        // Place nodes within the rectangular boundaries
+        pos = {static_cast<float>(GetRandomValue(300, GetScreenWidth() - 300)), static_cast<float>(GetRandomValue(0, GetScreenHeight() - 200))};
+
         // Check for overlap with existing nodes
-        for (const auto* node : graphNodes) {
+        for (const auto* node : graph) {
             Vector2 existingPos = node->getPosition();
             float dist = sqrt(pow(pos.x - existingPos.x, 2) + pow(pos.y - existingPos.y, 2));
             if (dist < MIN_DISTANCE) {
@@ -1030,13 +1084,17 @@ void Graph_Scene::AddNode(int value) {
             }
         }
         attempts++;
-    } while (tooClose && attempts < 100); // Limit attempts to avoid infinite loop
+    } while (tooClose && attempts < 1000); // Limit attempts to avoid infinite loop
 
-    if (attempts >= 100) {
-        std::cout << "Warning: Could not find a non-overlapping position for node " << value << " after 100 attempts\n";
+    if (attempts >= 1000) {
+        std::cout << "Warning: Could not find a non-overlapping position after 100 attempts\n";
         return;
     }
+}
 
+void Graph_Scene::AddNode(int value) {
+    Vector2 pos;
+    generatePos(pos, graphNodes);
     std::cout << "Adding node " << value << " at (" << pos.x << ", " << pos.y << ")\n";
     GraphNode* newNode = new GraphNode(GetScreenToWorld2D(pos, UI::camera), 20, value);
     addFunction(animation_queue, 1, std::bind(&Ani_GraphInsert::updateTarget, &ani_insert, newNode));
@@ -1071,44 +1129,19 @@ void Graph_Scene::AddEdge(int from, int to, int weight) {
 
 void Graph_Scene::randomize(int nodes) {
     clear();
-    std::vector<Vector2> positions;
     std::vector<GraphNode*> tempGraph;
+    unordered_set<int> valSet;
     for (int i = 0; i < nodes; i++) {
         Vector2 pos;
-        bool tooClose;
-        int attempts = 0;
-        do {
-            tooClose = false;
-            // Place nodes within the rectangular boundaries
-            pos = {GraphNode::LEFT + static_cast<float>(std::rand()) / RAND_MAX * (GraphNode::RIGHT - GraphNode::LEFT),
-                   GraphNode::TOP + static_cast<float>(std::rand()) / RAND_MAX * (GraphNode::BOTTOM - GraphNode::TOP)};
-
-            // Check for overlap with existing nodes
-            for (const auto& existingPos : positions) {
-                float dist = sqrt(pow(pos.x - existingPos.x, 2) + pow(pos.y - existingPos.y, 2));
-                if (dist < MIN_DISTANCE) {
-                    tooClose = true;
-                    break;
-                }
-            }
-            attempts++;
-        } while (tooClose && attempts < 100); // Limit attempts to avoid infinite loop
-        positions.push_back(pos);
-        
-        bool unValid = false;
+        generatePos(pos, tempGraph);
         int value;
         do {
-            value = rand() % 99;
-            for (auto* node : tempGraph) {
-                if (node->val == value) {
-                    unValid = false;
-                    break;
-                }
-            }
-        } while (unValid);
+            value = std::rand() % 100;
+        } while (valSet.find(value) != valSet.end());
         std::cout << "Adding node " << value << " at (" << pos.x << ", " << pos.y << ")\n";
         GraphNode* newNode = new GraphNode(GetScreenToWorld2D(pos, UI::camera), 20, value);
         tempGraph.push_back(newNode);
+        valSet.insert(value);
         addFunction(animation_queue, 1, std::bind(&Ani_GraphInsert::updateTarget, &ani_insert, newNode));
     }
     created = true;

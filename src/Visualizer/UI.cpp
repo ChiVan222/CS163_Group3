@@ -6,8 +6,10 @@
 float UI::time = 0.0f;
 Vector2 UI::mousePos = {0, 0};
 Texture2D UI::background;
-float UI::fontsize =0.0f;
+float UI::fontsize = 0.0f;
 Camera2D UI::camera = {0};
+float UI::wWidth = 1920;
+float UI::wHeight = 1080;
 
 void UI::UILoadFont()
 {

@@ -36,7 +36,9 @@ class Scene
     public: 
       virtual void run(Scenes& mscene)= 0;  
       void Drawbackground();
-      
+      float sceneWidth;
+      float sceneHeight;
+      bool firstEntry;
 }; 
 class SceneManager
 {
@@ -66,7 +68,11 @@ class NodeScene: public Scene{
 class Welcome_Scene: public Scene
 {
     public :
-     void run(Scenes& mscene); 
+    Welcome_Scene();
+    void run(Scenes& mscene); 
+    int fontSize;
+    Vector2 text1Pos;
+    Vector2 text2Pos;
 };
 class Menu_Scene: public Scene
 { 
@@ -77,6 +83,9 @@ class Menu_Scene: public Scene
      void run(Scenes& mscene); 
      Menu_Scene();
      ~Menu_Scene();
+     int menuFont;
+     Vector2 buttonPos;
+     Vector2 menuPos;
 };
 class Setting_Scene :public Scene{
   public:
@@ -90,9 +99,6 @@ class Setting_Scene :public Scene{
     Setting_Scene();
     void run(Scenes& mscene);
     void TextDraw();
-    
-
-
 };
 
 struct FunctionComparator {
