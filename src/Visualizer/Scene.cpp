@@ -1642,6 +1642,7 @@ void Trie_Scene:: balance(int level){
             }
 
         }
+        checkBalance(lev);
         lev += 80;
     }
     std::cout << "Done first half"<<"\n";
@@ -1660,10 +1661,48 @@ void Trie_Scene:: balance(int level){
             int offset = posX - oldPosition;
             parent->SetPosition({parentPosition.x - offset, parentPosition.y});
         }
+        checkBalance(lev);
         lev -= 80;
     }
     std::cout << "Done balancing"<<"\n";
     ani =  None;
+}
+
+
+void Trie_Scene::checkBalance(int level) {
+    if (levelMap[level].empty()) return;
+
+    int n = levelMap[level].size();
+
+    for (int i = 0; i < n; i++) {
+        TrieNodePrimary* tmp = levelMap[level][i];
+        Vector2 pos = tmp->getPosition();
+
+        // Left neighbor
+        if (i > 0) {
+            Vector2 neighbor = levelMap[level][i - 1]->getPosition();
+            if (pos.x <= neighbor.x + 80.0f) {
+                float offset = 80.0f - (pos.x - neighbor.x);
+                for (int j = i - 1; j >= 0; j--) {
+                    Vector2 curPos = levelMap[level][j]->getPosition();
+                    levelMap[level][j]->SetPosition({curPos.x - offset, curPos.y});
+                }
+            }
+        }
+
+        // Right neighbor
+        if (i < n - 1) {
+            Vector2 neighbor = levelMap[level][i + 1]->getPosition();
+            if (pos.x + 80.0f >= neighbor.x) {
+                float offset = 80.0f - (neighbor.x - pos.x);
+                for (int j = i + 1; j < n; j++) {
+                    Vector2 curPos = levelMap[level][j]->getPosition();
+                    levelMap[level][j]->SetPosition({curPos.x + offset, curPos.y});
+                }
+  
+            }
+        }
+    }
 }
 
 Vector2 Trie_Scene::calculatePosition(int level, int index){

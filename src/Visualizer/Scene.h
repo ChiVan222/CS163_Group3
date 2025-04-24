@@ -244,6 +244,7 @@ class Graph_Scene: public NodeScene
           void deleteNode();
           bool isTmpPresent(TrieNodePrimary* tmp);
           void balance(int level);
+          void checkBalance(int level);
           Vector2 calculatePosition(int level, int index);
            int calculateIndex(int level, const char word);
 };
