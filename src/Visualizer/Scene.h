@@ -189,6 +189,7 @@ class Graph_Scene: public NodeScene
 
     static std::vector<GraphNode*> graphNodes;
     static std::vector<Edge*> Edges; 
+    static std::priority_queue<std::pair<int, GraphNode*>, std::vector<std::pair<int, GraphNode*>>, std::greater<>> pq;
     static std::priority_queue<std::pair<int, std::function<void()>>, 
                                std::vector<std::pair<int, std::function<void()>>>, 
                                FunctionComparator2> animation_queue;
@@ -200,6 +201,7 @@ class Graph_Scene: public NodeScene
     bool isDragging;
     GraphNode* draggedNode;
     void draggingNode();
+    void drawDescription();
     Ani_GraphInsert ani_insert;
     Ani_GraphSearch ani_search;
     Ani_GraphRemove ani_remove;
