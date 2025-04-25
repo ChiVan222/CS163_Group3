@@ -1,36 +1,41 @@
-#ifndef HeapAnimation_h
-#define HeapAnimation_h
-#include "General.h"
-#include "CommonUI.h"
+#pragma once
+
 #include "../DataStructures/Heap/Heap.h"
+#include "CommonUI.h"
+#include "Utility.h"
+#include "iostream"
+#include <thread>
+#include <chrono>
+
 class MaxHeapVisualize {
     private:
         MaxHeap heap;
-        Max_Heap::Step animation;
         int type = 0;
         ProgressBar progressBar;
         int stepIndex;
         int frame;
         int numFrameOfAnimation;
         
-        Button  createButton;
+        ButtonNew  createButton;
         bool isCreateChosen;
-        Button randomButton;
-        Button loadFileButton;
+        ButtonNew randomButton;
+        ButtonNew loadFileButton;
         
         
-        Button pushButton;
+        ButtonNew pushButton;
         bool isPushChosen;
-        Button deleteButton;
+        ButtonNew deleteButton;
         bool isDeleteChosen;
         InputStr inputNumber;
-        Button playButton;
+        ButtonNew playButton;
         
-        Button topButton;
-        Button sizeButton;
+        ButtonNew topButton;
+        ButtonNew sizeButton;
+        
+        public:
         
         Font font;
-    public:
+        Max_Heap::Step animation;
         MaxHeapVisualize(Font font);
         MaxHeapVisualize() : MaxHeapVisualize(FONT) {} ;
         Max_Heap::Step getAinimation() { return this->animation;}
@@ -49,4 +54,3 @@ class MaxHeapVisualize {
         void draw();
         int buttonHandle();
 };
-#endif /* MaxHeap_hpp */

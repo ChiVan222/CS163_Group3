@@ -11,15 +11,15 @@ MaxHeapVisualize::MaxHeapVisualize(Font font) {
     this->type = 0;
     this->numFrameOfAnimation = FPS;
 
-    this->createButton = Button({8, 415, 110, 30}, "Create", -1, BLACK, 20, font);
-    this->randomButton = Button({156.5, 449.3, 110, 30}, "Random", -1, BLACK, 20, font);                        /////////////////
-    this->loadFileButton = Button({156.5, 520.6, 110, 30}, "Load File", -1, BLACK, 20, font);                       ///////////
-    this->pushButton = Button({8, 450, 110, 30}, "Push", -1, BLACK, 20, font);
-    this->deleteButton = Button({8, 485, 110, 30}, "Delete", -1, BLACK, 20, font);
+    this->createButton = ButtonNew({8, 415, 110, 30}, "Create", -1, BLACK, 20, font);
+    this->randomButton = ButtonNew({156.5, 449.3, 110, 30}, "Random", -1, BLACK, 20, font);                        /////////////////
+    this->loadFileButton = ButtonNew({156.5, 520.6, 110, 30}, "Load File", -1, BLACK, 20, font);                       ///////////
+    this->pushButton = ButtonNew({8, 450, 110, 30}, "Push", -1, BLACK, 20, font);
+    this->deleteButton = ButtonNew({8, 485, 110, 30}, "Delete", -1, BLACK, 20, font);
     this->inputNumber = InputStr(156.5, 449.3, 110, 30, "", 20, this->font);        /////////////////////////////////
-    this->playButton = Button({173, 492, 70, 30}, "Play", -1, BLACK, 20, font);                             /////////////////////////////////
-    this->topButton = Button({8, 555, 110, 30}, "Top", -1, BLACK, 20, font);
-    this->sizeButton = Button({8, 520, 110, 30}, "Size", -1, BLACK, 20, font);
+    this->playButton = ButtonNew({173, 492, 70, 30}, "Play", -1, BLACK, 20, font);                             /////////////////////////////////
+    this->topButton = ButtonNew({8, 555, 110, 30}, "Top", -1, BLACK, 20, font);
+    this->sizeButton = ButtonNew({8, 520, 110, 30}, "Size", -1, BLACK, 20, font);
 }
 
 void MaxHeapVisualize::updateStep(int index) {
@@ -96,15 +96,8 @@ void MaxHeapVisualize::createWithRandomizedData(int n, int range) {
 }
 
 void MaxHeapVisualize::createFromFile() {
-    auto f = pfd::open_file("Choose files to read", pfd::path::home(),
-                           { "Text Files (.txt .text)", "*.txt *.text",
-                               "All Files", "*" },
-                           pfd::opt::force_path);
-    if (f.result().empty()) {
-        return;
-    }
-    auto path = f.result().back();
-    this->heap.createFromFile(path.c_str());
+    
+    this->heap.createFromFile("../../assets/Data/Heap.txt");
     this->numFrameOfAnimation = 3;
     this->animation = this->heap.getSteps().front();
     this->progressBar.updateMaxStep((int)this->heap.getSteps().size() - 1);
