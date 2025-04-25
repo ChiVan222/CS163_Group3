@@ -1,6 +1,6 @@
 #include "CommonUI.h"
 
-Button::Button(Rectangle rect, const std::string text, float yText, Color textColor, float fontSize, Font font) {
+ButtonNew::ButtonNew(Rectangle rect, const std::string text, float yText, Color textColor, float fontSize, Font font) {
     this->outerRect = rect;
     this->content = text;
     this->font = font;
@@ -11,13 +11,13 @@ Button::Button(Rectangle rect, const std::string text, float yText, Color textCo
     this->isHovered = false;
 }
 
-void Button::draw(float radius) {
+void ButtonNew::draw(float radius) {
     this->isHovered = CheckCollisionPointRec(GetMousePosition(), this->outerRect);
     DrawRectangleRounded(this->outerRect, radius/55, 32, this->isHovered ? THEME.HOVER_BUTTON : THEME.BUTTON);
     DrawTextPro(this->font, this->content.c_str(), this->contentPos, ORIGIN, 0, this->fontSize, 2, this->contentColor);
 }
 
-int Button::handle() {
+int ButtonNew::handle() {
     if (IsMouseButtonDown(MOUSE_BUTTON_LEFT) && this->isHovered) {
         this->isHovered = false;
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
@@ -298,3 +298,15 @@ void drawSideBar(int type, std::string code, std::vector<int> lines, std::string
     drawInfor(infor, font);
     bar.draw(type);
 }
+
+void drawSideBar(int type, ProgressBar bar) {
+    /*  DrawRectangleRounded({0, 110, 297, 584}, 0.10f, 32, THEME.SIDEBAR);
+     DrawLineEx({0, 326}, {297, 326}, 1.3, THEME.SEPERATOR);
+     DrawLineEx({0, 408}, {297, 408}, 1.3, THEME.SEPERATOR);
+     DrawLineEx({126, 408}, {126, 592}, 1.3, THEME.SEPERATOR);
+     DrawLineEx({0, 592}, {297, 592}, 1.3, THEME.SEPERATOR);
+     drawCode(code, 8, lines, font);
+     drawInfor(infor, font); */
+     bar.draw(type);
+ }
+
