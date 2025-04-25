@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <stack>
 #include "Info.h"
+#include "HeapAnimation.h"
 #pragma once
 class Scene
 { 
@@ -245,4 +246,17 @@ class Graph_Scene: public NodeScene
           void checkBalance(int level);
           Vector2 calculatePosition(int level, int index);
            int calculateIndex(int level, const char word);
+};
+
+class Heap_Scene: public NodeScene
+{
+  private:
+  MaxHeapVisualize maxHeap = MaxHeapVisualize();
+  TittleButton tittle = TittleButton({465, 34, 350, 40}, "Max Heap", -1, BLACK, 20);
+
+  public:
+  
+  void run(Scenes& mscene);
+  void Draw();
+  void CheckBuffer() override; 
 };

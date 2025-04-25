@@ -558,6 +558,7 @@ SceneManager::SceneManager()
     scenes.push_back(new Singly_Scene()); 
     scenes.push_back(new Graph_Scene());
     scenes.push_back(new Trie_Scene());
+    scenes.push_back(new Heap_Scene());
     scenes.push_back(new Setting_Scene());
 }
 Setting_Scene::Setting_Scene() {
@@ -770,9 +771,10 @@ void NodeScene::DrawCommonUI()
         Inputs[i]->Draw(true);
         Inputs[i]->Send(buffer);
     }
+
     for(int i = 0; i<buttons.size(); i++)
     {
-        buttons[i]->Draw(); 
+        buttons[i]->Draw();
     }
 }
 NodeScene::NodeScene()
@@ -921,6 +923,7 @@ Graph_Scene::~Graph_Scene() {
 }    
 
 void Graph_Scene::run(Scenes& mscene) {
+    //zimba
     UI::wWidth = UI::wWidth;
     UI::wHeight = UI::wHeight;
     UI::wWidth = static_cast<float>(GetScreenWidth());
@@ -952,6 +955,7 @@ void Graph_Scene::run(Scenes& mscene) {
     DrawButtons();
     executeFunctions(animation_queue);
 }
+
 void Graph_Scene::Draw() {
     for (const auto& node : graphNodes) node->Draw();
 }  
@@ -1757,4 +1761,45 @@ int Trie_Scene::calculateIndex(int level, const char word){
         std::cout << " Runned " << index << "\n";
     }
     return index;
+}
+
+void Heap_Scene::run(Scenes& mscene) 
+{
+    /* UI::wWidth = static_cast<float>(GetScreenWidth());
+    UI::wHeight = static_cast<float>(GetScreenHeight());
+    float deltatime = IsWindowFocused() ? GetFrameTime() : 0;
+    ClearBackground(BLACK);
+    DrawCommonUI();
+    DrawText("Heap", 200, 200, 40, WHITE);
+    CheckBuffer();
+    if (IsKeyPressed(KEY_LEFT)) {
+        mscene = Menu;
+        return;
+    }
+    BeginMode2D(UI::camera);
+    UI::mousePos = GetScreenToWorld2D(GetMousePosition(), UI::camera);
+    Draw();
+    EndMode2D();
+    UI::mousePos = GetMousePosition();
+    DrawButtons();
+ */
+
+    ClearBackground(THEME.BACKGROUND);
+    maxHeap.draw();
+    tittle.draw();
+    maxHeap.handle();
+    if (tittle.handle() == 1) {
+        mscene = Menu;
+        return;
+    }
+}
+
+/* void Heap_Scene::Draw() {
+    Max_Heap::drawHeap(Mheap.animation, Mheap.font);
+} */
+
+void Heap_Scene::CheckBuffer()
+{
+    cout << "CheckBuffer" << endl;
+    return;
 }

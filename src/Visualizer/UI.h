@@ -1,6 +1,7 @@
 #pragma once
 #include <raylib.h> 
 #include "Scene.h"
+#include "Utility.h"
 class UI 
 {   public :
      static float time; 
