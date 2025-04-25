@@ -31,6 +31,8 @@ void UI::DrawFadingText(float time, int x, int y, int fontsize,const char* text)
 }
 UI::UI():  mFont(GetFontDefault())
 {
+    InitWindow(wWidth, wHeight, "Hello, World!");
+    UI::background = LoadTexture("../assets/Images/background.png");
     fontsize = mFont.baseSize;
     camera.offset = {(float)wWidth / 2, (float)wHeight / 2};    
     camera.zoom  =1; 
@@ -62,9 +64,6 @@ void UI:: resetCamera(){
 }
 void UI::run()
 {
-
-    InitWindow(wWidth, wHeight, "Hello, World!");
-    UI::background = LoadTexture("../assets/Images/background.png");
     SetTargetFPS(mFPS);
     SetWindowState(FLAG_WINDOW_RESIZABLE);
     scene_manager = new SceneManager();

@@ -3,9 +3,6 @@
 #include "Visualizer/UI.h"
 int main()
 { 
-    UI ui; 
-    // a.Traverse();
-    ui.run();
+    UI ui;
+    ui.run(); 
 }
-
-    
