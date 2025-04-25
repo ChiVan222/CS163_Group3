@@ -1,10 +1,14 @@
 #ifndef CommonUI_h
 #define CommonUI_h
 
-#include "General.h"
+#include "Utility.h"
+#include "string"
+#include <thread>
+#include <chrono>
+#include <vector>
 
 
-class Button {
+class ButtonNew {
     protected:
         Rectangle outerRect;
         std::string content;
@@ -14,16 +18,16 @@ class Button {
         float fontSize;
         bool isHovered;
     public:
-        Button(Rectangle rect, const std::string text, float yText, Color textColor, float fontSize, Font font = FONT);
-        Button() : Button({0,0,0,0}, "", 0.0f, BLUE, 0) {}
+        ButtonNew(Rectangle rect, const std::string text, float yText, Color textColor, float fontSize, Font font = FONT);
+        ButtonNew() : ButtonNew({0,0,0,0}, "", 0.0f, BLUE, 0) {}
         void draw(float radius = 15);
         int handle();
         bool getIsHovered() {return this->isHovered;}
         
-        virtual ~Button() = default;
+        virtual ~ButtonNew() = default;
 };
 
-class TittleButton : public Button {
+class TittleButton : public ButtonNew {
 protected:
     Vector2 backPagePos;
     float backPageRadius;
@@ -37,13 +41,13 @@ public:
     bool getIsHovered() {return this->isHovered;}
 };
 
-class ButtonImage : public Button {
+class ButtonImage : public ButtonNew {
     protected:
         Rectangle innerRect;
         Texture2D texture;
     public:
         ButtonImage(Rectangle outerRect, Rectangle innerRect, const char* path, const std::string text, float yText, Color textColor, float fontSize, Font font=FONT);
-        ButtonImage() : Button() {}
+        ButtonImage() : ButtonNew() {}
         void draw(float radius = 15);
     };
 
@@ -91,7 +95,7 @@ class ProgressBar {
         Font font;
     public:
         ProgressBar(Font font) : curStep(0), maxStep(0), speed(1), funcID(0), font(font) {}
-        ProgressBar() : ProgressBar(FONT) {}
+        ProgressBar() : ProgressBar(FONT) {};
         void draw(int type);
         void updateMaxStep(int max);
         void updateStep(int step);
@@ -106,4 +110,5 @@ class ProgressBar {
 void drawCode(std::string code, size_t n ,std::vector<int> highlight, Font font);
 void drawInfor(std::string infor, Font font = FONT);
 void drawSideBar(int type, std::string code, std::vector<int> lines, std::string infor, ProgressBar bar, Font font = FONT);
-#endif /* GUI_hpp */
+void drawSideBar(int type, ProgressBar bar);
+#endif

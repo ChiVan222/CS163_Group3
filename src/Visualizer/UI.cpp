@@ -64,6 +64,10 @@ void UI:: resetCamera(){
 }
 void UI::run()
 {
+
+    InitWindow(wWidth, wHeight, "Hello, World!");
+    UI::background = LoadTexture("../assets/Images/background.png");
+    initResource();
     SetTargetFPS(mFPS);
     SetWindowState(FLAG_WINDOW_RESIZABLE);
     scene_manager = new SceneManager();

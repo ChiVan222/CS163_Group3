@@ -133,11 +133,11 @@ Slider::Slider(Vector2 pos, Vector2 rect1, int t){
 }
 void Slider::SliderDraw(){
          if (type==1)
-             GuiSlider((Rectangle){ position.x, position.y, rect.x, rect.y }, NULL , NULL, &red, 0, 255);
+             GuiSlider({ position.x, position.y, rect.x, rect.y }, NULL , NULL, &red, 0, 255);
         else if (type==2)
-             GuiSlider((Rectangle){ position.x, position.y, rect.x, rect.y }, NULL , NULL, &green, 0, 255);
+             GuiSlider({ position.x, position.y, rect.x, rect.y }, NULL , NULL, &green, 0, 255);
          else if(type==3)
-             GuiSlider((Rectangle){ position.x, position.y, rect.x, rect.y }, NULL , NULL, &blue, 0, 255);
+             GuiSlider({ position.x, position.y, rect.x, rect.y }, NULL , NULL, &blue, 0, 255);
      }
     
     
