@@ -870,6 +870,7 @@ Singly_Scene::Singly_Scene(): NodeScene(),a(0.3,0), insert(0.5,0,20,Vector2({300
 
 std::vector<GraphNode*> Graph_Scene::graphNodes;
 std::vector<Edge*> Graph_Scene::Edges; 
+std::priority_queue<std::pair<int, GraphNode*>, std::vector<std::pair<int, GraphNode*>>, std::greater<>> Graph_Scene::pq;
 std::priority_queue<std::pair<int, std::function<void()>>, 
                     std::vector<std::pair<int, std::function<void()>>>, 
                     FunctionComparator2> Graph_Scene::animation_queue;
@@ -922,8 +923,31 @@ Graph_Scene::~Graph_Scene() {
     ani_dijkstra.~Ani_Dijkstra(); 
 }    
 
+void Graph_Scene::drawDescription() {
+    Vector2 samplePos1 = {static_cast<float>(GetScreenWidth() - 400), 50};
+    GraphNode* sample1 = new GraphNode(samplePos1, 15, 0);
+    Vector2 samplePos2 = {static_cast<float>(GetScreenWidth() - 400), 150};
+    GraphNode* sample2 = new GraphNode(samplePos2, 15, 0);
+    DrawCircleV(samplePos1, sample1->getRadius(), sample1->colorNode);
+    DrawCircleV(samplePos2, sample2->getRadius(), sample1->colorNode);
+    sample1->highlight(GREEN);
+    sample2->highlight(sample2->colorNode);
+    DrawText("Done", samplePos1.x + 40, samplePos1.y - sample1->getRadius(), 20, WHITE);
+    DrawText("Encounter", samplePos2.x + 40, samplePos2.y - sample1->getRadius(), 20, WHITE);
+    Vector2 offset = {static_cast<float>(GetScreenWidth() - 400), 250};
+    DrawText("Prority Queue", offset.x, offset.y, 20, WHITE);
+    while (!pq.empty()) {
+        offset.y += 30;
+        auto& node = pq.top();
+        int w = node.first;
+        int u = node.second->val;
+        std::string text = "Node - " + std::to_string(u) + " - Distance: " + to_string(w);
+        DrawText(text.c_str(), offset.x, offset.y, 20, WHITE);
+        pq.pop();
+    }
+}
+
 void Graph_Scene::run(Scenes& mscene) {
-    //zimba
     UI::wWidth = UI::wWidth;
     UI::wHeight = UI::wHeight;
     UI::wWidth = static_cast<float>(GetScreenWidth());
@@ -953,6 +977,7 @@ void Graph_Scene::run(Scenes& mscene) {
     EndMode2D();
     UI::mousePos = GetMousePosition();
     DrawButtons();
+    if (ani == DijkstraRunning) drawDescription();
     executeFunctions(animation_queue);
 }
 

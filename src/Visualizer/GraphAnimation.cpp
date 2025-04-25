@@ -249,6 +249,7 @@ void Ani_Dijkstra::updateAnimations(float deltaTime) {
     mp = snap.mp;
     dist = snap.dist;
     curEdge = snap.curEdge;
+    Graph_Scene::pq = snap.pq;
 
     // Highlight curEdge
     if (curEdge) {
@@ -299,12 +300,13 @@ void Ani_Dijkstra::prerun(GraphNode* start) {
     std::unordered_map<int, int> dist_local = dist;
 
     while (!pq.empty()) {
-        auto [d, u] = pq.top(); pq.pop();
+        auto [d, u] = pq.top();
         if (visited_local.count(u)) continue;
         cur_local = u;
-        history.push_back({nullptr, visited_local, mp_local, dist_local, nullptr});
+        history.push_back({nullptr, visited_local, mp_local, dist_local, nullptr, pq});
         visited_local.insert(u);
-        history.push_back({u, visited_local, mp_local, dist_local, nullptr});
+        pq.pop();
+        history.push_back({u, visited_local, mp_local, dist_local, nullptr, pq});
         for (auto* v : u->getAdj()) {
             if (mp_local[u].count(v)) continue;
 
@@ -314,7 +316,7 @@ void Ani_Dijkstra::prerun(GraphNode* start) {
                     e = edge; break;
                 }
             }
-            history.push_back({u, visited_local, mp_local, dist_local, e});
+            history.push_back({u, visited_local, mp_local, dist_local, e, pq});
 
             mp_local[u].insert(v);
             mp_local[v].insert(u);
@@ -325,10 +327,10 @@ void Ani_Dijkstra::prerun(GraphNode* start) {
             }
 
             // Store snapshot after each edge relax
-            history.push_back({u, visited_local, mp_local, dist_local, e});
+            history.push_back({u, visited_local, mp_local, dist_local, e, pq});
         }
     }
-    history.push_back({nullptr, visited_local, mp_local, dist_local, nullptr});
+    history.push_back({nullptr, visited_local, mp_local, dist_local, nullptr, pq});
 
     cur = nullptr;
     curEdge = nullptr;

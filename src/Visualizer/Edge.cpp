@@ -27,11 +27,17 @@ bool Edge::Draw(Color color, int flat)
         //     , Vector2({to->getPosition().x-Singly_Scene::Node_radius,to->getPosition().y}),size,WHITE); 
         // DrawLineBezier(cpos,dpos,size,WHITE); 
         DrawLineEx(cpos,dpos,size,color);
-        if (flat == 1 && weight != -1) {
-            Vector2 midPoint = {(from->getPosition().x + to->getPosition().x) / 2, (from->getPosition().y + to->getPosition().y) / 2};
+        if (flat == 1) {
+            Vector2 pos1 = getFrom()->getPosition();
+            Vector2 pos2 = getTo()->getPosition();
+            Vector2 midPoint = {(pos1.x + pos2.x) / 2, (pos1.y + pos2.y) / 2};
+            float angle = atan2(pos2.y - pos1.y, pos2.x - pos1.x);
+            float distance = sqrt(pow(pos2.x - pos1.x, 2) + pow(pos2.y - pos1.y, 2));
+            float offsetDistance = distance / 20;
+            Vector2 offset = {offsetDistance * cos(angle + PI / 2), offsetDistance * sin(angle + PI / 2)};
             const char* weightText = TextFormat("%d", weight);
             int textWidth = MeasureText(weightText, 20);
-            DrawText(weightText, midPoint.x - textWidth / 2, midPoint.y - 10, 20, WHITE);
+            DrawText(weightText, midPoint.x + offset.x - textWidth / 2, midPoint.y + offset.y, 20, WHITE);
         }
         return true;
     }

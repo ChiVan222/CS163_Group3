@@ -72,6 +72,7 @@ private:
         std::unordered_map<GraphNode*, std::unordered_set<GraphNode*>> mp;
         std::unordered_map<int, int> dist;
         Edge* curEdge;
+        std::priority_queue<std::pair<int, GraphNode*>, std::vector<std::pair<int, GraphNode*>>, std::greater<>> pq;
     };
     std::vector<DijkstraSnapshot> history;
     int currentStep = -1;
