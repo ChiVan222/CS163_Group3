@@ -1604,6 +1604,8 @@ void Trie_Scene::run(Scenes& mscene) {
 
     EndMode2D();
     UI::updateCamera();
+    UI::mousePos = GetMousePosition();
+
     // Cập nhật lại UI::mousePos thành vị trí thật để dùng cho các UI khác
        for(int i =0 ; i< Inputs.size();i++)
     {
@@ -1612,7 +1614,6 @@ void Trie_Scene::run(Scenes& mscene) {
         Inputs[i]->Send(buffer);
     }
  
-    UI::mousePos = GetMousePosition();
 }
 
 void Trie_Scene::Draw() {

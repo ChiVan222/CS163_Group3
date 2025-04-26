@@ -690,7 +690,7 @@ void Ani_LinkedListDelete::updateAnimations(float deltaTime)
         ncur = ncur->next; 
     }
     if(ncur)ncur->SetSecondaryHighLight();
-    if(currentStep != history.size()-1)
+    if(currentStep != history.size()-1 && ncur)
     {
         
         if(ncur->value != target)
@@ -744,7 +744,7 @@ void Ani_LinkedListDelete::updateAnimations(float deltaTime)
                     } 
             }    
         }
-        if(ncur == Singly_Scene::Nodes.get_root() && ncur->value == target)
+        if(ncur&& ncur == Singly_Scene::Nodes.get_root() && ncur->value == target)
         {
             SinglyNode* tmp =ncur; 
             ncur->SetPrimaryHighLight();
@@ -760,7 +760,7 @@ void Ani_LinkedListDelete::updateAnimations(float deltaTime)
                         return false;
                     }),
             Singly_Scene::Edges.end());
-            if(tmp->next)
+            if(tmp && tmp->next)
             {
                 Singly_Scene::m.setDuration(duration/history.size());
                 Singly_Scene::m.updateTarget(Vector2({(float)(-Singly_Scene::Node_radius*2-50),0}),tmp->next);
@@ -771,7 +771,6 @@ void Ani_LinkedListDelete::updateAnimations(float deltaTime)
             isPrerunDone = 0; 
             isDone =true ; 
             loaded = false; 
-            delete tmp;
             elapsed_time = 0 ; 
             Singly_Scene::stepindex = 0 ; 
             Singly_Scene::maxsteps = 0;
@@ -830,7 +829,8 @@ void Ani_LinkedListDelete::prerun()
     Singly_Scene::code.push_back(
         "if (ncur->next) {\n Node* tmp = ncur->next;\n ncur->next = tmp->next;\n delete tmp;\n }"
     ) ;
-    Singly_Scene::info = "Deleting " + std::to_string(target); 
+    Singly_Scene::info = "Deleting " + std::to_string(target);
+    if(!Singly_Scene::Nodes.get_root())return;  
     if(Singly_Scene::Nodes.get_root()->value == target) 
     {
         history.push_back({0, Singly_Scene::getInfo()}); 
@@ -867,6 +867,7 @@ void Ani_LinkedListDelete::prerun()
         Singly_Scene::maxsteps = history.size()-1;
         Singly_Scene::stepindex = 0 ;
         Singly_Scene::ani_state = Pause; 
+        std::cout<<"Preruned"<<"\n";
         return; 
     }
     
