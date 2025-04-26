@@ -65,6 +65,9 @@ class NodeScene: public Scene{
     int type= 0  ;  
     ProgressBar progressBar;
 
+    bool isGraph; 
+    ButtonNew clearButton;
+    
     ButtonNew  createButton;
     bool isCreateChosen;
     ButtonNew randomButton;
@@ -73,9 +76,14 @@ class NodeScene: public Scene{
 
     ButtonNew pushButton;
     ButtonNew searchButton;
+    ButtonNew dijkstrabutton; 
+    bool isdijkstraChosen; 
 
+    ButtonNew addedgeButton; 
+    bool isaddedgeChosen; 
     bool isPushChosen;
     ButtonNew deleteButton;
+  
     bool isDeleteChosen;
     InputStr inputNumber;
     ButtonNew playButton;
