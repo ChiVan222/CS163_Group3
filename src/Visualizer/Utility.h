@@ -5,8 +5,8 @@
 #include <fstream>
 //#include <bits/stdc++.h>
 
-const float NODE_RADIUS = 15;
-const float CODE_SIZE = 15;
+const float NODE_RADIUS = 20;
+const float CODE_SIZE = 20;
 enum Scenes{  
     Welcome = 0, Menu, Singly,Graph,Trie,Heap,Setting
 } ;
@@ -14,7 +14,7 @@ enum InputType
 {
     Insert = 0 , Remove, Update, Search, AddEdge, Randomize, DijkstraRun
 };
-enum animation 
+enum animation    
 { 
     None, Searching, Inserting, Updating, Removing, EdgeDrawing,Inserting_2,Straightening, DijkstraRunning
 };

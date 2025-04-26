@@ -313,7 +313,7 @@ class Graph_Scene: public NodeScene
           bool isValid (TrieNodePrimary* node,int level, char c);
           void loadFromFile();
           void clear();
-           int calculateIndex(int level, const char word);
+          int Trie_Scene::calculateIndex(int level, const char word);
            int handle() override{return 0 ;}; 
 
 };
