@@ -138,6 +138,7 @@ void InputField::Draw(bool DrawButton)
     DrawRectangleRec(inputbox, isActive? LIGHTGRAY:GRAY); 
     DrawText(input.c_str(), inputbox.x + 10, inputbox.y + 15, 20, BLACK);
     if(DrawButton){ 
+        button->setPosition({inputbox.x + inputbox.width, inputbox.y});
         button->Draw();
         button->DrawButtonText_center();
     }

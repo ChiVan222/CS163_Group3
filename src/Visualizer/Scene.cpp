@@ -111,6 +111,7 @@ Menu_Scene::~Menu_Scene() {
 }
 void Menu_Scene::run(Scenes& mscene)
 {
+    if (sceneWidth == GetScreenWidth()) firstEntry = false;
     float scaleX = GetScreenWidth() / sceneWidth;
     float scaleY = GetScreenHeight() / sceneHeight;
     float deltaTime = IsWindowFocused() ? GetFrameTime() : 0;
@@ -488,8 +489,9 @@ void Singly_Scene::run(Scenes& mscene)
         mscene = Menu;
         created = false;
         Clear(); 
+        sceneWidth = GetScreenWidth();
+        sceneHeight = GetScreenHeight();  
         return; 
-
     }
     de.setDuration(0.4);
     BeginMode2D(UI::camera);
@@ -556,7 +558,7 @@ void Singly_Scene::run(Scenes& mscene)
        }
 
     }
-
+    firstEntry = false;
 }
 SceneManager::SceneManager()
 {
@@ -793,7 +795,7 @@ void NodeScene::DrawCommonUI()
         codes += code[i]; 
     }
     drawSideBar(this->type, codes , this->highlights_code, this->info, this->progressBar,UI::getFont());
-    if (!isgraph) drawButtons();
+    drawButtons();
 }
 NodeScene::NodeScene()
 {
@@ -823,7 +825,7 @@ NodeScene::NodeScene()
 
     this->dijkstrabutton =  ButtonNew({8, 555, 110, 30}, "Dijkstra", -1, BLACK, 20, UI::getFont());
     this->addedgeButton =  ButtonNew({8, 590, 110, 30}, "Add Edge", -1, BLACK, 20, UI::getFont());
-
+    mRadius = 20;
 }
 void Singly_Scene::ClearHistory()
 {
@@ -839,6 +841,9 @@ void Singly_Scene::ClearHistory()
 }
 
 Singly_Scene::Singly_Scene(): NodeScene(),a(0.3,0), insert(0.5,0,20,Vector2({300,300})),d(0.5,0),isDragging(false), insert_2(1),st(1){
+    sceneWidth = GetScreenWidth();
+    sceneHeight = GetScreenHeight(); 
+    firstEntry = true; 
     Edges.clear(); 
     buttons[0]->OnClick=  [this]() {
         ClearHistory();
@@ -917,23 +922,24 @@ animation_state Graph_Scene:: ani_state = animation_state::Continue;
 float MIN_DISTANCE = 100.0f;
 
 Graph_Scene::Graph_Scene() : created(false), ani_insert(0.01, 0, 20, {0,0}), 
-ani_search(1.0, 0), ani_remove(1.0), ani_dijkstra(2.0, 0),isDragging(false), draggedNode(nullptr){
-    Inputs.push_back(new InputField(100*GetScreenWidth()/UI::wWidth,100*GetScreenHeight()/UI::wHeight,Vector2({0,(UI::wHeight-100)*GetScreenHeight()/UI::wHeight}),InputType::Insert));
-    Inputs.push_back(new InputField(100*GetScreenWidth()/UI::wWidth,100*GetScreenHeight()/UI::wHeight,Vector2({0,(UI::wHeight-210)*GetScreenHeight()/UI::wHeight}),InputType::Remove));
-    Inputs.push_back(new InputField(100*GetScreenWidth()/UI::wWidth,100*GetScreenHeight()/UI::wHeight,Vector2({0,(UI::wHeight-320)*GetScreenHeight()/UI::wHeight}),InputType::Search));
-    buttons.push_back(new Button("",Vector2({0,(UI::wHeight-430)*GetScreenHeight()/UI::wHeight}),Vector2({100*GetScreenWidth()/UI::wWidth,100*GetScreenHeight()/UI::wHeight}),"Randomize"));
-    buttons.push_back(new Button("",Vector2({(UI::wWidth -200)*GetScreenWidth()/UI::wWidth,(UI::wHeight-430)*GetScreenHeight()/UI::wHeight}),Vector2({100*GetScreenWidth()/UI::wWidth,100*GetScreenHeight()/UI::wHeight}),"Backward")); 
-    buttons.push_back(new Button("",Vector2({(UI::wWidth -200)*GetScreenWidth()/UI::wWidth,(UI::wHeight-320)*GetScreenHeight()/UI::wHeight}),Vector2({100*GetScreenWidth()/UI::wWidth,100*GetScreenHeight()/UI::wHeight}),"Pause")); 
-    buttons.push_back(new Button("",Vector2({(UI::wWidth -200)*GetScreenWidth()/UI::wWidth,(UI::wHeight-210)*GetScreenHeight()/UI::wHeight}),Vector2({100*GetScreenWidth()/UI::wWidth,100*GetScreenHeight()/UI::wHeight}),"Forward"));
-    Inputs.push_back(new InputField(100.0f,100.0f,Vector2({210,UI::wHeight-100}),InputType::AddEdge));
-    Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-540}),InputType::Randomize));
-    Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-650}),InputType::DijkstraRun));
-    buttons[0] = new Button("",Vector2({0,UI::wHeight-430}),Vector2({100,100}),"Clear");
-    buttons.push_back(new Button("",Vector2({100,UI::wHeight-430}),Vector2({100,100}),"Load File"));
-    buttons.push_back(new Button("",Vector2({UI::wWidth -200,UI::wHeight-540}),Vector2({100,100}),"First Step")); 
-    buttons.push_back(new Button("",Vector2({UI::wWidth -200,UI::wHeight-100}),Vector2({100,100}),"Final Step")); 
+ani_search(1.0, 0), ani_remove(1.0), ani_dijkstra(2.0, 0),isDragging(false), draggedNode(nullptr) {
+    buttons.clear();
+    Inputs.clear();
+    Inputs.push_back(new InputField(100, 100,Vector2({static_cast<float>(GetScreenWidth()) - 300,static_cast<float>(GetScreenHeight()) - 100}),InputType::Insert));
+    Inputs.push_back(new InputField(100, 100,Vector2({static_cast<float>(GetScreenWidth()) - 300,static_cast<float>(GetScreenHeight()) - 210}),InputType::AddEdge));
+    Inputs.push_back(new InputField(100, 100,Vector2({static_cast<float>(GetScreenWidth()) - 300,static_cast<float>(GetScreenHeight()) - 320}),InputType::Remove));
+    Inputs.push_back(new InputField(100, 100,Vector2({static_cast<float>(GetScreenWidth()) - 300,static_cast<float>(GetScreenHeight()) - 430}),InputType::Search));
+    Inputs.push_back(new InputField(100, 100,Vector2({static_cast<float>(GetScreenWidth()) - 300,static_cast<float>(GetScreenHeight()) - 540}),InputType::Randomize));
+    Inputs.push_back(new InputField(100, 100,Vector2({static_cast<float>(GetScreenWidth()) - 300,static_cast<float>(GetScreenHeight()) - 650}),InputType::DijkstraRun));
+    buttons.push_back(new Button("",Vector2({100, static_cast<float>(GetScreenHeight()) - 200}),Vector2({100,100}),"Clear"));
+    buttons.push_back(new Button("",Vector2({static_cast<float>(GetScreenWidth())/2 - 160,static_cast<float>(GetScreenHeight()) - 200}),Vector2({100,100}),"Backward")); 
+    buttons.push_back(new Button("",Vector2({static_cast<float>(GetScreenWidth())/2 - 50,static_cast<float>(GetScreenHeight()) - 200}),Vector2({100,100}),"Pause")); 
+    buttons.push_back(new Button("",Vector2({static_cast<float>(GetScreenWidth())/2 + 60,static_cast<float>(GetScreenHeight()) - 200}),Vector2({100,100}),"Forward"));
+    buttons.push_back(new Button("",Vector2({100, static_cast<float>(GetScreenHeight()) - 310}),Vector2({100,100}),"Load File"));
+    buttons.push_back(new Button("",Vector2({static_cast<float>(GetScreenWidth())/2 - 270,static_cast<float>(GetScreenHeight()) - 200}),Vector2({100,100}),"First Step")); 
+    buttons.push_back(new Button("",Vector2({static_cast<float>(GetScreenWidth())/2 + 170,static_cast<float>(GetScreenHeight()) - 200}),Vector2({100,100}),"Final Step")); 
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
-    isGraph =true; 
+    isGraph = true; 
     buttons[0]->OnClick = [this]() {
         clear();
     };
@@ -958,6 +964,9 @@ ani_search(1.0, 0), ani_remove(1.0), ani_dijkstra(2.0, 0),isDragging(false), dra
     buttons[6]->OnClick = [this]() {
         this->ani_state = animation_state::FinalState;
     };
+    firstEntry = true;
+    sceneWidth = GetScreenWidth();
+    sceneHeight = GetScreenHeight();
 }
 
 Graph_Scene::~Graph_Scene() {
@@ -971,16 +980,16 @@ Graph_Scene::~Graph_Scene() {
 void Graph_Scene::drawDescription() {
     Vector2 samplePos1 = {static_cast<float>(GetScreenWidth() - 400), 50};
     GraphNode* sample1 = new GraphNode(samplePos1, 15, 0);
-    Vector2 samplePos2 = {static_cast<float>(GetScreenWidth() - 400), 150};
+    Vector2 samplePos2 = {static_cast<float>(GetScreenWidth() - 400), 100};
     GraphNode* sample2 = new GraphNode(samplePos2, 15, 0);
     DrawCircleV(samplePos1, sample1->getRadius(), sample1->colorNode);
     DrawCircleV(samplePos2, sample2->getRadius(), sample1->colorNode);
     sample1->highlight(GREEN);
     sample2->highlight(sample2->colorNode);
-    DrawText("Done", samplePos1.x + 40, samplePos1.y - sample1->getRadius(), 20, WHITE);
-    DrawText("Encounter", samplePos2.x + 40, samplePos2.y - sample1->getRadius(), 20, WHITE);
-    Vector2 offset = {static_cast<float>(GetScreenWidth() - 400), 250};
-    DrawText("Prority Queue", offset.x, offset.y, 20, WHITE);
+    DrawText("Done", samplePos1.x + 40, samplePos1.y - sample1->getRadius(), NodeScene::mRadius, WHITE);
+    DrawText("Encounter", samplePos2.x + 40, samplePos2.y - sample1->getRadius(), NodeScene::mRadius    , WHITE);
+    Vector2 offset = {static_cast<float>(GetScreenWidth() - 400), 150};
+    DrawText("Priority Queue", offset.x, offset.y, 20, WHITE);
     while (!pq.empty()) {
         offset.y += 30;
         auto& node = pq.top();
@@ -993,19 +1002,18 @@ void Graph_Scene::drawDescription() {
 }
 
 void Graph_Scene::run(Scenes& mscene) {
-    UI::wWidth = UI::wWidth;
-    UI::wHeight = UI::wHeight;
-    UI::wWidth = static_cast<float>(GetScreenWidth());
-    UI::wHeight = static_cast<float>(GetScreenHeight());
     float deltatime = IsWindowFocused() ? GetFrameTime() : 0;
     ClearBackground(BLACK);
-    DrawCommonUI();
+    Drawbackground();
+    DrawButtons();
     DrawText("Graph", 200, 200, 40, WHITE);
     CheckBuffer();
     if (IsKeyPressed(KEY_LEFT)) {
         mscene = Menu;
         created = false;
         clear();
+        sceneWidth = GetScreenWidth();
+        sceneHeight = GetScreenHeight();
         return;
     }
     BeginMode2D(UI::camera);
@@ -1021,9 +1029,11 @@ void Graph_Scene::run(Scenes& mscene) {
     ani_dijkstra.updateAnimations(deltatime);
     EndMode2D();
     UI::mousePos = GetMousePosition();
-    DrawButtons();
     if (ani == DijkstraRunning) drawDescription();
     executeFunctions(animation_queue);
+    sceneWidth = GetScreenWidth();
+    sceneHeight = GetScreenHeight();
+    firstEntry = false;
 }
 
 void Graph_Scene::Draw() {
@@ -1031,10 +1041,17 @@ void Graph_Scene::Draw() {
 }  
 
 void Graph_Scene::DrawButtons() {
+    for(int i =0 ; i < Inputs.size();i++)
+    {
+        Vector2 pos = Inputs[i]->getPosition();
+        Inputs[i]->setPosition({pos.x * GetScreenWidth() / sceneWidth, pos.y * GetScreenHeight() / sceneHeight});
+        Inputs[i]->HandleInput(buffer,UI::mousePos);
+        Inputs[i]->Draw(true);
+        Inputs[i]->Send(buffer);
+    }
     for(int i = 0; i < buttons.size(); i++) {
         Vector2 pos = buttons[i]->get_position();
-        Vector2 rect = buttons[i]->get_rectangle();
-        buttons[i]->setPositionRect({pos.x*UI::wWidth/UI::wWidth, pos.y*UI::wHeight/UI::wHeight}, {rect.x*UI::wWidth/UI::wWidth, rect.y*UI::wHeight/UI::wHeight});
+        buttons[i]->setPosition({pos.x * GetScreenWidth() / sceneWidth, pos.y * GetScreenHeight() / sceneHeight});
         buttons[i]->Draw();
         buttons[i]->DrawButtonText_center();
         if(buttons[i]->IsHovered(UI::mousePos) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
@@ -1182,7 +1199,7 @@ void Graph_Scene::AddNode(int value) {
     Vector2 pos;
     generatePos(pos, graphNodes);
     std::cout << "Adding node " << value << " at (" << pos.x << ", " << pos.y << ")\n";
-    GraphNode* newNode = new GraphNode(GetScreenToWorld2D(pos, UI::camera), 20, value);
+    GraphNode* newNode = new GraphNode(GetScreenToWorld2D(pos, UI::camera), NodeScene::mRadius, value);
     addFunction(animation_queue, 1, std::bind(&Ani_GraphInsert::updateTarget, &ani_insert, newNode));
     created = true;
 }
@@ -1225,7 +1242,7 @@ void Graph_Scene::randomize(int nodes) {
             value = std::rand() % 100;
         } while (valSet.find(value) != valSet.end());
         std::cout << "Adding node " << value << " at (" << pos.x << ", " << pos.y << ")\n";
-        GraphNode* newNode = new GraphNode(GetScreenToWorld2D(pos, UI::camera), 20, value);
+        GraphNode* newNode = new GraphNode(GetScreenToWorld2D(pos, UI::camera), NodeScene::mRadius, value);
         tempGraph.push_back(newNode);
         valSet.insert(value);
         addFunction(animation_queue, 1, std::bind(&Ani_GraphInsert::updateTarget, &ani_insert, newNode));

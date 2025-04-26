@@ -105,7 +105,7 @@ class NodeScene: public Scene{
     void DrawCommonUI(); 
     NodeScene(); 
     virtual void CheckBuffer()=0; 
-    
+    float mRadius;
 }; 
 class Welcome_Scene: public Scene
 {
