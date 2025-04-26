@@ -7,8 +7,13 @@
 class TrieNodePrimary : public PolyNode {
 public:
     char key;
+    std::string input;
     bool isEndOfWord;
-    bool isDeleted;
+    bool isupdate;
+    float lastDeletedTime ;
+    const float waitTime =0.1f;
+    bool trueUpdate;
+    bool deleting;
     std::map<char, TrieNodePrimary*> children;
     
     ~TrieNodePrimary();
@@ -18,5 +23,7 @@ public:
     TrieNodePrimary(Vector2 pos, float radius, char value);
     bool Draw() override;
     void SetEndOfWord(bool isEnd);
+    void onClick();
+    bool canDelete(TrieNodePrimary* node);
 };
 

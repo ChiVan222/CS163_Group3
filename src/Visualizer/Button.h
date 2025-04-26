@@ -19,6 +19,7 @@ class Button
     Texture2D get_texture(); 
     Vector2 get_position();
     Vector2 get_rectangle();
+    void SetText(const char* newText);
     void setPositionRect(Vector2 newPos, Vector2 newRect);
     void setPositionText(Vector2 newPos, Texture2D newText);
   protected : 
@@ -51,6 +52,7 @@ class InputButton: public Button
 };
 class SettingButton: public Button{
   public:
+    bool entry;
     SettingButton(Vector2 pos, Vector2 rect1);
     void SettingDraw();
  };

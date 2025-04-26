@@ -26,6 +26,8 @@ class Scene
       static SettingButton setting;
       static bool isDefault;
       static Font currentFont;
+      Font defaultFont;
+      Font Nowester;
       static bool isDarkMode;
       Color dark1{27,79,58,255};
       Color dark2{29,32,30,255};
@@ -255,20 +257,28 @@ class Graph_Scene: public NodeScene
 
  class Trie_Scene:public NodeScene{
      public :
+        std::string wordSearch;
+        bool pushed;
+        bool firstDelete ;
          static Ani_TrieInsert i;
           Ani_TrieSearch s;
           Ani_TrieDelete d;
           Ani_TrieUpdate u;
-           static std::vector<Edge*> edges;
+         static std::vector<Edge*> edges;
          unordered_map <int, vector<TrieNodePrimary*>> levelMap;
+         std::stack<pair<InputType, std::string>> history;
+         std::stack<pair<InputType, std::string>> future;
          static animation ani;
+         static animation_state state;
+         static animation_state ani_state;
          static int Node_radius;
          TrieNodePrimary* cur;
          TrieNodePrimary* balancePointer;
            float deltaTime;
           std::queue<TrieNodePrimary*> deleteQueue;
+          std::queue<TrieNodePrimary*> deleteAll;
           static TrieNodePrimary* proot;
-  
+
            bool isInserting = false;
   
       public:
@@ -277,13 +287,26 @@ class Graph_Scene: public NodeScene
           Trie_Scene();
         void Draw();
           void Insert(const char& word, float duration);
-         bool Search(const string word,float duration);
+         bool Search(char c,float duration);
+         bool removeWordStep(TrieNodePrimary* node, const string& word, int depth);
           bool removeWord(TrieNodePrimary* node, const string& word, int depth);
           void deleteNode();
+          void helpDeleteStep(const char c, float duration);
+          
+          void printBalance(int level);
+          //void findParent(TrieNodePrimary* node)
           bool isTmpPresent(TrieNodePrimary* tmp);
           void balance(int level);
           void checkBalance(int level);
           Vector2 calculatePosition(int level, int index);
+          
+          int calculateIndex(int level, const char word);
+          void UndoTrie();
+          void RedoTrie();
+          void updateHelper();
+          bool isValid (TrieNodePrimary* node,int level, char c);
+          void loadFromFile();
+          void clear();
            int calculateIndex(int level, const char word);
            int handle() override{return 0 ;}; 
 

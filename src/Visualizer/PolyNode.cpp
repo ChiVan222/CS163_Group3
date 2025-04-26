@@ -1,14 +1,26 @@
 #include "PolyNode.h"
 #include "Scene.h"
 #include <raymath.h>
+#include <iostream>
  PolyNode:: PolyNode(Vector2 pos,float radius): position(pos), radius(radius)
  {
      highlight = Null;
 }
 Color PolyNode::colorNode={243,80,0,255};
 void PolyNode::DrawNode(){
-        float outline_thickness = 6.0f;
-        DrawCircle(position.x, position.y, radius + outline_thickness, HightLight);
+        float outline_thickness = 4.0f;
+        if(highlight==Null){
+            DrawCircle(position.x, position.y, radius + outline_thickness, HightLight);
+
+        }
+        else if (highlight!=Null && Scene::isDarkMode){
+            DrawCircle(position.x, position.y, radius + outline_thickness, darkSpecialHightLight);
+
+        }
+        else if (highlight!=Null && Scene::isDarkMode==false){
+            DrawCircle(position.x, position.y, radius + outline_thickness, lightSpecialHighLight);
+
+        }
         DrawCircle(position.x, position.y, radius, colorNode);
 
     }

@@ -31,6 +31,7 @@
    };
 
    class Ani_TrieSearch : public Animations{
+    bool doneSearch;
     public:
     string key;
     Ani_TrieSearch();
@@ -38,7 +39,7 @@
     void play();
     void updateAnimations(float deltaTime);
     void setKey(const string word);
-
+    void setDone(bool Done);
   };
 
   class Ani_TrieUpdate : public Animations{
@@ -46,4 +47,5 @@
     Ani_TrieUpdate();
     void play();
     void updateAnimations(float deltaTime);
+    
    };

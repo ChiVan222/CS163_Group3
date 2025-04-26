@@ -98,14 +98,6 @@ Scenes SceneButton::getButtonScenes()
 {
     return bScenes; 
 }
-float Slider::red = 243.0f;
-float Slider::green = 80.0f;
-float Slider::blue = 0.0f;
-SettingButton::SettingButton(Vector2 pos, Vector2 rect1):Button() {
-    position = pos;
-    rect = rect1;
-
-}
 void Button::setPositionRect(Vector2 newPos, Vector2 newRect)
 {
     position = newPos;
@@ -115,13 +107,20 @@ void Button::setPositionText(Vector2 newPos, Texture2D newText) {
     position = newPos;
     texture = newText;
 }
-
-
+void Button::SetText(const char* newText){
+    title=newText;
+}
+float Slider::red = 243.0f;
+float Slider::green = 80.0f;
+float Slider::blue = 0.0f;
+SettingButton::SettingButton(Vector2 pos, Vector2 rect1):Button() {
+    position = pos;
+    rect = rect1;
+    entry= true;
+}
+Image settingImg = LoadImage("../assets/Images/icon_setting.png");
 void SettingButton::SettingDraw(){
-    std::cout<< "Draw setting"<<"\n";
-    Image img =  LoadImage("../assets/Images/icon_setting.png");
-    texture =  LoadTextureFromImage(img);
-    UnloadImage(img);
+    texture =  LoadTextureFromImage(settingImg);
     Rectangle btnBounds = {position.x, position.y, (float)texture.width, (float)texture.height};
     DrawTexture(texture, btnBounds.x, btnBounds.y, WHITE);
 }
