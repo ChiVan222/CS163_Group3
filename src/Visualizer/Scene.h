@@ -18,6 +18,7 @@
 #include <stack>
 #include "Info.h"
 #include "HeapAnimation.h"
+#include "CommonUI.h"
 #pragma once
 class Scene
 { 
@@ -55,16 +56,50 @@ class SceneManager
     SceneManager();
     ~SceneManager();
 };
+
+
+
 class NodeScene: public Scene{
     protected :
-    //  std::vector<PolyNode*> Node; 
-     std::string buffer; 
-     std::vector<InputField*> Inputs; 
-     std::vector<Button*>  buttons;  
+     std::vector<PolyNode*> Node; 
+    int type= 0  ;  
+    ProgressBar progressBar;
+
+ 
+
+    ButtonNew  createButton;
+    bool isCreateChosen;
+    ButtonNew randomButton;
+    ButtonNew loadFileButton;
+    bool isSearchChosen = false;
+
+    ButtonNew pushButton;
+    ButtonNew searchButton;
+
+    bool isPushChosen;
+    ButtonNew deleteButton;
+    bool isDeleteChosen;
+    InputStr inputNumber;
+    ButtonNew playButton;
+    std::string buffer; 
+    std::vector<InputField*> Inputs; 
+    std::vector<Button*>  buttons;  
+    float speed; 
     public :
+    static std::vector<string>  code;  
+    static std::vector<int> highlights_code;
+    static int stepindex;   
+    static int maxsteps;
+   static string info ;
+    public:
+    void updateStep(int index);
+    void createFromFile();
+    void drawButtons();
+    virtual int handle() = 0;
     void DrawCommonUI(); 
     NodeScene(); 
     virtual void CheckBuffer()=0; 
+    
 }; 
 class Welcome_Scene: public Scene
 {
@@ -150,6 +185,7 @@ class Singly_Scene:public NodeScene
         Singly_Scene();
         void Clear(); 
         void Draw();
+      
         static void addFunction(std::priority_queue<std::pair<int, std::function<void()>>, 
         std::vector<std::pair<int, std::function<void()>>>, 
        FunctionComparator>& q, int priority, std::function<void()> func);
@@ -159,7 +195,7 @@ class Singly_Scene:public NodeScene
        static void ClearHistory();
        void UI_executeFunctions();
        void executeBackwardFunction(); 
-
+      int handle() override; 
       static Singly_Scene_Info getInfo();
        static void loadInfo(Singly_Scene_Info&& info); 
       static void loadInfo(const Singly_Scene_Info& info); 
@@ -187,6 +223,7 @@ class Graph_Scene: public NodeScene
     void randomize(int nodes);
     void clear();
     void loadFromFile();
+    int handle() override{return 0 ; }; 
 
     static std::vector<GraphNode*> graphNodes;
     static std::vector<Edge*> Edges; 
@@ -248,6 +285,8 @@ class Graph_Scene: public NodeScene
           void checkBalance(int level);
           Vector2 calculatePosition(int level, int index);
            int calculateIndex(int level, const char word);
+           int handle() override{return 0 ;}; 
+
 };
 
 class Heap_Scene: public NodeScene
@@ -257,7 +296,8 @@ class Heap_Scene: public NodeScene
   TittleButton tittle = TittleButton({465, 34, 350, 40}, "Max Heap", -1, BLACK, 20);
 
   public:
-  
+  int handle() override{return 0 ;}; 
+
   void run(Scenes& mscene);
   void Draw();
   void CheckBuffer() override; 
