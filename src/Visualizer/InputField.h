@@ -24,4 +24,11 @@ class InputField
      void Draw(bool DrawButton); 
      InputField(Rectangle rec);
      InputField(float width, float height, Vector2 position, InputType type);
+     Vector2 getPosition() {
+        return {inputbox.x, inputbox.y}; 
+     }
+     void setPosition(Vector2 pos) {
+        inputbox.x = pos.x;
+        inputbox.y = pos.y;
+     }
 }; 

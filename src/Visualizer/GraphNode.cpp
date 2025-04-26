@@ -18,8 +18,8 @@ GraphNode::GraphNode(Vector2 position, float radius, int value) : PolyNode(posit
 }
 
 bool GraphNode::Draw() {
-    drawNodes();
     drawEdges();
+    drawNodes();
     return true;
 }
 

@@ -67,8 +67,9 @@ class NodeScene: public Scene{
     int type= 0  ;  
     ProgressBar progressBar;
 
- 
-
+    bool isGraph; 
+    ButtonNew clearButton;
+    
     ButtonNew  createButton;
     bool isCreateChosen;
     ButtonNew randomButton;
@@ -77,9 +78,14 @@ class NodeScene: public Scene{
 
     ButtonNew pushButton;
     ButtonNew searchButton;
+    ButtonNew dijkstrabutton; 
+    bool isdijkstraChosen; 
 
+    ButtonNew addedgeButton; 
+    bool isaddedgeChosen; 
     bool isPushChosen;
     ButtonNew deleteButton;
+  
     bool isDeleteChosen;
     InputStr inputNumber;
     ButtonNew playButton;
@@ -101,7 +107,7 @@ class NodeScene: public Scene{
     void DrawCommonUI(); 
     NodeScene(); 
     virtual void CheckBuffer()=0; 
-    
+    float mRadius;
 }; 
 class Welcome_Scene: public Scene
 {
@@ -225,7 +231,7 @@ class Graph_Scene: public NodeScene
     void randomize(int nodes);
     void clear();
     void loadFromFile();
-    int handle() override{return 0 ; }; 
+    int handle() override{return 0;}; 
 
     static std::vector<GraphNode*> graphNodes;
     static std::vector<Edge*> Edges; 

@@ -22,6 +22,9 @@ class Button
     void SetText(const char* newText);
     void setPositionRect(Vector2 newPos, Vector2 newRect);
     void setPositionText(Vector2 newPos, Texture2D newText);
+    void setPosition(Vector2 pos) {
+      position = pos;
+    }
   protected : 
     typedef enum HighLight{
       None, 

@@ -61,7 +61,7 @@ void Button::DrawButtonText_center()
     float textX = position.x + (rect.x - textWidth) / 2;
     float textY = position.y + (rect.y - textHeight) / 2;
 
-    DrawButtonText(Vector2({textX,textY}), 30);
+    DrawButtonText(Vector2({textX,textY}), (UI::fontsize+1)*10);
 }
 bool Button :: IsHovered(Vector2 mousePos)
 {

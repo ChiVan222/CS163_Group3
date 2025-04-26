@@ -6,7 +6,7 @@
 float UI::time = 0.0f;
 Vector2 UI::mousePos = {0, 0};
 Texture2D UI::background;
-float UI::fontsize = 0.0f;
+float UI::fontsize = 1.0f;
 Camera2D UI::camera = {0};
 float UI::wWidth = 1920;
 float UI::wHeight = 1080;
@@ -32,8 +32,7 @@ void UI::DrawFadingText(float time, int x, int y, int fontsize,const char* text)
 }
 UI::UI()
 {
-
-    fontsize = mFont.baseSize;
+    fontsize = mFont.baseSize + 1;
     camera.offset = {(float)wWidth / 2, (float)wHeight / 2};    
     camera.zoom  =1; 
     camera.target = { 0, 0 };
