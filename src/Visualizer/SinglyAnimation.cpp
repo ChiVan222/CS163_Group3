@@ -68,6 +68,38 @@ void Ani_LinkedListSearching::updateAnimations(float deltaTime) {
             }
             Singly_Scene::ani_state = animation_state::Pause;
             break;
+        case animation_state::FirstState:
+            currentStep =0 ; 
+            if (currentStep > 0) {
+                const auto& snap = history[currentStep];
+                Edge* edge= snap.edge;
+                SinglyNode* cur = snap.cur; 
+                if(cur) cur->SetNullHighLight();
+                if(edge)
+                {   
+                    edge->setColor(WHITE); 
+                }
+                Singly_Scene::cur  = snap.cur;
+                currentStep--;
+            }
+           Singly_Scene::ani_state = animation_state::Pause;
+           break; 
+        case animation_state::FinalState :
+            currentStep = history.size()-1; 
+            if (currentStep + 1 < history.size()) 
+            {
+                const auto& snap = history[currentStep];
+                Edge* edge= snap.edge;
+                SinglyNode* cur = snap.cur; 
+                if(cur) cur->SetNullHighLight();
+                if(edge)
+                {   
+                    edge->setColor(WHITE); 
+                }
+                currentStep++;
+            }
+            Singly_Scene::ani_state = animation_state::Pause;
+            break; 
 
         case animation_state::Continue:
             break;
@@ -129,16 +161,22 @@ void Ani_LinkedListSearching::updateAnimations(float deltaTime) {
     
                 if (++currentStep >= history.size()) {
                     isDone = true;
+                    Singly_Scene::stepindex = 0 ; 
+                    Singly_Scene::maxsteps = 0;
                     Singly_Scene::ani = None;
                     return;
                 }
             } else if( Singly_Scene::cur && Singly_Scene::cur->value == target)
             {
+                Singly_Scene::stepindex = 0 ; 
+                Singly_Scene::maxsteps = 0;
                 isDone = true;
                 Singly_Scene::ani=None;
             }
              if(Singly_Scene::cur == nullptr)
             {
+                Singly_Scene::stepindex = 0 ; 
+                Singly_Scene::maxsteps = 0;
                 isDone = true;
                 Singly_Scene::ani=None;
                 Singly_Scene::cur =Singly_Scene::Nodes.get_root();
@@ -152,7 +190,20 @@ void Ani_LinkedListSearching::prerun()
     SinglyNode* ncur =  Singly_Scene::Nodes.get_root();  
     Edge* edge = nullptr;
 
-    
+    Singly_Scene::code.clear();
+    Singly_Scene::code.push_back("Node* ncur = root;\n");
+    Singly_Scene::code.push_back("int index = 0;\n");
+    Singly_Scene::code.push_back("while (ncur != nullptr) {\n");
+Singly_Scene::code.push_back("    if (ncur->value == target) {\n");
+Singly_Scene::code.push_back("        std::cout << \"Found at position: \" << index << std::endl;\n");
+Singly_Scene::code.push_back("        return;\n");
+Singly_Scene::code.push_back("    }\n");
+Singly_Scene::code.push_back("    ncur = ncur->next;\n");
+Singly_Scene::code.push_back("    index++;\n");
+Singly_Scene::code.push_back("}\n");
+Singly_Scene::code.push_back("std::cout << \"Value not found.\" << std::endl;\n");
+
+   Singly_Scene::info = "Searching for" + std::to_string(target);
     while(ncur && ncur->value != target)
     {
         auto it = std::find_if(Singly_Scene::Edges.begin(), Singly_Scene::Edges.end(),
@@ -177,6 +228,8 @@ void Ani_LinkedListSearching::prerun()
         history.push_back({Singly_Scene::Nodes.get_root(),nullptr}); 
     }
     currentStep =0;
+    Singly_Scene::maxsteps = history.size()-1; 
+    Singly_Scene::stepindex = 0 ;     
     this->setDuration(0.5*history.size()); 
     isPrerunDone =true; 
 }
@@ -279,6 +332,17 @@ void Ani_LinkedListInsert::updateAnimations(float deltaTime)
             }
             Singly_Scene::ani_state = animation_state::Pause;
             break;
+        case animation_state::FirstState:
+            currentStep =0 ; 
+            loaded = false; 
+            Singly_Scene::ani_state = animation_state::Pause;
+            break; 
+
+        case animation_state::FinalState :
+            currentStep = history.size()-1; 
+            Singly_Scene::ani_state = animation_state::Pause;
+            loaded  =false; 
+            break; 
 
         case animation_state::Continue:
             break;
@@ -294,7 +358,7 @@ void Ani_LinkedListInsert::updateAnimations(float deltaTime)
         index = snapshot.index; 
         loaded = true; 
     }
-
+    Singly_Scene::stepindex = currentStep;  
     SinglyNode* ncur = Singly_Scene::Nodes.get_root(); 
     for(int i =0 ; i < index;i++)
     {
@@ -317,6 +381,8 @@ void Ani_LinkedListInsert::updateAnimations(float deltaTime)
                     Singly_Scene::addFunction(Singly_Scene::animation_queue,Singly_Scene::cur_animation.first-2, std::bind(&Ani_DrawEdge::updateTarget, &Singly_Scene::de,Singly_Scene::Edges.back()));
                 }
                 Singly_Scene::Nodes.Insert(insertnode,(duration/history.size())/5);  
+                Singly_Scene::stepindex = 0 ; 
+                Singly_Scene::maxsteps = 0;
                 // Singly_Scene::Nodes.InsertAfter(ncur,node_insert);
                 inserted = true; 
             }
@@ -329,6 +395,8 @@ void Ani_LinkedListInsert::updateAnimations(float deltaTime)
                 loaded = 0; 
                 isPrerunDone = 0 ;
                 Singly_Scene::cur = insertnode; 
+                Singly_Scene::stepindex = 0 ; 
+                Singly_Scene::maxsteps = 0;
                elapsed_time =0 ;
                 return; 
             }
@@ -340,7 +408,8 @@ void Ani_LinkedListInsert::updateAnimations(float deltaTime)
             index= 0 ; 
             inserted=0 ; 
             Singly_Scene::ani = None; 
-            
+            Singly_Scene::stepindex = 0 ; 
+            Singly_Scene::maxsteps = 0;
             loaded = 0; 
             isPrerunDone = 0 ;
             elapsed_time =0 ;
@@ -413,6 +482,30 @@ void Ani_LinkedListInsert::updateAnimations(float deltaTime)
 void Ani_LinkedListInsert::prerun()
 {
     history.clear();
+    Singly_Scene::code.clear();
+    Singly_Scene::code.push_back("Node* newNode = new Node(newValue);\n");
+    Singly_Scene::code.push_back("if (position == 0) {\n");
+    Singly_Scene::code.push_back("    newNode->next = root;\n");
+    Singly_Scene::code.push_back("    root = newNode;\n");
+    Singly_Scene::code.push_back("    return;\n");
+    Singly_Scene::code.push_back("}\n");
+    Singly_Scene::code.push_back("Node* ncur = root;\n");
+    Singly_Scene::code.push_back("for (int i = 0; i < position - 1 && ncur != nullptr; ++i) {\n");
+    Singly_Scene::code.push_back("    ncur = ncur->next;\n");
+    Singly_Scene::code.push_back("}\n");
+    Singly_Scene::code.push_back("if (ncur == nullptr) {\n");
+    Singly_Scene::code.push_back("    std::cout << \"Position out of bounds!\\n\";\n");
+    Singly_Scene::code.push_back("    delete newNode;\n");
+    Singly_Scene::code.push_back("    return;\n");
+    Singly_Scene::code.push_back("}\n");
+    Singly_Scene::code.push_back("newNode->next = ncur->next;\n");
+    Singly_Scene::code.push_back("ncur->next = newNode;\n");
+    
+    std::string a = "";
+
+    if(Singly_Scene::cur)a = "after" +std::to_string(Singly_Scene::cur->getValue());
+    Singly_Scene::info = "Inserting" + std::to_string(target) + a;
+
     SinglyNode* ncur = Singly_Scene::Nodes.get_root();
     Edge* edge= nullptr; 
     int nindex= -1 ; 
@@ -435,7 +528,8 @@ void Ani_LinkedListInsert::prerun()
     history.push_back({++nindex,Singly_Scene::getInfo()});
     isPrerunDone = true;  
     currentStep = 0 ; 
-    std::cout<<"Preruned"<<"\n";
+    Singly_Scene::maxsteps = history.size()-1; 
+    Singly_Scene::stepindex = 0 ;     
     Singly_Scene::loadInfo(history[0].info);
     Singly_Scene::ani_state = Pause; 
     duration = 0.5*history.size(); 
@@ -563,7 +657,16 @@ void Ani_LinkedListDelete::updateAnimations(float deltaTime)
             }
             Singly_Scene::ani_state = animation_state::Pause;
             break;
-
+        case animation_state::FirstState:
+            currentStep =0 ; 
+            Singly_Scene::ani_state = animation_state::Pause;
+            loaded = false; 
+            break;
+        case animation_state::FinalState :
+        Singly_Scene::ani_state = animation_state::Pause;
+            currentStep = history.size()-1; 
+            loaded  =false; 
+            break;
         case animation_state::Continue:
             break;
         default:
@@ -572,6 +675,7 @@ void Ani_LinkedListDelete::updateAnimations(float deltaTime)
  
 
     if (Singly_Scene::ani_state != animation_state::Pause) elapsed_time += deltaTime;
+    Singly_Scene::stepindex = currentStep;  
 
     if(!loaded)
     {
@@ -669,6 +773,8 @@ void Ani_LinkedListDelete::updateAnimations(float deltaTime)
             loaded = false; 
             delete tmp;
             elapsed_time = 0 ; 
+            Singly_Scene::stepindex = 0 ; 
+            Singly_Scene::maxsteps = 0;
             return; 
           }
         }
@@ -691,6 +797,8 @@ void Ani_LinkedListDelete::updateAnimations(float deltaTime)
                     isPrerunDone = 0; 
                     loaded = 0 ; 
                     elapsed_time = 0; 
+                    Singly_Scene::stepindex = 0 ; 
+                    Singly_Scene::maxsteps = 0;
             }
         }
     }else{
@@ -699,6 +807,8 @@ void Ani_LinkedListDelete::updateAnimations(float deltaTime)
             Singly_Scene::ani=None;
             isPrerunDone = 0; 
             elapsed_time = 0;
+            Singly_Scene::stepindex = 0 ; 
+            Singly_Scene::maxsteps = 0;
         }
     }
    
@@ -707,9 +817,20 @@ void Ani_LinkedListDelete::updateAnimations(float deltaTime)
 void Ani_LinkedListDelete::prerun()
 {
     history.clear();
+    Singly_Scene::code.clear();
     Singly_Scene::code.push_back(
-        "if(root == nullptr) return false; \n"
-    ); 
+        "if(root == nullptr) return false; \n"        
+    );
+    Singly_Scene::code.push_back( "if(root->value == target)\n { Node* tmp = root; \n root = tmp->next; \n; delete tmp;\n return }"
+    );
+
+    Singly_Scene::code.push_back(
+        "Node*ncur = root \n while(ncur&& ncur->next && ncur->next->value != target)\n { ncur = ncur->next; }"
+    ) ;
+    Singly_Scene::code.push_back(
+        "if (ncur->next) {\n Node* tmp = ncur->next;\n ncur->next = tmp->next;\n delete tmp;\n }"
+    ) ;
+    Singly_Scene::info = "Deleting " + std::to_string(target); 
     if(Singly_Scene::Nodes.get_root()->value == target) 
     {
         history.push_back({0, Singly_Scene::getInfo()}); 
@@ -743,13 +864,13 @@ void Ani_LinkedListDelete::prerun()
         currentStep = 0 ; 
         elapsed_time = 0;  
         Singly_Scene::loadInfo(history[0].info);
+        Singly_Scene::maxsteps = history.size()-1;
+        Singly_Scene::stepindex = 0 ;
         Singly_Scene::ani_state = Pause; 
         return; 
     }
     
-    Singly_Scene::code.push_back(
-        "while(ncur&& ncur->next && ncur->next->value != target)\n { ncur = ncur->next; }"
-        ); 
+  
     
     SinglyNode* ncur = Singly_Scene::Nodes.get_root();
     Edge* edge= nullptr; 
@@ -761,9 +882,7 @@ void Ani_LinkedListDelete::prerun()
         history.push_back({++nindex,Singly_Scene::getInfo()});
         ncur = ncur->next; 
     }
-    Singly_Scene::code.push_back(
-    "while(ncur&& ncur->next && ncur->next->value != target)\n { ncur = ncur->next; }"
-    ); 
+
 
     history.push_back({++nindex,Singly_Scene::getInfo()});
     SinglyNode* tmp = ncur->next; 

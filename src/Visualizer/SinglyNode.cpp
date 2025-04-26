@@ -32,10 +32,9 @@ bool SinglyNode::Draw()
     DrawCircleGradient(position.x, position.y,radius, circle_primaryColor, defaule_sec);
     // DrawCircle(position.x, position.y,radius, circle_primaryColor); 
     DrawCircleLines(position.x, position.y,radius, WHITE);
-    int textSize = radius / 2;
     const char* text = input.c_str();
-    int textWidth = MeasureText(text, textSize);
-    int textHeight = textSize;
+    int textWidth = MeasureText(text, radius);
+    int textHeight = radius;
     int textX = position.x - textWidth / 2;
     int textY = position.y - textHeight / 2;
     DrawText(text,textX, textY, radius, WHITE);
@@ -192,6 +191,33 @@ void SinglyLinkedListNode::InsertAtEnd(SinglyNode* node,float maxDistance)
     Singly_Scene::Edges.push_back(new Edge(cur2,node)); 
     Singly_Scene::addFunction(Singly_Scene::animation_queue,Singly_Scene::cur_animation.first-1, std::bind(&Ani_DrawEdge::updateTarget, &Singly_Scene::de,Singly_Scene::Edges.back())); 
 
+}
+
+void SinglyLinkedListNode::InsertAtEnd2(SinglyNode* node,float maxDistance)
+{ 
+    if(!root) 
+    {
+        root = node; 
+        size++;
+        return ; 
+    }
+    SinglyNode* cur2 = root; 
+    size++;  
+    Vector2 direction = {1,0};
+
+    while(cur2->next)
+    {
+        float distance = getDistance(cur2->next->getPosition(),cur2->getPosition());
+        direction.x = (cur2->next->getPosition().x-cur2->getPosition().x)/distance;
+        direction.y =  (cur2->next->getPosition().y-cur2->getPosition().y)/distance;
+        cur2 = cur2->next; 
+    }
+    cur2->next = node;
+    node->SetPosition(Vector2({ cur2->getPosition().x + direction.x * maxDistance,
+        cur2->getPosition().y + direction.y * maxDistance }));
+
+    Singly_Scene::Edges.push_back(new Edge(cur2,node)); 
+    Singly_Scene::Edges.back()->isDraw = true; 
 }
 void SinglyLinkedListNode::Traverse()
 {

@@ -54,6 +54,6 @@ class SinglyNode: public PolyNode
         void TraverseCheck();
         void DeleteAtEnd();   
         void UpdateHightLight(); 
-
+        void InsertAtEnd2(SinglyNode* node,float maxDistance);
   }; 
 

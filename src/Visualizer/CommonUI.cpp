@@ -102,6 +102,10 @@ void InputStr::resetText() {
     srand((int)time(0));
     this->changePlaceHolder(TextFormat("%d", rand() % 100));
 }
+void InputStr::reset() {
+  text =""; 
+    changePlaceHolder("");
+}
 
 void InputStr::update() {
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
@@ -183,6 +187,10 @@ void ProgressBar::updateMaxStep(int max) {
     this->curStep = 0;
 }
 
+void ProgressBar::setStep(int s)
+{
+    this->curStep = s; 
+}
 void ProgressBar::updateSpeed(float speed) {
     this->speed = speed;
 }
@@ -298,6 +306,5 @@ void drawSideBar(int type, std::string code, std::vector<int> lines, std::string
     drawInfor(infor, font);
     bar.draw(type);
 }
-
 
 

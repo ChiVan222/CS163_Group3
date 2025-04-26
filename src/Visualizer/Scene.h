@@ -65,7 +65,6 @@ class NodeScene: public Scene{
     protected :
      std::vector<PolyNode*> Node; 
     int type= 0  ;  
-    ProgressBar progressBar;
 
     bool isGraph; 
     ButtonNew clearButton;
@@ -100,6 +99,7 @@ class NodeScene: public Scene{
     static int maxsteps;
    static string info ;
     public:
+    ProgressBar progressBar;
     void updateStep(int index);
     void createFromFile();
     void drawButtons();
@@ -157,6 +157,8 @@ struct FunctionComparator {
 class Singly_Scene:public NodeScene
 {
     public :
+    TittleButton title = TittleButton({465, 34, 350, 40}, "Singly Linked List", -1, BLACK, 20);
+
    static std::priority_queue<std::pair<int, std::function<void()>>, 
      std::vector<std::pair<int, std::function<void()>>>, 
     FunctionComparator> animation_queue;
@@ -193,7 +195,7 @@ class Singly_Scene:public NodeScene
         Singly_Scene();
         void Clear(); 
         void Draw();
-      
+          void LoadFromFile();
         static void addFunction(std::priority_queue<std::pair<int, std::function<void()>>, 
         std::vector<std::pair<int, std::function<void()>>>, 
        FunctionComparator>& q, int priority, std::function<void()> func);
@@ -313,7 +315,6 @@ class Graph_Scene: public NodeScene
           bool isValid (TrieNodePrimary* node,int level, char c);
           void loadFromFile();
           void clear();
-          int Trie_Scene::calculateIndex(int level, const char word);
            int handle() override{return 0 ;}; 
 
 };

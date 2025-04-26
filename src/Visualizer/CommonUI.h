@@ -66,6 +66,7 @@ class InputStr {
         void update();
         void draw();
         void resetText();
+        void reset();
         std::string getText();
         void changePlaceHolder(const std::string newPlaceHolder);
 };
@@ -103,7 +104,8 @@ class ProgressBar {
         float getSpeed() {return this->speed;}
         int getStep() {return this->curStep;}
         int getMaxStep() {return this->maxStep;}
-        
+        void setStep(int s);
+
         int handle();
 };
 

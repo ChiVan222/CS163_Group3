@@ -481,7 +481,7 @@ void Singly_Scene::run(Scenes& mscene)
     ClearBackground(BLACK);
     Rectangle src = { 0, 0, (float)UI::background.width, (float)UI::background.height};
     Rectangle dest = { 0, 0, (float)GetScreenWidth(), (float)GetScreenHeight()};
-    DrawTexturePro(UI::background, src, dest, Vector2({0, 0}), 0.0f, WHITE);
+    Drawbackground();
 
     float deltaTime = IsWindowFocused() ? GetFrameTime() : 0;
     CheckBuffer();
@@ -507,7 +507,7 @@ void Singly_Scene::run(Scenes& mscene)
     mn.updateAnimations(deltaTime);
     st.updateAnimations(deltaTime);
     insert_2.updateAnimations(deltaTime);
-
+    
     if(ani == None)
     {
         while(!pending_animation.empty())
@@ -543,22 +543,27 @@ void Singly_Scene::run(Scenes& mscene)
         UI::updateCamera();
     }
     UI::mousePos = GetMousePosition();
-    DrawText("Singly Linked List", 200, 200, 40, WHITE);
+    
     DrawText(std::to_string(deltaTime).c_str(), 500, 10, 20, WHITE);
     DrawCommonUI();
     handle();
+    progressBar.setStep(stepindex);
+    std::cout<<stepindex<<" "<<progressBar.getStep()<<"\n";
+    // for(int i =0 ; i<buttons.size();i++)
+    // {
+    //    buttons[i]->Draw();
+    //    buttons[i]->DrawButtonText_center();
+    //    if(buttons[i]->IsHovered(UI::mousePos) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+    //    {
+    //      buttons[i]->OnClick();
+    //    }
 
-    for(int i =0 ; i<buttons.size();i++)
-    {
-       buttons[i]->Draw();
-       buttons[i]->DrawButtonText_center();
-       if(buttons[i]->IsHovered(UI::mousePos) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
-       {
-         buttons[i]->OnClick();
-       }
-
-    }
-    firstEntry = false;
+    // }
+    title.draw(); 
+    if (title.handle() == 1) {
+        mscene = Menu;
+        return;
+    }    firstEntry = false;
 }
 SceneManager::SceneManager()
 {
@@ -600,8 +605,6 @@ Setting_Scene::Setting_Scene() {
     spinners.push_back(Spinner(theme, {120, dis+280.0f}, {(6*w/20),(h/20)}, mytheme[0], 0));
     controls.push_back(ControlButton({120-(h/20), dis+280.0f}, {h/20,h/20}, 0));
     controls.push_back(ControlButton({120+ (6*w/20), dis+280.0f}, {h/20,h/20}, 1));
-    block = CodeBlock({UI::wWidth/2 + 100.0f, dis}, {300, 400});
-
 }
 void Heap_Scene::CheckBuffer()
 {
@@ -623,7 +626,6 @@ void Setting_Scene::run(Scenes& mscene) {
     });
     if (IsKeyDown(KEY_DOWN)) block.Scroll(5);
     if (IsKeyDown(KEY_UP)) block.Scroll(-5);
-    block.Draw();
     for(int i = 0; i <sliders.size();  i++)
     {
         sliders[i]->SliderDraw();
@@ -781,16 +783,16 @@ SceneManager::~SceneManager() {
 }
 void NodeScene::DrawCommonUI()
 {
-    for(int i =0 ; i< Inputs.size();i++)
-    {
-        Inputs[i]->HandleInput(buffer,UI::mousePos);
-        Inputs[i]->Draw(true);
-        Inputs[i]->Send(buffer);
-    }
-    for(int i = 0; i<buttons.size(); i++)
-    {
-        buttons[i]->Draw();
-    }
+    // for(int i =0 ; i< Inputs.size();i++)
+    // {
+    //     Inputs[i]->HandleInput(buffer,UI::mousePos);
+    //     Inputs[i]->Draw(true);
+    //     Inputs[i]->Send(buffer);
+    // }
+    // for(int i = 0; i<buttons.size(); i++)
+    // {
+    //     buttons[i]->Draw();
+    // }
     std::string codes; 
     for(int i = 0 ; i   < code.size();i++)
     { 
@@ -2357,10 +2359,7 @@ void Heap_Scene::run(Scenes& mscene)
 
 
 void NodeScene::updateStep(int index) {
-    
     this->stepindex = index; 
-
-    
 }
 
 
@@ -2465,7 +2464,8 @@ int Singly_Scene::handle() {
             if(input!="")
            {  
              buffer += formatInput2("0",' ' +input + ' '); 
-            input =""; 
+                input ="";
+                this->inputNumber.reset();
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(200));
             ani_state = Continue; 
@@ -2481,6 +2481,8 @@ int Singly_Scene::handle() {
              buffer += formatInput2("1",' ' +input + ' '); 
             input =""; 
             }
+            this->inputNumber.reset();
+
             ani_state = Continue; 
             std::this_thread::sleep_for(std::chrono::milliseconds(200));
             return 3;
@@ -2493,13 +2495,16 @@ int Singly_Scene::handle() {
            {  
              buffer += formatInput2("3",' ' +input + ' '); 
             input =""; 
+            this->inputNumber.reset();
             }
+
             std::this_thread::sleep_for(std::chrono::milliseconds(200));
             ani_state = Continue; 
             return 4; 
         }
     }
-
+    
+    Singly_Scene::progressBar.updateMaxStep(maxsteps); 
 
     if (this->randomButton.handle()) {
         ClearHistory();
@@ -2518,20 +2523,23 @@ int Singly_Scene::handle() {
         return 1;
     }
     if (this->loadFileButton.handle()) {
-        // createFromFile();
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        LoadFromFile(); 
         return 5;
     }
-
+    if(this->clearButton.handle())
+    {
+        Clear();
+        return 6; 
+    }
     int flag = this->progressBar.handle();
-
+    if(flag != 10)std::cout<<flag<<"\n";
     switch (flag)
     {
         case -2:
             if (maxsteps == 0) break;
             ani_state = FirstState; 
             stepindex = 0; 
-            
+
             break;
 
         case -1:
@@ -2549,6 +2557,7 @@ int Singly_Scene::handle() {
         case 2:
             if (maxsteps == 0) return 0;
             ani_state = FinalState; 
+            std::cout<<static_cast<int>(FinalState)<<"\n"; 
             stepindex = maxsteps; 
             this->type = 2;
             break;
@@ -2584,4 +2593,39 @@ int Singly_Scene::handle() {
     }
 
     return 0;
+}
+void Singly_Scene::LoadFromFile() {
+    const char* filter[] = {"*.txt"};
+    const char* filePath = tinyfd_openFileDialog(
+        "Select a text file", // Title
+        "", // Default path (empty = open from last used folder)
+        1, // Number of filter patterns
+        filter, // Filter patterns
+        "Text file (*.txt)", // Filter description
+        0 // Single file seclection mode
+    );
+    
+    if (filePath) {
+        std::cout << "Trying to open file " << filePath << "\n";
+        std::ifstream fin(filePath);
+        if (fin.is_open()) {
+            Clear(); 
+            int value = 0; 
+            while(fin>>value)
+            {
+                    std::cout << value << "\n";
+                    SinglyNode* insertNode =  new SinglyNode({300,300},Node_radius,value); 
+                    if(!Nodes.get_root())
+                    {
+                            Nodes.set_root(insertNode);
+                            cur  = insertNode; 
+                    }else{
+                            Nodes.InsertAtEnd2(insertNode, 2*Node_radius +50) ;
+                    }
+                    
+            }
+        }
+        else std::cerr << "Error: Can not open file\n";
+        fin.close();
+    }
 }
