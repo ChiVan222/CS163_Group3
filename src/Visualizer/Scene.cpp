@@ -68,10 +68,23 @@ void Welcome_Scene::run(Scenes& mscene)
     float scaleX = GetScreenWidth() / sceneWidth;
     float scaleY = GetScreenHeight() / sceneHeight;
     ClearBackground(DARKBLUE);
-    Rectangle src = { 0, 0, (float)UI::background.width, (float)UI::background.height};
-    Rectangle dest = { 0, 0, (float)GetScreenWidth(), (float)GetScreenHeight()};
+    
+    Rectangle src = { 0, 0, (float)UI::background.width, (float)UI::background.height };
+    Rectangle dest = { 0, 0, (float)GetScreenWidth(), (float)GetScreenHeight() };
     DrawTexturePro(UI::background, src, dest, Vector2({0, 0}), 0.0f, WHITE);
-    DrawText("DATA STRUCTURE VISUALIZATION", text1Pos.x*scaleX, text1Pos.y*scaleY, fontSize*scaleY*4/3, WHITE);
+    
+    float baseX = text1Pos.x * scaleX;
+    float baseY = text1Pos.y * scaleY;
+    float lineSpacing = fontSize * scaleY * 1.5f;  
+
+    DrawText("DATA STRUCTURE VISUALIZATION", baseX, baseY, fontSize * scaleY * 4 / 3, WHITE);
+    DrawText("Group 3", baseX, baseY + lineSpacing, fontSize * scaleY, WHITE);
+    DrawText("24125049 - Vong Chi Van", baseX, baseY + 2 * lineSpacing, fontSize * scaleY, WHITE);
+    DrawText("24125046 - Pham Van Trang", baseX, baseY + 3 * lineSpacing, fontSize * scaleY, WHITE);
+    DrawText("24125040 - Pham Nguyen Minh Quan", baseX, baseY + 4 * lineSpacing, fontSize * scaleY, WHITE);
+    DrawText("23125056 - Vo Tran Hien", baseX, baseY + 5 * lineSpacing, fontSize * scaleY, WHITE);
+
+    
     UI::DrawFadingText(UI::time, text2Pos.x*scaleX, text2Pos.y*scaleY, fontSize*scaleY, "Press any keys to continue");
     if(GetKeyPressed()!=0)
     {
@@ -798,6 +811,7 @@ void NodeScene::DrawCommonUI()
     { 
         codes += code[i]; 
     }
+    
     drawSideBar(this->type, codes , this->highlights_code, this->info, this->progressBar,UI::getFont());
     drawButtons();
 }
@@ -1458,7 +1472,7 @@ Trie_Scene::Trie_Scene(): NodeScene() {
      };
      buttons.push_back(new Button("",Vector2({UI::wWidth -200,UI::wHeight-650}),Vector2({100,100}),"Redo"));
     buttons.push_back(new Button("",Vector2({UI::wWidth -200,UI::wHeight-540}),Vector2({100,100}),"Undo"));
-    buttons.push_back(new Button("",Vector2({100,UI::wHeight-430}),Vector2({100,100}),"Load File"));
+    buttons.push_back(new Button("",Vector2({0,UI::wHeight-430}),Vector2({100,100}),"Load File"));
 
      buttons[3]->OnClick = [this]() {
         if (ani_state==Forward) {
@@ -1478,7 +1492,7 @@ Trie_Scene::Trie_Scene(): NodeScene() {
      buttons[6]->OnClick = [this]() {
         loadFromFile();
     };
-    buttons.push_back (new Button("",Vector2({0,UI::wHeight-390}),Vector2({100,100}),"Clear"));
+    buttons.push_back (new Button("",Vector2({0,UI::wHeight-540}),Vector2({100,100}),"Clear"));
     buttons[7]->OnClick = [this]() {
         clear();
     };
@@ -1530,7 +1544,6 @@ void Trie_Scene::run(Scenes& mscene) {
 
     // UI phía ngoài camera (nền, tiêu đề, menu)
     Drawbackground();
-    DrawCommonUI();
     //
     //printBalance(proot->getPosition().y);
 
@@ -1592,6 +1605,13 @@ void Trie_Scene::run(Scenes& mscene) {
     EndMode2D();
     UI::updateCamera();
     // Cập nhật lại UI::mousePos thành vị trí thật để dùng cho các UI khác
+       for(int i =0 ; i< Inputs.size();i++)
+    {
+        Inputs[i]->HandleInput(buffer,UI::mousePos);
+        Inputs[i]->Draw(true);
+        Inputs[i]->Send(buffer);
+    }
+ 
     UI::mousePos = GetMousePosition();
 }
 
@@ -2343,6 +2363,7 @@ void Heap_Scene::run(Scenes& mscene)
  */
 
     ClearBackground(THEME.BACKGROUND);
+    Drawbackground();
     maxHeap.draw();
     tittle.draw();
     maxHeap.handle();

@@ -4,9 +4,6 @@ using namespace std;
 
 #include "../../Visualizer/GraphNode.h"
 
-/*
- * Dijkstra Algorithm is directed
- */
 
  class Dijkstra {
     private:

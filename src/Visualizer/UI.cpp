@@ -67,7 +67,6 @@ void UI::run()
     initResource();
     UI::background = LoadTexture("../assets/Images/background.png");
     SetTargetFPS(mFPS);
-    SetWindowState(FLAG_BORDERLESS_WINDOWED_MODE);
     scene_manager = new SceneManager();
     while (!WindowShouldClose())
     {

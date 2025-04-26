@@ -12,6 +12,7 @@ Dijkstra::Dijkstra(int nodes, int start) : nodes(nodes), start(start), isRun(fal
 
 void Dijkstra::addEdge(int from, int to, int weight) {
     adj[from].emplace_back(to, weight);
+    adj[to].emplace_back(from, weight);
 }
 
 void Dijkstra::run() {  

@@ -194,14 +194,14 @@ void Ani_LinkedListSearching::prerun()
     Singly_Scene::code.push_back("Node* ncur = root;\n");
     Singly_Scene::code.push_back("int index = 0;\n");
     Singly_Scene::code.push_back("while (ncur != nullptr) {\n");
-Singly_Scene::code.push_back("    if (ncur->value == target) {\n");
-Singly_Scene::code.push_back("        std::cout << \"Found at position: \" << index << std::endl;\n");
-Singly_Scene::code.push_back("        return;\n");
-Singly_Scene::code.push_back("    }\n");
-Singly_Scene::code.push_back("    ncur = ncur->next;\n");
-Singly_Scene::code.push_back("    index++;\n");
-Singly_Scene::code.push_back("}\n");
-Singly_Scene::code.push_back("std::cout << \"Value not found.\" << std::endl;\n");
+    Singly_Scene::code.push_back("    if (ncur->value == target) {\n");
+    Singly_Scene::code.push_back("        std::cout << \"Found at position: \" << index << std::endl;\n");
+    Singly_Scene::code.push_back("        return;\n");  
+    Singly_Scene::code.push_back("    }\n");
+    Singly_Scene::code.push_back("    ncur = ncur->next;\n");
+    Singly_Scene::code.push_back("    index++;\n");
+    Singly_Scene::code.push_back("}\n");
+    Singly_Scene::code.push_back("std::cout << \"Value not found.\" << std::endl;\n");
 
    Singly_Scene::info = "Searching for" + std::to_string(target);
     while(ncur && ncur->value != target)
