@@ -1420,7 +1420,7 @@ void Graph_Scene::executeFunctions(std::priority_queue<std::pair<int, std::funct
 }
 
 Ani_TrieInsert Trie_Scene::i;
-TrieNodePrimary* Trie_Scene::proot = new TrieNodePrimary(Vector2{0, -300}, 30, '*');
+TrieNodePrimary* Trie_Scene::proot = new TrieNodePrimary(Vector2{640, 100}, 30, '*');
 animation Trie_Scene::ani = None;
 animation_state Trie_Scene::state = Pause;
 animation_state Trie_Scene::ani_state = Pause;
@@ -1472,7 +1472,7 @@ Trie_Scene::Trie_Scene(): NodeScene() {
      };
      buttons.push_back(new Button("",Vector2({UI::wWidth -200,UI::wHeight-650}),Vector2({100,100}),"Redo"));
     buttons.push_back(new Button("",Vector2({UI::wWidth -200,UI::wHeight-540}),Vector2({100,100}),"Undo"));
-    buttons.push_back(new Button("",Vector2({0,UI::wHeight-430}),Vector2({100,100}),"Load File"));
+    buttons.push_back(new Button("",Vector2({100,UI::wHeight-430}),Vector2({100,100}),"Load File"));
 
      buttons[3]->OnClick = [this]() {
         if (ani_state==Forward) {
@@ -1788,7 +1788,7 @@ void Trie_Scene::Insert(const char& word, float duration){
     TrieNodePrimary* tmp = cur;
 
     if (cur->children.find(word) == cur->children.end()) {
-        TrieNodePrimary* newNode = new TrieNodePrimary(Vector2({curPos.x-300, curPos.y-200}), 30, word);
+        TrieNodePrimary* newNode = new TrieNodePrimary(Vector2({100, 100}), 30, word);
         index = calculateIndex(level, word);
         levelMap[level].insert(levelMap[level].begin()+index, newNode);
         std::cout << newNode->key << "\n";
