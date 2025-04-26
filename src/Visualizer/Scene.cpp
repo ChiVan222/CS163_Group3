@@ -793,7 +793,7 @@ void NodeScene::DrawCommonUI()
         codes += code[i]; 
     }
     drawSideBar(this->type, codes , this->highlights_code, this->info, this->progressBar,UI::getFont());
-    drawButtons();
+    if (!isgraph) drawButtons();
 }
 NodeScene::NodeScene()
 {
@@ -819,8 +819,38 @@ NodeScene::NodeScene()
     this->inputNumber = InputStr(156.5, 449.3, 110, 30, "", 20, UI::getFont());        
     this->playButton = ButtonNew({173, 492, 70, 30}, "Play", -1, BLACK, 20, UI::getFont());                          
     this->searchButton = ButtonNew({8, 520, 110, 30}, "Search", -1, BLACK, 20, UI::getFont());
-
 }
+
+std::string formatInput2(const std::string& type, const std::string& input) {
+    std::stringstream ss(input);
+    std::vector<std::string> words;
+    std::string word, result;
+
+    while (ss >> word) {
+        words.push_back(type + " " + word);
+    }
+    for (const std::string& w : words) {
+        result += w + " ";
+    }
+
+    return result;
+}
+
+std::string  formatInputAddEdge2(const std::string& type, const std::string& input) {
+    std::stringstream ss(input);
+    std::vector<std::string> words;
+    std::string from, to, weight, result;
+
+    while (ss >> from && ss>>to && ss>>weight) {
+        words.push_back(type + " " + from+" "+to+" "+weight);
+    }
+    for (const std::string& w : words) {
+        result += w + " ";
+    }
+
+    return result;
+}
+
 void Singly_Scene::ClearHistory()
 {
     while(!ani_his.empty())
@@ -912,8 +942,15 @@ animation Graph_Scene:: ani = None;
 animation_state Graph_Scene:: ani_state = animation_state::Continue;
 float MIN_DISTANCE = 100.0f;
 
-Graph_Scene::Graph_Scene() : NodeScene(), created(false), ani_insert(0.01, 0, 20, {0,0}), 
+Graph_Scene::Graph_Scene() : created(false), ani_insert(0.01, 0, 20, {0,0}), 
 ani_search(1.0, 0), ani_remove(1.0), ani_dijkstra(2.0, 0),isDragging(false), draggedNode(nullptr){
+    Inputs.push_back(new InputField(100*GetScreenWidth()/UI::wWidth,100*GetScreenHeight()/UI::wHeight,Vector2({0,(UI::wHeight-100)*GetScreenHeight()/UI::wHeight}),InputType::Insert));
+    Inputs.push_back(new InputField(100*GetScreenWidth()/UI::wWidth,100*GetScreenHeight()/UI::wHeight,Vector2({0,(UI::wHeight-210)*GetScreenHeight()/UI::wHeight}),InputType::Remove));
+    Inputs.push_back(new InputField(100*GetScreenWidth()/UI::wWidth,100*GetScreenHeight()/UI::wHeight,Vector2({0,(UI::wHeight-320)*GetScreenHeight()/UI::wHeight}),InputType::Search));
+    buttons.push_back(new Button("",Vector2({0,(UI::wHeight-430)*GetScreenHeight()/UI::wHeight}),Vector2({100*GetScreenWidth()/UI::wWidth,100*GetScreenHeight()/UI::wHeight}),"Randomize"));
+    buttons.push_back(new Button("",Vector2({(UI::wWidth -200)*GetScreenWidth()/UI::wWidth,(UI::wHeight-430)*GetScreenHeight()/UI::wHeight}),Vector2({100*GetScreenWidth()/UI::wWidth,100*GetScreenHeight()/UI::wHeight}),"Backward")); 
+    buttons.push_back(new Button("",Vector2({(UI::wWidth -200)*GetScreenWidth()/UI::wWidth,(UI::wHeight-320)*GetScreenHeight()/UI::wHeight}),Vector2({100*GetScreenWidth()/UI::wWidth,100*GetScreenHeight()/UI::wHeight}),"Pause")); 
+    buttons.push_back(new Button("",Vector2({(UI::wWidth -200)*GetScreenWidth()/UI::wWidth,(UI::wHeight-210)*GetScreenHeight()/UI::wHeight}),Vector2({100*GetScreenWidth()/UI::wWidth,100*GetScreenHeight()/UI::wHeight}),"Forward"));
     Inputs.push_back(new InputField(100.0f,100.0f,Vector2({210,UI::wHeight-100}),InputType::AddEdge));
     Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-540}),InputType::Randomize));
     Inputs.push_back(new InputField(100.0f,100.0f,Vector2({0,UI::wHeight-650}),InputType::DijkstraRun));
@@ -1883,38 +1920,6 @@ void NodeScene::drawButtons() {
     }
 }
 
-
-
-
-std::string formatInput2(const std::string& type, const std::string& input) {
-    std::stringstream ss(input);
-    std::vector<std::string> words;
-    std::string word, result;
-
-    while (ss >> word) {
-        words.push_back(type + " " + word);
-    }
-    for (const std::string& w : words) {
-        result += w + " ";
-    }
-
-    return result;
-}
-
-std::string  formatInputAddEdge2(const std::string& type, const std::string& input) {
-    std::stringstream ss(input);
-    std::vector<std::string> words;
-    std::string from, to, weight, result;
-
-    while (ss >> from && ss>>to && ss>>weight) {
-        words.push_back(type + " " + from+" "+to+" "+weight);
-    }
-    for (const std::string& w : words) {
-        result += w + " ";
-    }
-
-    return result;
-}
 
 int Singly_Scene::handle() {
     this->type = (ani_state ==Pause) ?  0 : 1;  

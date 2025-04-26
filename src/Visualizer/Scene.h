@@ -65,8 +65,6 @@ class NodeScene: public Scene{
     int type= 0  ;  
     ProgressBar progressBar;
 
- 
-
     ButtonNew  createButton;
     bool isCreateChosen;
     ButtonNew randomButton;
@@ -223,7 +221,7 @@ class Graph_Scene: public NodeScene
     void randomize(int nodes);
     void clear();
     void loadFromFile();
-    int handle() override{return 0 ; }; 
+    int handle() override{return 0;}; 
 
     static std::vector<GraphNode*> graphNodes;
     static std::vector<Edge*> Edges; 
