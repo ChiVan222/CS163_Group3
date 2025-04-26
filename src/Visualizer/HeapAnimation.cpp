@@ -175,6 +175,8 @@ void MaxHeapVisualize::drawButtons() {
 }
 
 void MaxHeapVisualize::draw() {
+    ClearBackground(DARKGRAY);
+
     drawSideBar(this->type, this->animation.code, this->animation.lines, this->animation.infor, this->progressBar, this->font);
     drawButtons();
     Max_Heap::drawHeap(this->animation, this->font);

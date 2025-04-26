@@ -184,13 +184,14 @@ void Ani_LinkedListSearching::updateTarget(int x)
 {
   target = x; 
   Singly_Scene::ani  =Searching;
-  if(!Singly_Scene::cur)
+  if(!Singly_Scene::Nodes.get_root())
   {
+
     Singly_Scene::ani = None;
     return; 
   }
   Singly_Scene::cur->SetNullHighLight();
-  if(Singly_Scene::ani_state==Forward) Singly_Scene::cur = Singly_Scene::Nodes.get_root();
+  Singly_Scene::cur = Singly_Scene::Nodes.get_root();
   play();
 }
 
@@ -434,6 +435,7 @@ void Ani_LinkedListInsert::prerun()
     history.push_back({++nindex,Singly_Scene::getInfo()});
     isPrerunDone = true;  
     currentStep = 0 ; 
+    std::cout<<"Preruned"<<"\n";
     Singly_Scene::loadInfo(history[0].info);
     Singly_Scene::ani_state = Pause; 
     duration = 0.5*history.size(); 
@@ -540,6 +542,7 @@ void Ani_LinkedListDelete::play() {
 void Ani_LinkedListDelete::updateAnimations(float deltaTime)
 {
     if (isDone || history.empty() || !isPrerunDone ) return;
+    Singly_Scene::stepindex = currentStep;  
     switch (Singly_Scene::ani_state) {
         case animation_state::Pause:
             break;
@@ -704,6 +707,10 @@ void Ani_LinkedListDelete::updateAnimations(float deltaTime)
 void Ani_LinkedListDelete::prerun()
 {
     history.clear();
+    Singly_Scene::code.push_back(
+        "while(ncur&& ncur->next && ncur->next->value != target)\n { ncur = ncur->next; }"
+        
+    ); 
     if(Singly_Scene::Nodes.get_root()->value == target) 
     {
         history.push_back({0, Singly_Scene::getInfo()}); 
@@ -740,6 +747,11 @@ void Ani_LinkedListDelete::prerun()
         Singly_Scene::ani_state = Pause; 
         return; 
     }
+    
+    Singly_Scene::code.push_back(
+        "while(ncur&& ncur->next && ncur->next->value != target)\n { ncur = ncur->next; }"
+        ); 
+    
     SinglyNode* ncur = Singly_Scene::Nodes.get_root();
     Edge* edge= nullptr; 
     int nindex= -1; 
@@ -750,6 +762,10 @@ void Ani_LinkedListDelete::prerun()
         history.push_back({++nindex,Singly_Scene::getInfo()});
         ncur = ncur->next; 
     }
+    Singly_Scene::code.push_back(
+    "while(ncur&& ncur->next && ncur->next->value != target)\n { ncur = ncur->next; }"
+    ); 
+
     history.push_back({++nindex,Singly_Scene::getInfo()});
     SinglyNode* tmp = ncur->next; 
     if(tmp&&tmp->next)
@@ -798,6 +814,8 @@ void Ani_LinkedListDelete::prerun()
     loaded = false; 
     Singly_Scene::loadInfo(history[0].info);
     duration = 0.5*history.size(); 
+    Singly_Scene::maxsteps = history.size(); 
+    Singly_Scene::stepindex = 0 ;  
     Singly_Scene::ani_state = Pause; 
 }
 Ani_LinkedListDelete& Ani_LinkedListDelete::operator=(const Ani_LinkedListDelete& other) noexcept {

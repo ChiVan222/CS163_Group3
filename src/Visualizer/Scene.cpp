@@ -22,7 +22,7 @@ animation Singly_Scene:: ani = None;
 animation_state Singly_Scene::ani_state = Continue; 
 Ani_DrawEdge Singly_Scene::de;  
 std::pair<int, std::function<void()>> Singly_Scene::cur_animation;
-
+std::string NodeScene::info;
 std::priority_queue<std::pair<int, std::function<void()>>, 
      std::vector<std::pair<int, std::function<void()>>>, 
     FunctionComparator> Singly_Scene:: animation_queue ; 
@@ -30,6 +30,12 @@ std::priority_queue<std::pair<int, std::function<void()>>,
     std::vector<std::pair<int, std::function<void()>>>, 
    FunctionComparator> Singly_Scene:: UI_animation_queue ; 
 int Singly_Scene::Node_radius = 20; 
+
+int NodeScene::maxsteps = 0 ; 
+int NodeScene::stepindex = 0 ; 
+
+std::vector<string> NodeScene:: code; 
+std::vector<int> NodeScene::highlights_code;
 Scenes SceneManager::get_scene()
 {
     return mscene;
@@ -490,7 +496,7 @@ void Singly_Scene::run(Scenes& mscene)
     UI::mousePos =  GetScreenToWorld2D(GetMousePosition(), UI::camera);
     Draw();
 
-    // a.updateAnimations(deltaTime);
+    a.updateAnimations(deltaTime);
     insert.updateAnimations(deltaTime); 
 
     m.updateAnimations(deltaTime); 
@@ -538,6 +544,8 @@ void Singly_Scene::run(Scenes& mscene)
     DrawText("Singly Linked List", 200, 200, 40, WHITE);
     DrawText(std::to_string(deltaTime).c_str(), 500, 10, 20, WHITE);
     DrawCommonUI();
+    handle();
+
     for(int i =0 ; i<buttons.size();i++)
     {
        buttons[i]->Draw();
@@ -591,7 +599,11 @@ Setting_Scene::Setting_Scene() {
     block = CodeBlock({UI::wWidth/2 + 100.0f, dis}, {300, 400});
 
 }
-
+void Heap_Scene::CheckBuffer()
+{
+    cout << "CheckBuffer" << endl;
+    return;
+}
 void Setting_Scene::run(Scenes& mscene) {
 
     ClearBackground({48,46,46,255});
@@ -771,11 +783,17 @@ void NodeScene::DrawCommonUI()
         Inputs[i]->Draw(true);
         Inputs[i]->Send(buffer);
     }
-
     for(int i = 0; i<buttons.size(); i++)
     {
         buttons[i]->Draw();
     }
+    std::string codes; 
+    for(int i = 0 ; i   < code.size();i++)
+    { 
+        codes += code[i]; 
+    }
+    drawSideBar(this->type, codes , this->highlights_code, this->info, this->progressBar,UI::getFont());
+    drawButtons();
 }
 NodeScene::NodeScene()
 {
@@ -786,6 +804,22 @@ NodeScene::NodeScene()
     buttons.push_back(new Button("",Vector2({(UI::wWidth -200)*GetScreenWidth()/UI::wWidth,(UI::wHeight-430)*GetScreenHeight()/UI::wHeight}),Vector2({100*GetScreenWidth()/UI::wWidth,100*GetScreenHeight()/UI::wHeight}),"Backward")); 
     buttons.push_back(new Button("",Vector2({(UI::wWidth -200)*GetScreenWidth()/UI::wWidth,(UI::wHeight-320)*GetScreenHeight()/UI::wHeight}),Vector2({100*GetScreenWidth()/UI::wWidth,100*GetScreenHeight()/UI::wHeight}),"Pause")); 
     buttons.push_back(new Button("",Vector2({(UI::wWidth -200)*GetScreenWidth()/UI::wWidth,(UI::wHeight-210)*GetScreenHeight()/UI::wHeight}),Vector2({100*GetScreenWidth()/UI::wWidth,100*GetScreenHeight()/UI::wHeight}),"Forward")); 
+
+    this->progressBar = ProgressBar(UI::getFont());
+    this->isCreateChosen = false;
+    this->isPushChosen = false;
+    this->isDeleteChosen = false;
+    this->stepindex = 0;
+    this->type = 0;
+    this->createButton = ButtonNew({8, 415, 110, 30}, "Create", -1, BLACK, 20, UI::getFont());
+    this->randomButton = ButtonNew({156.5, 449.3, 110, 30}, "Random", -1, BLACK, 20, UI::getFont());                        
+    this->loadFileButton = ButtonNew({156.5, 520.6, 110, 30}, "Load File", -1, BLACK, 20, UI::getFont());                     
+    this->pushButton = ButtonNew({8, 450, 110, 30}, "Push", -1, BLACK, 20, UI::getFont());
+    this->deleteButton = ButtonNew({8, 485, 110, 30}, "Delete", -1, BLACK, 20, UI::getFont());
+    this->inputNumber = InputStr(156.5, 449.3, 110, 30, "", 20, UI::getFont());        
+    this->playButton = ButtonNew({173, 492, 70, 30}, "Play", -1, BLACK, 20, UI::getFont());                          
+    this->searchButton = ButtonNew({8, 520, 110, 30}, "Search", -1, BLACK, 20, UI::getFont());
+
 }
 void Singly_Scene::ClearHistory()
 {
@@ -1823,8 +1857,223 @@ void Heap_Scene::run(Scenes& mscene)
     Max_Heap::drawHeap(Mheap.animation, Mheap.font);
 } */
 
-void Heap_Scene::CheckBuffer()
-{
-    cout << "CheckBuffer" << endl;
-    return;
+
+
+void NodeScene::updateStep(int index) {
+    
+    this->stepindex = index; 
+
+    
+}
+
+
+void NodeScene::drawButtons() {
+    this->createButton.draw(50);
+    this->deleteButton.draw(50);
+    this->pushButton.draw(50);
+    this->searchButton.draw(50); 
+    if(this->isCreateChosen) {
+        this->randomButton.draw();
+        this->loadFileButton.draw();
+    }
+    if(this->isDeleteChosen || this->isPushChosen||this->isSearchChosen) {
+        this->inputNumber.draw();
+        this->inputNumber.update();
+        this->playButton.draw();
+    }
+}
+
+
+
+
+std::string formatInput2(const std::string& type, const std::string& input) {
+    std::stringstream ss(input);
+    std::vector<std::string> words;
+    std::string word, result;
+
+    while (ss >> word) {
+        words.push_back(type + " " + word);
+    }
+    for (const std::string& w : words) {
+        result += w + " ";
+    }
+
+    return result;
+}
+
+std::string  formatInputAddEdge2(const std::string& type, const std::string& input) {
+    std::stringstream ss(input);
+    std::vector<std::string> words;
+    std::string from, to, weight, result;
+
+    while (ss >> from && ss>>to && ss>>weight) {
+        words.push_back(type + " " + from+" "+to+" "+weight);
+    }
+    for (const std::string& w : words) {
+        result += w + " ";
+    }
+
+    return result;
+}
+
+int Singly_Scene::handle() {
+    this->type = (ani_state ==Pause) ?  0 : 1;  
+    if(IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+        if (this->createButton.getIsHovered()) {
+            this->isCreateChosen = true;
+            this->isDeleteChosen = false;
+            this->isPushChosen = false;
+            this->isSearchChosen = false; 
+        }
+        if (this->deleteButton.getIsHovered()) {
+            this->isCreateChosen = false;
+            //this->inputNumber.resetText();
+            this->isDeleteChosen = true;
+            this->isPushChosen = false;
+            this->isSearchChosen = false; 
+
+        }
+        if (this->pushButton.getIsHovered()) {
+            this->isCreateChosen = false;
+            this->isDeleteChosen = false;
+            //this->inputNumber.resetText();
+            this->isPushChosen = true;
+            this->isSearchChosen = false; 
+
+        }
+        if (this->searchButton.getIsHovered()) {
+            this->isCreateChosen = false;
+            this->isDeleteChosen = false;
+            //this->inputNumber.resetText();
+            this->isPushChosen = false;
+            this->isSearchChosen = true; 
+        }
+    }
+
+    if (this->playButton.handle()) {
+        if (this->isPushChosen) {
+            std::string input =  this->inputNumber.getText(); 
+            this->inputNumber.resetText();
+            if(input!="")
+           {  
+             buffer += formatInput2("0",' ' +input + ' '); 
+            input =""; 
+            }
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+            ani_state = Continue; 
+
+            return 2;
+        }
+        if (this->isDeleteChosen) {
+            
+            std::string input =  this->inputNumber.getText(); 
+            this->inputNumber.resetText();
+            if(input!="")
+           {  
+             buffer += formatInput2("1",' ' +input + ' '); 
+            input =""; 
+            }
+            ani_state = Continue; 
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+            return 3;
+        }
+        if(this->isSearchChosen)
+        {
+            std::string input =  this->inputNumber.getText(); 
+            this->inputNumber.resetText();
+            if(input!="")
+           {  
+             buffer += formatInput2("3",' ' +input + ' '); 
+            input =""; 
+            }
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+            ani_state = Continue; 
+            return 4; 
+        }
+    }
+
+
+    if (this->randomButton.handle()) {
+        ClearHistory();
+        int n = std::rand() % 11 +1; 
+        for(int i =0 ; i <n;i++)
+        {
+            Vector2 pos = {static_cast<float>(std::rand() % GetScreenWidth()), static_cast<float>(std::rand() % GetScreenHeight())};
+            if (pos.x + 500 < GetScreenWidth()) pos.x += 500;
+            if (pos.y + 200 < GetScreenHeight()) pos.y += 200;
+            if (pos.x > GetScreenWidth() - 100) pos.x -= 100;
+            if (pos.y > GetScreenHeight() - 100) pos.y -= 100;
+            int value = std::rand() % 1000;
+            addFunction(animation_queue,++cur_priority, std::bind(&Ani_InsertRandomList ::updateTarget, &insert_2, pos,value));       
+        }
+        addFunction(animation_queue,++cur_priority,std::bind(&Ani_Straighten::updateTarget, &st, Vector2{100,100}));
+        return 1;
+    }
+    if (this->loadFileButton.handle()) {
+        // createFromFile();
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        return 5;
+    }
+
+    int flag = this->progressBar.handle();
+
+    switch (flag)
+    {
+        case -2:
+            if (maxsteps == 0) break;
+            ani_state = FirstState; 
+            stepindex = 0; 
+            
+            break;
+
+        case -1:
+            if (maxsteps == 0) return 0;
+            ani_state = Backward;  
+            stepindex -= 1; 
+            break;
+
+        case 1:
+             if (maxsteps == 0) return 0;
+             ani_state = Forward; 
+             stepindex += 1; 
+            break;
+
+        case 2:
+            if (maxsteps == 0) return 0;
+            ani_state = FinalState; 
+            stepindex = maxsteps; 
+            this->type = 2;
+            break;
+
+        case 0:
+            if (this->type == 2) {
+                if (maxsteps == 0) return 0;
+                this->ani_state = FirstState;
+                stepindex = 0 ;   
+                this->type = 0;
+                break;
+            }
+            if (this->type == 1) {
+                ani_state = Pause;  
+                this->type = 0;
+                break;
+            }
+            if (this->type == 0 && ani != None) {
+                ani_state = Continue; 
+                this->type = 1;
+                break;
+            }
+            break;
+
+        case 3:
+           speed += 0.1f;
+
+            break;
+        case -3:
+            speed -= 0.1f;
+        default:
+            break;
+    }
+
+    return 0;
 }

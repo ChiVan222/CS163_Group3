@@ -11,6 +11,7 @@ Camera2D UI::camera = {0};
 float UI::wWidth = 1920;
 float UI::wHeight = 1080;
 
+Font UI::mFont(GetFontDefault());
 void UI::UILoadFont()
 {
    mFont = LoadFont("../assets/Fonts/fonts.ttf"); 
@@ -29,10 +30,9 @@ void UI::DrawFadingText(float time, int x, int y, int fontsize,const char* text)
     Color textColor = {255,255,255,(unsigned char)(alpha*255)}; 
     DrawText(text, x,y,fontsize,textColor); 
 }
-UI::UI():  mFont(GetFontDefault())
+UI::UI()
 {
-    InitWindow(wWidth, wHeight, "Hello, World!");
-    UI::background = LoadTexture("../assets/Images/background.png");
+
     fontsize = mFont.baseSize;
     camera.offset = {(float)wWidth / 2, (float)wHeight / 2};    
     camera.zoom  =1; 
@@ -64,10 +64,10 @@ void UI:: resetCamera(){
 }
 void UI::run()
 {
-
+   
     InitWindow(wWidth, wHeight, "Hello, World!");
-    UI::background = LoadTexture("../assets/Images/background.png");
     initResource();
+    UI::background = LoadTexture("../assets/Images/background.png");
     SetTargetFPS(mFPS);
     SetWindowState(FLAG_WINDOW_RESIZABLE);
     scene_manager = new SceneManager();

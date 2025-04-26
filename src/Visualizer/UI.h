@@ -12,10 +12,10 @@ class UI
      static Vector2 mousePos;
      static float fontsize; 
      static Camera2D camera;
+     static Font mFont;
 
     private: 
       SceneManager* scene_manager; 
-      Font mFont;
         private : 
    //   void initAssets(); 
     public : 
@@ -29,5 +29,5 @@ class UI
      static void resetCamera();
      static void ChangeCameraTarget(Vector2 newtarget); 
      static void ChangeCameraZoom(float newzoom);  
-     Font getFont();
+    static Font getFont();
 };
