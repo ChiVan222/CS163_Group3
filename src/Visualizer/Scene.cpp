@@ -969,6 +969,7 @@ ani_search(1.0, 0), ani_remove(1.0), ani_dijkstra(2.0, 0),isDragging(false), dra
     firstEntry = true;
     sceneWidth = GetScreenWidth();
     sceneHeight = GetScreenHeight();
+    block = CodeBlock({1, 1}, {600, 700});
 }
 
 Graph_Scene::~Graph_Scene() {
@@ -1031,7 +1032,32 @@ void Graph_Scene::run(Scenes& mscene) {
     ani_dijkstra.updateAnimations(deltatime);
     EndMode2D();
     UI::mousePos = GetMousePosition();
-    if (ani == DijkstraRunning) drawDescription();
+    if (ani == DijkstraRunning) {
+        drawDescription();
+        block.setFontSize(30);
+        block.SetLines({
+            "void dijkstra(int start, const vector<vector<pair<int, int>>>& graph, vector<int>& distance) {",
+            "   int n = graph.size();",
+            "   distance.assign(n, INF);",
+            "   distance[start] = 0;",
+            "   priority_queue<pair<int, int>, vector<pair<int, int>>, greater<>> pq;",
+            "   pq.push({0, start});",
+            "   while (!pq.empty()) {",
+            "       auto [dist, u] = pq.top(); pq.pop();",
+            "       if (dist > distance[u]) continue;",
+            "       for (auto [v, weight] : graph[u]) {",
+            "           if (distance[u] + weight < distance[v]) {",
+            "               distance[v] = distance[u] + weight;",
+            "               pq.push({distance[v], v});",
+            "           }",
+            "       }",
+            "   }",
+            "}"
+        });
+        if (IsKeyDown(KEY_DOWN)) block.Scroll(5);
+        if (IsKeyDown(KEY_UP)) block.Scroll(-5);
+        block.Draw();
+    }
     executeFunctions(animation_queue);
     sceneWidth = GetScreenWidth();
     sceneHeight = GetScreenHeight();

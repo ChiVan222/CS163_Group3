@@ -114,5 +114,7 @@ class CodeBlock:public Button{
     void Scroll(float amount);
     void SetLines(const std::vector<std::string>& newLines) ;
     void WrapAndAddLine(const std::string& rawLine);
-
+    void setFontSize(float newFontSize) {
+      fontSize = newFontSize;
+    }
 };
