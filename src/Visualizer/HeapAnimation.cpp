@@ -155,6 +155,7 @@ void MaxHeapVisualize::getSize() {
     this->stepIndex = 0;
     this->frame = 0;
     this->progressBar.updateStep(0);
+    this->type = 1;
 }
 
 void MaxHeapVisualize::drawButtons() {
