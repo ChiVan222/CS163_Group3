@@ -555,7 +555,7 @@ void Ani_LinkedListDelete::updateAnimations(float deltaTime)
            Singly_Scene::ani_state = animation_state::Pause;
             break;
 
-        case animation_state::Forward:
+        case animation_state::Forward:  
             if (currentStep + 1 < history.size()) 
             {
                 currentStep++;
@@ -708,8 +708,7 @@ void Ani_LinkedListDelete::prerun()
 {
     history.clear();
     Singly_Scene::code.push_back(
-        "while(ncur&& ncur->next && ncur->next->value != target)\n { ncur = ncur->next; }"
-        
+        "if(root == nullptr) return false; \n"
     ); 
     if(Singly_Scene::Nodes.get_root()->value == target) 
     {

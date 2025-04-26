@@ -804,7 +804,7 @@ NodeScene::NodeScene()
     buttons.push_back(new Button("",Vector2({(UI::wWidth -200)*GetScreenWidth()/UI::wWidth,(UI::wHeight-430)*GetScreenHeight()/UI::wHeight}),Vector2({100*GetScreenWidth()/UI::wWidth,100*GetScreenHeight()/UI::wHeight}),"Backward")); 
     buttons.push_back(new Button("",Vector2({(UI::wWidth -200)*GetScreenWidth()/UI::wWidth,(UI::wHeight-320)*GetScreenHeight()/UI::wHeight}),Vector2({100*GetScreenWidth()/UI::wWidth,100*GetScreenHeight()/UI::wHeight}),"Pause")); 
     buttons.push_back(new Button("",Vector2({(UI::wWidth -200)*GetScreenWidth()/UI::wWidth,(UI::wHeight-210)*GetScreenHeight()/UI::wHeight}),Vector2({100*GetScreenWidth()/UI::wWidth,100*GetScreenHeight()/UI::wHeight}),"Forward")); 
-
+    isGraph = false; 
     this->progressBar = ProgressBar(UI::getFont());
     this->isCreateChosen = false;
     this->isPushChosen = false;
@@ -814,11 +814,15 @@ NodeScene::NodeScene()
     this->createButton = ButtonNew({8, 415, 110, 30}, "Create", -1, BLACK, 20, UI::getFont());
     this->randomButton = ButtonNew({156.5, 449.3, 110, 30}, "Random", -1, BLACK, 20, UI::getFont());                        
     this->loadFileButton = ButtonNew({156.5, 520.6, 110, 30}, "Load File", -1, BLACK, 20, UI::getFont());                     
-    this->pushButton = ButtonNew({8, 450, 110, 30}, "Push", -1, BLACK, 20, UI::getFont());
+    this->pushButton = ButtonNew({8, 450, 110, 30}, "Insert", -1, BLACK, 20, UI::getFont());
     this->deleteButton = ButtonNew({8, 485, 110, 30}, "Delete", -1, BLACK, 20, UI::getFont());
     this->inputNumber = InputStr(156.5, 449.3, 110, 30, "", 20, UI::getFont());        
     this->playButton = ButtonNew({173, 492, 70, 30}, "Play", -1, BLACK, 20, UI::getFont());                          
     this->searchButton = ButtonNew({8, 520, 110, 30}, "Search", -1, BLACK, 20, UI::getFont());
+    this->clearButton = ButtonNew({173, 562, 70, 30}, "Clear", -1, BLACK, 20, UI::getFont());                          
+
+    this->dijkstrabutton =  ButtonNew({8, 555, 110, 30}, "Dijkstra", -1, BLACK, 20, UI::getFont());
+    this->addedgeButton =  ButtonNew({8, 590, 110, 30}, "Add Edge", -1, BLACK, 20, UI::getFont());
 
 }
 void Singly_Scene::ClearHistory()
@@ -922,7 +926,7 @@ ani_search(1.0, 0), ani_remove(1.0), ani_dijkstra(2.0, 0),isDragging(false), dra
     buttons.push_back(new Button("",Vector2({UI::wWidth -200,UI::wHeight-540}),Vector2({100,100}),"First Step")); 
     buttons.push_back(new Button("",Vector2({UI::wWidth -200,UI::wHeight-100}),Vector2({100,100}),"Final Step")); 
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
-
+    isGraph =true; 
     buttons[0]->OnClick = [this]() {
         clear();
     };
@@ -1872,15 +1876,26 @@ void NodeScene::drawButtons() {
     this->deleteButton.draw(50);
     this->pushButton.draw(50);
     this->searchButton.draw(50); 
+    if(this->isGraph)
+    {
+        this->dijkstrabutton.draw(50); 
+        this->addedgeButton.draw(50);
+    }
+
     if(this->isCreateChosen) {
         this->randomButton.draw();
         this->loadFileButton.draw();
     }
-    if(this->isDeleteChosen || this->isPushChosen||this->isSearchChosen) {
+    if(this->isDeleteChosen || this->isPushChosen||this->isSearchChosen|| (isGraph && (isdijkstraChosen||isaddedgeChosen))) {
         this->inputNumber.draw();
         this->inputNumber.update();
         this->playButton.draw();
     }
+    if(this->isDeleteChosen)
+    {
+        this->clearButton.draw();
+    }
+ 
 }
 
 
