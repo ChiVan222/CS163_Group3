@@ -256,7 +256,7 @@ class Graph_Scene: public NodeScene
     void executeFunctions(std::priority_queue<std::pair<int, std::function<void()>>, 
                           std::vector<std::pair<int, std::function<void()>>>, 
                           FunctionComparator2>& q);
-
+    CodeBlock block;
 };
 
  class Trie_Scene:public NodeScene{
